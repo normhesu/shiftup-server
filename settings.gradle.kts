@@ -1,0 +1,1 @@
+rootProject.name = "app.vercel.shiftup.shiftup-server"
