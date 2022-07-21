@@ -1,13 +1,16 @@
 package app.vercel.shiftup.plugins
 
 import io.ktor.http.*
+import io.ktor.resources.*
 import io.ktor.server.application.*
-import io.ktor.server.locations.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.resources.*
+import io.ktor.server.resources.Resources
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 
 fun Application.configureSerialization() {
     install(StatusPages) {
@@ -19,8 +22,7 @@ fun Application.configureSerialization() {
         }
     }
     install(AutoHeadResponse)
-    install(Locations) {
-    }
+    install(Resources)
     install(ContentNegotiation) {
     }
 
@@ -44,14 +46,18 @@ fun Application.configureSerialization() {
 class AuthenticationException : RuntimeException()
 class AuthorizationException : RuntimeException()
 
-@Location("/location/{name}")
+@Serializable
+@Resource("/location/{name}")
 class MyLocation(val name: String, val arg1: Int = 42, val arg2: String = "default")
 
-@Location("/type/{name}")
+@Serializable
+@Resource("/type/{name}")
 data class Type(val name: String) {
-    @Location("/edit")
+    @Serializable
+    @Resource("/edit")
     data class Edit(val type: Type)
 
-    @Location("/list/{page}")
+    @Serializable
+    @Resource("/list/{page}")
     data class List(val type: Type, val page: Int)
 }
