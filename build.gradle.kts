@@ -1,7 +1,3 @@
-val ktor_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
-
 plugins {
     application
     kotlin("jvm") version "1.7.10"
@@ -22,22 +18,28 @@ repositories {
     mavenCentral()
 }
 
+object Version {
+    const val ktor = "2.0.3"
+    const val kotlin = "1.7.10"
+    const val logback = "1.2.3"
+}
+
 dependencies {
-    implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
-    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-metrics-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-call-logging-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-cors-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-host-common-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-status-pages-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-auto-head-response-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-resources:$ktor_version")
-    implementation("io.ktor:ktor-client-core-jvm:$ktor_version")
-    implementation("io.ktor:ktor-client-apache-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-    testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    implementation("io.ktor:ktor-server-content-negotiation-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-server-core-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-server-metrics-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-server-call-logging-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-server-cors-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-server-host-common-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-server-status-pages-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-server-auto-head-response-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-server-auth-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-server-resources:${Version.ktor}")
+    implementation("io.ktor:ktor-client-core-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-client-apache-jvm:${Version.ktor}")
+    implementation("io.ktor:ktor-server-netty-jvm:${Version.ktor}")
+    implementation("ch.qos.logback:logback-classic:${Version.logback}")
+    testImplementation("io.ktor:ktor-server-tests-jvm:${Version.ktor}")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:${Version.kotlin}")
 }
