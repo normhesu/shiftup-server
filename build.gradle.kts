@@ -1,8 +1,12 @@
+import io.gitlab.arturbosch.detekt.Detekt
+import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
+
 plugins {
     application
     kotlin("jvm") version "1.7.10"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.7.10"
     id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("io.gitlab.arturbosch.detekt") version "1.21.0"
 }
 
 group = "app.vercel.shiftup"
@@ -23,6 +27,7 @@ object Version {
     const val kotlin = "1.7.10"
     const val logback = "1.2.3"
     const val ktorCsrf = "1.0.0"
+    const val detekt = "1.21.0"
 }
 
 dependencies {
@@ -44,4 +49,27 @@ dependencies {
     implementation("org.mpierce.ktor.csrf:ktor-csrf:${Version.ktorCsrf}")
     testImplementation("io.ktor:ktor-server-tests-jvm:${Version.ktor}")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:${Version.kotlin}")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:${Version.detekt}")
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config = files("config/detekt/detekt.yml")
+}
+
+tasks.withType<Detekt>().configureEach {
+    reports {
+        html.required.set(true)
+        xml.required.set(false)
+        txt.required.set(true)
+        sarif.required.set(false)
+        md.required.set(true)
+    }
+}
+tasks.withType<Detekt>().configureEach {
+    jvmTarget = "1.8"
+}
+tasks.withType<DetektCreateBaselineTask>().configureEach {
+    jvmTarget = "1.8"
 }
