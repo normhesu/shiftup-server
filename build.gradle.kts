@@ -22,6 +22,7 @@ object Version {
     const val ktor = "2.0.3"
     const val kotlin = "1.7.10"
     const val logback = "1.2.3"
+    const val ktorCsrf = "1.0.0"
 }
 
 dependencies {
@@ -40,6 +41,7 @@ dependencies {
     implementation("io.ktor:ktor-client-apache-jvm:${Version.ktor}")
     implementation("io.ktor:ktor-server-netty-jvm:${Version.ktor}")
     implementation("ch.qos.logback:logback-classic:${Version.logback}")
+    implementation("org.mpierce.ktor.csrf:ktor-csrf:${Version.ktorCsrf}")
     testImplementation("io.ktor:ktor-server-tests-jvm:${Version.ktor}")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:${Version.kotlin}")
 }
