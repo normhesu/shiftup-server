@@ -28,6 +28,10 @@ object Version {
     const val logback = "1.2.3"
     const val ktorCsrf = "1.0.0"
     const val detekt = "1.21.0"
+    const val kotest = "5.4.0"
+    const val kotestAssertionsKtor = "1.0.3"
+    const val archUnit = "1.0.0-rc1"
+    const val mockK = "1.12.4"
 }
 
 dependencies {
@@ -49,6 +53,12 @@ dependencies {
     implementation("org.mpierce.ktor.csrf:ktor-csrf:${Version.ktorCsrf}")
     testImplementation("io.ktor:ktor-server-tests-jvm:${Version.ktor}")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:${Version.kotlin}")
+    testImplementation("io.kotest:kotest-runner-junit5:${Version.kotest}")
+    testImplementation("io.kotest:kotest-assertions-core:${Version.kotest}")
+    testImplementation("io.kotest:kotest-property:${Version.kotest}")
+    testImplementation("io.kotest.extensions:kotest-assertions-ktor:${Version.kotestAssertionsKtor}")
+    testImplementation("com.tngtech.archunit:archunit:${Version.archUnit}")
+    testImplementation("io.mockk:mockk:${Version.mockK}")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:${Version.detekt}")
 }
 
@@ -72,4 +82,8 @@ tasks.withType<Detekt>().configureEach {
 }
 tasks.withType<DetektCreateBaselineTask>().configureEach {
     jvmTarget = "1.8"
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
