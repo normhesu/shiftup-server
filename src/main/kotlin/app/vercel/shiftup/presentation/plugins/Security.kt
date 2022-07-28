@@ -1,47 +1,31 @@
 package app.vercel.shiftup.presentation.plugins
 
-import io.ktor.client.*
-import io.ktor.client.engine.apache.*
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
+import io.ktor.server.plugins.cors.routing.*
+import org.mpierce.ktor.csrf.CsrfProtection
+import org.mpierce.ktor.csrf.OriginMatchesKnownHost
 
-fun Application.configureRouting() {
+private const val SCHEME = "https"
+private const val HOST = "shiftup.vercel.app"
 
-    authentication {
-        oauth("auth-oauth-google") {
-            urlProvider = { "http://localhost:8080/callback" }
-            providerLookup = {
-                OAuthServerSettings.OAuth2ServerSettings(
-                    name = "google",
-                    authorizeUrl = "https://accounts.google.com/o/oauth2/auth",
-                    accessTokenUrl = "https://accounts.google.com/o/oauth2/token",
-                    requestMethod = HttpMethod.Post,
-                    clientId = System.getenv("GOOGLE_CLIENT_ID"),
-                    clientSecret = System.getenv("GOOGLE_CLIENT_SECRET"),
-                    defaultScopes = listOf("https://www.googleapis.com/auth/userinfo.profile")
-                )
-            }
-            client = HttpClient(Apache)
+fun Application.configureSecurity() {
+    val productMode = environment.developmentMode.not()
+    install(CORS) {
+        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Patch)
+        allowHeader(HttpHeaders.Authorization)
+        if (productMode) {
+            allowHost(host = HOST, schemes = listOf(SCHEME))
+        } else {
+            anyHost()
         }
     }
 
-    routing {
-        authenticate("auth-oauth-google") {
-            get("login") {
-                call.respondRedirect("/callback")
-            }
-
-            get("/callback") {
-                val principal: OAuthAccessTokenResponse.OAuth2? = call.authentication.principal()
-                call.sessions.set(UserSession(principal?.accessToken.toString()))
-                call.respondRedirect("/hello")
-            }
-        }
+    if (productMode) install(CsrfProtection) {
+        applyToAllRoutes()
+        validate(OriginMatchesKnownHost(SCHEME, HOST))
     }
 }
-
-class UserSession(accessToken: String)
