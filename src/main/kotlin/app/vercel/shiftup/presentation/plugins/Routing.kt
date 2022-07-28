@@ -2,6 +2,7 @@ package app.vercel.shiftup.presentation.plugins
 
 import io.ktor.http.*
 import io.ktor.resources.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -24,6 +25,7 @@ fun Application.configureSerialization() {
     install(AutoHeadResponse)
     install(Resources)
     install(ContentNegotiation) {
+        json()
     }
 
     routing {
