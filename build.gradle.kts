@@ -24,7 +24,6 @@ repositories {
 
 object Version {
     const val ktor = "2.0.3"
-    const val kotlin = "1.7.10"
     const val logback = "1.2.3"
     const val ktorCsrf = "1.0.0"
     const val detekt = "1.21.0"
@@ -52,7 +51,6 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:${Version.logback}")
     implementation("org.mpierce.ktor.csrf:ktor-csrf:${Version.ktorCsrf}")
     testImplementation("io.ktor:ktor-server-tests-jvm:${Version.ktor}")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:${Version.kotlin}")
     testImplementation("io.kotest:kotest-runner-junit5:${Version.kotest}")
     testImplementation("io.kotest:kotest-assertions-core:${Version.kotest}")
     testImplementation("io.kotest:kotest-property:${Version.kotest}")
