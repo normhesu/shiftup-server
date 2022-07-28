@@ -1,6 +1,6 @@
 package app.vercel.shiftup
 
-import app.vercel.shiftup.plugins.*
+import app.vercel.shiftup.presentation.plugins.*
 import io.ktor.server.application.*
 
 @Suppress("RemoveRedundantQualifierName")

@@ -1,4 +1,4 @@
-package app.vercel.shiftup.plugins
+package app.vercel.shiftup.presentation.plugins
 
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*

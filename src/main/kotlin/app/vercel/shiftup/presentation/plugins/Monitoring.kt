@@ -1,4 +1,4 @@
-package app.vercel.shiftup.plugins
+package app.vercel.shiftup.presentation.plugins
 
 import io.ktor.server.application.*
 import io.ktor.server.plugins.callloging.*
