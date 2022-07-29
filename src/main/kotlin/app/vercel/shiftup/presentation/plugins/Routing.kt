@@ -1,5 +1,6 @@
 package app.vercel.shiftup.presentation.plugins
 
+import app.vercel.shiftup.presentation.routes.routes
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.autohead.*
@@ -15,4 +16,5 @@ fun Application.configureRouting() {
     install(ContentNegotiation) {
         json()
     }
+    routes()
 }
