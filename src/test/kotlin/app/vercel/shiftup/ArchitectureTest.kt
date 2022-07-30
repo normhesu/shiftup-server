@@ -5,6 +5,7 @@ import com.tngtech.archunit.core.importer.ImportOption
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition
 import com.tngtech.archunit.library.Architectures
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.data.row
 
 class ArchitectureTest : FreeSpec({
     "依存関係" - {
@@ -55,12 +56,23 @@ class ArchitectureTest : FreeSpec({
             }
         }
         "外部" - {
-            "プレゼンテーション層以外は、Ktorに依存しない" {
-                ArchRuleDefinition.noClasses()
-                    .that().resideOutsideOfPackage(PackageId.PRESENTATION)
-                    .should().dependOnClassesThat().resideInAPackage(PackageId.Dependencies.KTOR)
-                    .allowEmptyShould(true)
-                    .check(CLASSES)
+            arrayOf(
+                row(
+                    "プレゼンテーション層以外は、Ktorに依存しない",
+                    PackageId.PRESENTATION, PackageId.Dependencies.KTOR,
+                ),
+                row(
+                    "インフラ層以外は、KMongoに依存しない",
+                    PackageId.INFRASTRUCTURE, PackageId.Dependencies.KMONGO,
+                ),
+            ).forEach { (testName, layer, dependenciesPackage) ->
+                testName {
+                    ArchRuleDefinition.noClasses()
+                        .that().resideOutsideOfPackage(layer)
+                        .should().dependOnClassesThat().resideInAPackage(dependenciesPackage)
+                        .allowEmptyShould(true)
+                        .check(CLASSES)
+                }
             }
         }
     }
@@ -126,6 +138,7 @@ private object PackageId {
 
     object Dependencies {
         const val KTOR = "io.ktor.."
+        const val KMONGO = "org.litote.kmongo.."
     }
 }
 

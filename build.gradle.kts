@@ -31,6 +31,7 @@ object Version {
     const val kotestAssertionsKtor = "1.0.3"
     const val archUnit = "1.0.0-rc1"
     const val mockK = "1.12.4"
+    const val kMongo = "4.6.1"
 }
 
 dependencies {
@@ -50,6 +51,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:${Version.ktor}")
     implementation("ch.qos.logback:logback-classic:${Version.logback}")
     implementation("org.mpierce.ktor.csrf:ktor-csrf:${Version.ktorCsrf}")
+    implementation("org.litote.kmongo:kmongo-coroutine-serialization:${Version.kMongo}")
     testImplementation("io.ktor:ktor-server-tests-jvm:${Version.ktor}")
     testImplementation("io.kotest:kotest-runner-junit5:${Version.kotest}")
     testImplementation("io.kotest:kotest-assertions-core:${Version.kotest}")
