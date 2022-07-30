@@ -8,6 +8,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.gitlab.arturbosch.detekt") version "1.21.0"
     id("com.google.devtools.ksp") version "1.7.10-1.0.6"
+    id("org.jetbrains.dokka") version "1.6.21"
 }
 
 group = "app.vercel.shiftup"
@@ -104,4 +105,8 @@ tasks.withType<DetektCreateBaselineTask>().configureEach {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+tasks.dokkaHtml.configure {
+    outputDirectory.set(buildDir.resolve("dokka"))
 }
