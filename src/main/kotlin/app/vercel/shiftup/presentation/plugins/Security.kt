@@ -24,8 +24,8 @@ fun Application.configureSecurity() {
         }
     }
 
-    if (productMode) install(CsrfProtection) {
-        applyToAllRoutes()
+    install(CsrfProtection) {
+        if (productMode) applyToAllRoutes()
         validate(OriginMatchesKnownHost(SCHEME, HOST))
     }
 }
