@@ -7,6 +7,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "1.7.10"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.gitlab.arturbosch.detekt") version "1.21.0"
+    id("com.google.devtools.ksp") version "1.7.10-1.0.6"
 }
 
 group = "app.vercel.shiftup"
@@ -16,6 +17,15 @@ application {
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+    sourceSets.test {
+        kotlin.srcDir("build/generated/ksp/test/kotlin")
+    }
 }
 
 repositories {
