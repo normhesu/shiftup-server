@@ -9,6 +9,7 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.21.0"
     id("com.google.devtools.ksp") version "1.7.10-1.0.6"
     id("org.jetbrains.dokka") version "1.6.21"
+    id("org.dddjava.jig-gradle-plugin") version "2022.7.4"
 }
 
 group = "app.vercel.shiftup"
@@ -85,6 +86,11 @@ detekt {
     buildUponDefaultConfig = true
     allRules = false
     config = files("config/detekt/detekt.yml")
+}
+
+jig {
+    modelPattern = ".+\\.model\\..+"
+    outputOmitPrefix = ".+\\.model\\."
 }
 
 tasks.withType<Detekt>().configureEach {
