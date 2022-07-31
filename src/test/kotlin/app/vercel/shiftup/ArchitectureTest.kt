@@ -5,7 +5,6 @@ import com.tngtech.archunit.core.importer.ImportOption
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition
 import com.tngtech.archunit.library.Architectures
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.data.row
 
 class ArchitectureTest : FreeSpec({
     "依存関係" - {
@@ -56,23 +55,24 @@ class ArchitectureTest : FreeSpec({
             }
         }
         "外部" - {
-            arrayOf(
-                row(
-                    "プレゼンテーション層以外は、Ktorに依存しない",
-                    PackageId.PRESENTATION, PackageId.Dependencies.KTOR,
-                ),
-                row(
-                    "インフラ層以外は、KMongoに依存しない",
-                    PackageId.INFRASTRUCTURE, PackageId.Dependencies.KMONGO,
-                ),
-            ).forEach { (testName, layer, dependenciesPackage) ->
-                testName {
-                    ArchRuleDefinition.noClasses()
-                        .that().resideOutsideOfPackage(layer)
-                        .should().dependOnClassesThat().resideInAPackage(dependenciesPackage)
-                        .allowEmptyShould(true)
-                        .check(CLASSES)
-                }
+            "プレゼンテーション層以外は、Ktorに依存しない" {
+                ArchRuleDefinition.noClasses()
+                    .that().resideOutsideOfPackage(PackageId.PRESENTATION)
+                    .should().dependOnClassesThat().resideInAPackage(PackageId.Dependencies.KTOR)
+                    .allowEmptyShould(true)
+                    .check(CLASSES)
+            }
+            "インフラ層以外は、kmongo-idを除くKMongoに依存しない" {
+                val kmongo = PackageId.Dependencies.Kmongo
+                ArchRuleDefinition.noClasses()
+                    .that().resideOutsideOfPackage(PackageId.INFRASTRUCTURE)
+                    .should().dependOnClassesThat().resideInAnyPackage(
+                        // Idがorg.litote.kmongoに含まれているので、
+                        // 下記のパッケージを制限して、 データベースに直接アクセスできないようにする
+                        kmongo.REACTIVESTREAMS, kmongo.COROUTINE,
+                    )
+                    .allowEmptyShould(true)
+                    .check(CLASSES)
             }
         }
     }
@@ -120,6 +120,7 @@ class ArchitectureTest : FreeSpec({
 private val CLASSES = ClassFileImporter()
     .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
     .withImportOption { it.contains("/ApplicationKt.class").not() }
+    .withImportOption { it.contains("/KoinModulesKt").not() }
     .importPackages("app.vercel.shiftup")
 
 private object PackageId {
@@ -138,7 +139,12 @@ private object PackageId {
 
     object Dependencies {
         const val KTOR = "io.ktor.."
-        const val KMONGO = "org.litote.kmongo.."
+
+        object Kmongo {
+            private const val KMONGO_PACKAGE = "org.litote.kmongo"
+            const val REACTIVESTREAMS = "$KMONGO_PACKAGE.reactivestreams.."
+            const val COROUTINE = "$KMONGO_PACKAGE.coroutine.."
+        }
     }
 }
 

@@ -7,6 +7,11 @@ val ApplicationConfig.allowAllHosts
         .propertyOrNull(ApplicationConfPath.Ktor.Security.allowAllHosts)
         ?.getString().toBoolean()
 
+val ApplicationConfig.mongoDbConnectionUri
+    get() = this
+        .propertyOrNull(ApplicationConfPath.Ktor.Database.mongoDbConnectionUri)
+        ?.getString()
+
 private object ApplicationConfPath {
     object Ktor {
         private const val PATH = "ktor"
@@ -14,6 +19,11 @@ private object ApplicationConfPath {
         object Security {
             private const val PATH = "${Ktor.PATH}.security"
             const val allowAllHosts = "$PATH.allow-all-hosts"
+        }
+
+        object Database {
+            private const val PATH = "${Ktor.PATH}.database"
+            const val mongoDbConnectionUri = "$PATH.mongo-db-connection-uri"
         }
     }
 }
