@@ -1,3 +1,4 @@
+import com.bnorm.power.PowerAssertGradleExtension
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
@@ -10,6 +11,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.7.10-1.0.6"
     id("org.jetbrains.dokka") version "1.6.21"
     id("org.dddjava.jig-gradle-plugin") version "2022.7.4"
+    id("com.bnorm.power.kotlin-power-assert") version "0.12.0"
 }
 
 group = "app.vercel.shiftup"
@@ -119,4 +121,12 @@ tasks.withType<Test>().configureEach {
 
 tasks.dokkaHtml.configure {
     outputDirectory.set(buildDir.resolve("dokka"))
+}
+
+configure<PowerAssertGradleExtension> {
+    functions = listOf(
+        "kotlin.assert",
+        "kotlin.require",
+        "kotlin.check",
+    )
 }
