@@ -10,6 +10,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.resources.*
 import io.ktor.server.response.*
+import kotlinx.serialization.json.Json
 
 fun Application.configureRouting() {
     install(StatusPages) {
@@ -38,7 +39,12 @@ fun Application.configureRouting() {
     install(AutoHeadResponse)
     install(Resources)
     install(ContentNegotiation) {
-        json()
+        json(
+            Json {
+                prettyPrint = true
+                isLenient = true
+            }
+        )
     }
     routes()
 }
