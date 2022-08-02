@@ -1,15 +1,18 @@
 package app.vercel.shiftup
 
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import app.vercel.shiftup.plugins.*
+import app.vercel.shiftup.presentation.plugins.configureDI
+import app.vercel.shiftup.presentation.plugins.configureMonitoring
+import app.vercel.shiftup.presentation.plugins.configureRouting
+import app.vercel.shiftup.presentation.plugins.configureSecurity
+import io.ktor.server.application.*
 
-fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
-        configureSerialization()
-        configureMonitoring()
-        configureHTTP()
-        configureSecurity()
-        configureRouting()
-    }.start(wait = true)
+@Suppress("RemoveRedundantQualifierName")
+fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
+
+@Suppress("unused")
+fun Application.module() {
+    configureDI()
+    configureMonitoring()
+    configureSecurity()
+    configureRouting()
 }
