@@ -96,21 +96,9 @@ class ArchitectureTest : FreeSpec({
         }
         "リポジトリのインターフェースは、ドメインサービス層にのみ存在する" {
             ArchRuleDefinition.classes()
-                .that().haveSimpleNameStartingWith(Prefix.REPOSITORY_INTERFACE)
-                .and().haveSimpleNameEndingWith(Suffix.REPOSITORY)
+                .that().haveSimpleNameEndingWith(Suffix.REPOSITORY_INTERFACE)
                 .and().areInterfaces()
                 .should().resideInAPackage(PackageId.Domain.SERVICE)
-                .allowEmptyShould(true)
-                .check(CLASSES)
-        }
-    }
-
-    "命名" - {
-        "リポジトリのインターフェースは、接頭辞「I」を持つ" {
-            ArchRuleDefinition.classes()
-                .that().haveSimpleNameEndingWith(Suffix.REPOSITORY)
-                .and().areInterfaces()
-                .should().haveSimpleNameStartingWith(Prefix.REPOSITORY_INTERFACE)
                 .allowEmptyShould(true)
                 .check(CLASSES)
         }
@@ -148,11 +136,8 @@ private object PackageId {
     }
 }
 
-private object Prefix {
-    const val REPOSITORY_INTERFACE = "I"
-}
-
 private object Suffix {
     const val USE_CASE = "UseCase"
     const val REPOSITORY = "Repository"
+    const val REPOSITORY_INTERFACE = "RepositoryInterface"
 }
