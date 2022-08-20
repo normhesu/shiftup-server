@@ -95,8 +95,9 @@ detekt {
 }
 
 jig {
-    modelPattern = ".+\\.model\\..+"
-    outputOmitPrefix = ".+\\.model\\."
+    modelPattern = "^(?=.+\\.domain\\..+)(?!.*\\\$)(?!.*Kt$).*\$"
+    outputOmitPrefix = ".+\\.features\\."
+    linkPrefix = "https://github.com/normhesu/shiftup-server/tree/develop/src/main/kotlin"
 }
 
 tasks.withType<Detekt>().configureEach {
