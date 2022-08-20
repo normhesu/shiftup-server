@@ -113,7 +113,7 @@ private val CLASSES = ClassFileImporter()
 
 private object PackageId {
     private const val SHIFTUP_PACKAGE = "app.vercel.shiftup"
-    private const val FEATURES_PACKAGE = "$SHIFTUP_PACKAGE.features.*"
+    private const val FEATURES_PACKAGE = "$SHIFTUP_PACKAGE.features.(**)"
 
     object Domain {
         private const val DOMAIN_PACKAGE = "$FEATURES_PACKAGE.domain"
