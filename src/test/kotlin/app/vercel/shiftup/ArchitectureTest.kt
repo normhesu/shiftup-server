@@ -121,7 +121,7 @@ private object PackageId {
         const val SERVICE = "$DOMAIN_PACKAGE.service.."
     }
 
-    const val APPLICATION = "$FEATURES_PACKAGE.usecase.."
+    const val APPLICATION = "$FEATURES_PACKAGE.application.."
     const val INFRASTRUCTURE = "$FEATURES_PACKAGE.infra.."
     const val PRESENTATION = "$SHIFTUP_PACKAGE.presentation.."
 
