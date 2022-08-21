@@ -12,26 +12,26 @@ class ArchitectureTest : FreeSpec({
             "レイヤ間の依存関係" {
                 Architectures.layeredArchitecture().consideringAllDependencies()
                     // レイヤの定義
-                    .layer(PackageId.Domain.MODEL).definedBy(PackageId.Domain.MODEL)
-                    .layer(PackageId.Domain.SERVICE).definedBy(PackageId.Domain.SERVICE)
-                    .layer(PackageId.INFRASTRUCTURE).definedBy(PackageId.INFRASTRUCTURE)
-                    .layer(PackageId.APPLICATION).definedBy(PackageId.APPLICATION)
-                    .layer(PackageId.PRESENTATION).definedBy(PackageId.PRESENTATION)
+                    .layer(LayerName.Domain.MODEL).definedBy(PackageId.Domain.MODEL)
+                    .layer(LayerName.Domain.SERVICE).definedBy(PackageId.Domain.SERVICE)
+                    .layer(LayerName.INFRASTRUCTURE).definedBy(PackageId.INFRASTRUCTURE)
+                    .layer(LayerName.APPLICATION).definedBy(PackageId.APPLICATION)
+                    .layer(LayerName.PRESENTATION).definedBy(PackageId.PRESENTATION)
                     // 制約の定義
-                    .whereLayer(PackageId.Domain.MODEL).mayOnlyBeAccessedByLayers(
-                        PackageId.Domain.SERVICE, PackageId.APPLICATION,
-                        PackageId.INFRASTRUCTURE, PackageId.PRESENTATION,
+                    .whereLayer(LayerName.Domain.MODEL).mayOnlyBeAccessedByLayers(
+                        LayerName.Domain.SERVICE, LayerName.APPLICATION,
+                        LayerName.INFRASTRUCTURE, LayerName.PRESENTATION,
                     )
-                    .whereLayer(PackageId.Domain.SERVICE).mayOnlyBeAccessedByLayers(
-                        PackageId.APPLICATION, PackageId.INFRASTRUCTURE,
+                    .whereLayer(LayerName.Domain.SERVICE).mayOnlyBeAccessedByLayers(
+                        LayerName.APPLICATION, LayerName.INFRASTRUCTURE,
                     )
-                    .whereLayer(PackageId.INFRASTRUCTURE).mayOnlyBeAccessedByLayers(
-                        PackageId.APPLICATION,
+                    .whereLayer(LayerName.INFRASTRUCTURE).mayOnlyBeAccessedByLayers(
+                        LayerName.APPLICATION,
                     )
-                    .whereLayer(PackageId.APPLICATION).mayOnlyBeAccessedByLayers(
-                        PackageId.PRESENTATION,
+                    .whereLayer(LayerName.APPLICATION).mayOnlyBeAccessedByLayers(
+                        LayerName.PRESENTATION,
                     )
-                    .whereLayer(PackageId.PRESENTATION).mayNotBeAccessedByAnyLayer()
+                    .whereLayer(LayerName.PRESENTATION).mayNotBeAccessedByAnyLayer()
                     .withOptionalLayers(true)
                     .ensureAllClassesAreContainedInArchitecture()
                     .check(CLASSES)
@@ -96,21 +96,9 @@ class ArchitectureTest : FreeSpec({
         }
         "リポジトリのインターフェースは、ドメインサービス層にのみ存在する" {
             ArchRuleDefinition.classes()
-                .that().haveSimpleNameStartingWith(Prefix.REPOSITORY_INTERFACE)
-                .and().haveSimpleNameEndingWith(Suffix.REPOSITORY)
+                .that().haveSimpleNameEndingWith(Suffix.REPOSITORY_INTERFACE)
                 .and().areInterfaces()
                 .should().resideInAPackage(PackageId.Domain.SERVICE)
-                .allowEmptyShould(true)
-                .check(CLASSES)
-        }
-    }
-
-    "命名" - {
-        "リポジトリのインターフェースは、接頭辞「I」を持つ" {
-            ArchRuleDefinition.classes()
-                .that().haveSimpleNameEndingWith(Suffix.REPOSITORY)
-                .and().areInterfaces()
-                .should().haveSimpleNameStartingWith(Prefix.REPOSITORY_INTERFACE)
                 .allowEmptyShould(true)
                 .check(CLASSES)
         }
@@ -123,9 +111,30 @@ private val CLASSES = ClassFileImporter()
     .withImportOption { it.contains("/KoinModulesKt").not() }
     .importPackages("app.vercel.shiftup")
 
+private object LayerName {
+    object Domain {
+        const val MODEL = "ドメインモデル層"
+        const val SERVICE = "ドメインサービス層"
+    }
+
+    const val APPLICATION = "アプリケーション層"
+    const val INFRASTRUCTURE = "インフラ層"
+    const val PRESENTATION = "プレゼンテーション層"
+
+    object Dependencies {
+        const val KTOR = "io.ktor.."
+
+        object Kmongo {
+            private const val KMONGO_PACKAGE = "org.litote.kmongo"
+            const val REACTIVESTREAMS = "$KMONGO_PACKAGE.reactivestreams.."
+            const val COROUTINE = "$KMONGO_PACKAGE.coroutine.."
+        }
+    }
+}
+
 private object PackageId {
     private const val SHIFTUP_PACKAGE = "app.vercel.shiftup"
-    private const val FEATURES_PACKAGE = "$SHIFTUP_PACKAGE.features.*"
+    private const val FEATURES_PACKAGE = "$SHIFTUP_PACKAGE.features.(**)"
 
     object Domain {
         private const val DOMAIN_PACKAGE = "$FEATURES_PACKAGE.domain"
@@ -133,7 +142,7 @@ private object PackageId {
         const val SERVICE = "$DOMAIN_PACKAGE.service.."
     }
 
-    const val APPLICATION = "$FEATURES_PACKAGE.usecase.."
+    const val APPLICATION = "$FEATURES_PACKAGE.application.."
     const val INFRASTRUCTURE = "$FEATURES_PACKAGE.infra.."
     const val PRESENTATION = "$SHIFTUP_PACKAGE.presentation.."
 
@@ -148,11 +157,8 @@ private object PackageId {
     }
 }
 
-private object Prefix {
-    const val REPOSITORY_INTERFACE = "I"
-}
-
 private object Suffix {
     const val USE_CASE = "UseCase"
     const val REPOSITORY = "Repository"
+    const val REPOSITORY_INTERFACE = "RepositoryInterface"
 }
