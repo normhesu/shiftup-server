@@ -29,9 +29,7 @@ fun Application.configureRouting() {
             throw cause
         }
 
-        val respondTextStatusCodes = HttpStatusCode.allStatusCodes
-            .filter { it.isSuccess().not() }
-            .toTypedArray()
+        val respondTextStatusCodes = HttpStatusCode.allStatusCodes.toTypedArray()
         @Suppress("SpreadOperator")
         status(*respondTextStatusCodes) { call, status ->
             call.respondText(status)
