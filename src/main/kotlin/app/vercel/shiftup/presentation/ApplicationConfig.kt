@@ -8,6 +8,25 @@ val ApplicationConfig.topPageUrl
         .property(ApplicationConfPath.Ktor.Application.topPageUrl)
         .getString()
 
+// Auth
+val ApplicationConfig.firstManager
+    get() = FirstManager(
+        studentNumber = firstManagerStudentNumber,
+        department = firstManagerDepartment,
+    )
+
+private val ApplicationConfig.firstManagerStudentNumber
+    get() = this
+        .property(ApplicationConfPath.Ktor.Auth.firstManagerStudentNumber)
+        .getString()
+        .let(::StudentNumber)
+
+private val ApplicationConfig.firstManagerDepartment
+    get() = this
+        .property(ApplicationConfPath.Ktor.Auth.firstManagerDepartment)
+        .getString()
+        .let { Department.valueOf(it) }
+
 // Security
 val ApplicationConfig.allowAllHosts
     get() = this
@@ -27,6 +46,12 @@ private object ApplicationConfPath {
         object Application {
             private const val PATH = "${Ktor.PATH}.application"
             const val topPageUrl = "$PATH.top-page-url"
+        }
+
+        object Auth {
+            private const val PATH = "${Ktor.PATH}.auth"
+            const val firstManagerStudentNumber = "$PATH.first-manager-student-number"
+            const val firstManagerDepartment = "$PATH.first-manager-department"
         }
 
         object Security {
