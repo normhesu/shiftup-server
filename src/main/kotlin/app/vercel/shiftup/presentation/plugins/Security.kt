@@ -1,17 +1,18 @@
 package app.vercel.shiftup.presentation.plugins
 
 import app.vercel.shiftup.presentation.allowAllHosts
+import app.vercel.shiftup.presentation.topPageUrl
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cors.routing.*
 import org.mpierce.ktor.csrf.CsrfProtection
 import org.mpierce.ktor.csrf.OriginMatchesKnownHost
 
-private const val SCHEME = "https"
-private const val HOST = "shiftup.vercel.app"
-
 fun Application.configureSecurity() {
     val allowAllHosts = environment.config.allowAllHosts
+    val (scheme, host) = environment.config.topPageUrl
+        .dropLastWhile { it == '/' }
+        .split("://")
 
     install(CORS) {
         allowMethod(HttpMethod.Options)
@@ -22,12 +23,12 @@ fun Application.configureSecurity() {
         if (allowAllHosts) {
             anyHost()
         } else {
-            allowHost(host = HOST, schemes = listOf(SCHEME))
+            allowHost(host = host, schemes = listOf(scheme))
         }
     }
 
     install(CsrfProtection) {
         if (!allowAllHosts) applyToAllRoutes()
-        validate(OriginMatchesKnownHost(SCHEME, HOST))
+        validate(OriginMatchesKnownHost(scheme, host))
     }
 }
