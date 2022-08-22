@@ -13,7 +13,7 @@ value class NeecEmail(val value: String) {
         private const val suffix = "@g.neec.ac.jp"
 
         fun of(studentNumber: StudentNumber): NeecEmail {
-            return NeecEmail("${studentNumber.lowercase()}@g.neec.ac.jp")
+            return NeecEmail(studentNumber.lowercaseValue() + suffix)
         }
     }
 

@@ -9,7 +9,7 @@ value class StudentNumber(val value: String) {
         require(value matches regex)
     }
 
-    fun lowercase() = value.lowercase()
+    fun lowercaseValue() = value.lowercase()
 
     val entranceYear
         get() = EntranceYear(

@@ -6,7 +6,7 @@ import io.kotest.property.arbitrary.int
 import io.kotest.property.forAll
 
 class StudentNumberTest : FreeSpec({
-    "entranceYear取得" - {
+    "entranceYear取得" {
         forAll(Arb.int(0..999)) {
             val studentNumber = StudentNumber(
                 "G${"$it".padStart(3, '0')}C0000",
