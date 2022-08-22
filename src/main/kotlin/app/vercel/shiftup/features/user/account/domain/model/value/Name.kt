@@ -13,7 +13,12 @@ value class Name(val value: String) {
     constructor(
         familyName: String,
         givenName: String,
-    ) : this(getName(familyName = familyName, givenName = givenName))
+    ) : this(
+        value = getName(
+            familyName = familyName,
+            givenName = givenName,
+        ),
+    )
 }
 
 private fun getName(
@@ -24,6 +29,8 @@ private fun getName(
         familyName to givenName,
         givenName to familyName,
     ).find {
-        runCatching { StudentNumber(it.first.trim()) }.isSuccess
+        runCatching {
+            StudentNumber(it.first.trim())
+        }.isSuccess
     }?.second ?: (familyName + givenName)
 }
