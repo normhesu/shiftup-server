@@ -8,7 +8,6 @@ import io.ktor.server.sessions.*
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
 import java.io.File
-import kotlin.time.Duration.Companion.days
 
 const val USER_SESSION_NAME = "user_session"
 
@@ -25,7 +24,6 @@ fun Application.configureSessions() {
         ) {
             cookie.apply {
                 path = "/"
-                maxAge = 30.days
                 secure = productMode
                 httpOnly = true
             }
