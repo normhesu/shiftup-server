@@ -6,7 +6,7 @@ import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invited.domain.model.InvitedUser
 import app.vercel.shiftup.features.user.invited.domain.model.value.FirstManager
-import app.vercel.shiftup.features.user.invited.domain.model.value.InvitedUserType
+import app.vercel.shiftup.features.user.invited.domain.model.value.Position
 import app.vercel.shiftup.features.user.invited.domain.service.GetInvitedUserDomainService
 import app.vercel.shiftup.features.user.invited.infra.InvitedUserRepository
 import com.github.michaelbull.result.Err
@@ -58,13 +58,13 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 userRepository.findById(userId)
             } returns null
 
-            val invitedUserType = InvitedUserType.Manager
+            val position = Position.Manager
             val resultUser = User(
                 id = userId,
                 name = mockk(relaxed = true),
                 studentNumber = StudentNumber("G000C0000"),
                 department = mockk(relaxed = true),
-                roles = invitedUserType.roles,
+                roles = position.roles,
             )
 
             val notAllowedFirstManager = FirstManager(
@@ -78,7 +78,7 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 coEvery {
                     invitedUserRepository.findByEmail(resultUser.email)
                 } returns InvitedUser(
-                    type = invitedUserType,
+                    position = position,
                     studentNumber = resultUser.studentNumber,
                     department = resultUser.department,
                 )

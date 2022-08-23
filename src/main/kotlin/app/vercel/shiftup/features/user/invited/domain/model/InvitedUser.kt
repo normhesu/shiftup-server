@@ -4,7 +4,7 @@ import app.vercel.shiftup.features.user.domain.model.value.Department
 import app.vercel.shiftup.features.user.domain.model.value.NeecEmail
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invited.domain.model.value.FirstManager
-import app.vercel.shiftup.features.user.invited.domain.model.value.InvitedUserType
+import app.vercel.shiftup.features.user.invited.domain.model.value.Position
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -18,7 +18,7 @@ typealias InvitedUserId = Id<InvitedUser>
 data class InvitedUser(
     val studentNumber: StudentNumber,
     val department: Department,
-    val type: InvitedUserType,
+    val position: Position,
     @SerialName("_id") @Contextual val id: InvitedUserId = newId()
 ) {
     companion object {
@@ -27,7 +27,7 @@ data class InvitedUser(
             firstManager: FirstManager,
         ) = when (email) {
             NeecEmail.of(firstManager.studentNumber) -> InvitedUser(
-                type = InvitedUserType.Manager,
+                position = Position.Manager,
                 studentNumber = firstManager.studentNumber,
                 department = firstManager.department,
             )
@@ -36,5 +36,5 @@ data class InvitedUser(
     }
 
     @Transient
-    val roles = type.roles
+    val roles = position.roles
 }
