@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @JvmInline
-value class UserId(val value: String)
+value class UserId(@Suppress("unused") private val value: String)
 
 @Serializable
 data class User(

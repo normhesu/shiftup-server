@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @JvmInline
-value class StudentNumber(val value: String) {
+value class StudentNumber(private val value: String) {
     init {
         require(value matches regex)
     }

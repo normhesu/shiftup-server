@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @JvmInline
-value class SchoolYear(val value: Int) {
+value class SchoolYear(private val value: Int) {
     init {
         require(value in MIN..MAX)
     }

@@ -8,7 +8,7 @@ import java.time.ZonedDateTime
 
 @Serializable
 @JvmInline
-value class EntranceYear(val value: Int) {
+value class EntranceYear(private val value: Int) {
     init {
         require(OPENING_YEAR <= value)
     }
