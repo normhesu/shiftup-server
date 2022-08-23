@@ -1,6 +1,5 @@
 package app.vercel.shiftup.features.user.domain.model.value
 
-import app.vercel.shiftup.features.user.account.domain.model.value.SchoolYear
 import kotlinx.serialization.Serializable
 import java.time.Month
 import java.time.ZoneId
@@ -20,14 +19,20 @@ value class EntranceYear(private val value: Int) {
     /**
      * 入学前や卒業後の場合はnullを返します
      */
-    fun getSchoolYear(tenure: Int): SchoolYear? {
+    fun getSchoolYear(tenure: Tenure): SchoolYear? {
         val currentDate = ZonedDateTime.now(ZoneId.of("Asia/Tokyo"))
         val fiscalYear = when (currentDate.month) {
             in Month.JANUARY..Month.MARCH -> currentDate.year - 1
             else -> currentDate.year
         }
-        return (fiscalYear - value + SchoolYear.MIN)
-            .takeIf { it in SchoolYear.MIN..tenure }
+        return (fiscalYear - value + SchoolYear.MIN_VALUE)
+            .takeIf {
+                runCatching {
+                    Tenure(it)
+                }.getOrElse {
+                    return null
+                } in Tenure.MIN..tenure
+            }
             ?.let(::SchoolYear)
     }
 }

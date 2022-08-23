@@ -1,11 +1,7 @@
 package app.vercel.shiftup.features.user.account.domain.model
 
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
-import app.vercel.shiftup.features.user.account.domain.model.value.SchoolYear
-import app.vercel.shiftup.features.user.domain.model.value.Department
-import app.vercel.shiftup.features.user.domain.model.value.NeecEmail
-import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
+import app.vercel.shiftup.features.user.domain.model.value.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

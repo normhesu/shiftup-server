@@ -1,6 +1,5 @@
-package app.vercel.shiftup.features.user.account.domain.model.value
+package app.vercel.shiftup.features.user.domain.model.value
 
-import app.vercel.shiftup.features.user.domain.model.value.EntranceYear
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.inspectors.forAll
 import io.kotest.matchers.shouldBe
@@ -10,15 +9,15 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-class SchoolYearTest : FreeSpec({
-    "生成" - {
+class EntranceYearTest : FreeSpec({
+    "getSchoolYear" - {
         mockkStatic(ZonedDateTime::class)
 
         data class Params(
             val currentYear: Int,
             val currentMonth: Int,
             val entranceYearValue: Int,
-            val tenure: Int,
+            val tenureValue: Int,
             val expectedSchoolYearValue: Int?,
         )
 
@@ -36,10 +35,10 @@ class SchoolYearTest : FreeSpec({
                 )
 
                 EntranceYear(it.entranceYearValue).getSchoolYear(
-                    tenure = it.tenure,
+                    tenure = Tenure(it.tenureValue),
                 ) shouldBe it
                     .expectedSchoolYearValue
-                    ?.let(::EntranceYear)
+                    ?.let(::SchoolYear)
             }
         }
 
@@ -47,22 +46,22 @@ class SchoolYearTest : FreeSpec({
             invokeTest(
                 Params(
                     currentYear = 2022, currentMonth = 3,
-                    entranceYearValue = 2021, tenure = 2,
+                    entranceYearValue = 2021, tenureValue = 2,
                     expectedSchoolYearValue = 1,
                 ),
                 Params(
                     currentYear = 2022, currentMonth = 4,
-                    entranceYearValue = 2021, tenure = 2,
+                    entranceYearValue = 2021, tenureValue = 2,
                     expectedSchoolYearValue = 2,
                 ),
                 Params(
                     currentYear = 2023, currentMonth = 4,
-                    entranceYearValue = 2021, tenure = 4,
+                    entranceYearValue = 2021, tenureValue = 4,
                     expectedSchoolYearValue = 3,
                 ),
                 Params(
                     currentYear = 2024, currentMonth = 4,
-                    entranceYearValue = 2021, tenure = 4,
+                    entranceYearValue = 2021, tenureValue = 4,
                     expectedSchoolYearValue = 4,
                 ),
             )
@@ -72,17 +71,17 @@ class SchoolYearTest : FreeSpec({
             invokeTest(
                 Params(
                     currentYear = 2021, currentMonth = 3,
-                    entranceYearValue = 2021, tenure = 2,
+                    entranceYearValue = 2021, tenureValue = 2,
                     expectedSchoolYearValue = null,
                 ),
                 Params(
                     currentYear = 2021, currentMonth = 3,
-                    entranceYearValue = 2021, tenure = 3,
+                    entranceYearValue = 2021, tenureValue = 3,
                     expectedSchoolYearValue = null,
                 ),
                 Params(
                     currentYear = 2021, currentMonth = 4,
-                    entranceYearValue = 2022, tenure = 4,
+                    entranceYearValue = 2022, tenureValue = 4,
                     expectedSchoolYearValue = null,
                 ),
             )
@@ -92,17 +91,17 @@ class SchoolYearTest : FreeSpec({
             invokeTest(
                 Params(
                     currentYear = 2023, currentMonth = 4,
-                    entranceYearValue = 2021, tenure = 2,
+                    entranceYearValue = 2021, tenureValue = 2,
                     expectedSchoolYearValue = null,
                 ),
                 Params(
                     currentYear = 2024, currentMonth = 4,
-                    entranceYearValue = 2021, tenure = 3,
+                    entranceYearValue = 2021, tenureValue = 3,
                     expectedSchoolYearValue = null,
                 ),
                 Params(
                     currentYear = 2025, currentMonth = 4,
-                    entranceYearValue = 2021, tenure = 4,
+                    entranceYearValue = 2021, tenureValue = 4,
                     expectedSchoolYearValue = null,
                 ),
             )
