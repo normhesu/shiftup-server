@@ -1,6 +1,6 @@
 package app.vercel.shiftup.presentation.routes.invitedusers
 
-import app.vercel.shiftup.features.user.account.domain.model.value.Role
+import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.features.user.invited.application.AddInvitedUsersUseCase
 import app.vercel.shiftup.features.user.invited.application.GetAllInvitedUsersUseCase
 import app.vercel.shiftup.features.user.invited.application.RemoveInvitedUsersUseCase

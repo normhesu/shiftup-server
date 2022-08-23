@@ -1,7 +1,7 @@
 package app.vercel.shiftup.presentation.routes.auth.plugins
 
 import app.vercel.shiftup.features.user.account.application.GetUserUseCase
-import app.vercel.shiftup.features.user.account.domain.model.value.Role
+import app.vercel.shiftup.features.user.domain.model.value.Role
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
