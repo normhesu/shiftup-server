@@ -6,12 +6,16 @@ import io.kotest.property.arbitrary.int
 import io.kotest.property.forAll
 
 class StudentNumberTest : FreeSpec({
-    "entranceYear取得" {
-        forAll(Arb.int(0..999)) {
+    "学年を取得" {
+        forAll(Arb.int(0..999)) { entranceYearValue ->
             val studentNumber = StudentNumber(
-                "G${"$it".padStart(3, '0')}C0000",
+                "G${"$entranceYearValue".padStart(3, '0')}C0000",
             )
-            studentNumber.entranceYear == EntranceYear(it + 2000)
+            val entranceYear = EntranceYear(
+                entranceYearValue + 2000,
+            )
+            val tenure = Department.C2.tenure
+            studentNumber.getSchoolYear(tenure) == entranceYear.getSchoolYear(tenure)
         }
     }
 })

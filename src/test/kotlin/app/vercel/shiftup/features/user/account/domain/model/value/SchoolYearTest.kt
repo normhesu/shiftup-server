@@ -35,10 +35,11 @@ class SchoolYearTest : FreeSpec({
                     tokyoZoneId,
                 )
 
-                SchoolYear.of(
-                    entranceYear = EntranceYear(it.entranceYearValue),
+                EntranceYear(it.entranceYearValue).getSchoolYear(
                     tenure = it.tenure,
-                )?.value shouldBe it.expectedSchoolYearValue
+                ) shouldBe it
+                    .expectedSchoolYearValue
+                    ?.let(::EntranceYear)
             }
         }
 

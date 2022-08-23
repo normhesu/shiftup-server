@@ -24,8 +24,7 @@ data class User(
     val email: NeecEmail
         get() = NeecEmail.of(studentNumber)
     val schoolYear: SchoolYear?
-        get() = SchoolYear.of(
-            entranceYear = studentNumber.entranceYear,
+        get() = studentNumber.getSchoolYear(
             tenure = department.tenure,
         )
 }

@@ -11,10 +11,12 @@ value class StudentNumber(val value: String) {
 
     fun lowercaseValue() = value.lowercase()
 
-    val entranceYear
+    private val entranceYear
         get() = EntranceYear(
             ("2" + value.substring(startIndex = 1, endIndex = 4)).toInt(),
         )
+
+    fun getSchoolYear(tenure: Int) = entranceYear.getSchoolYear(tenure)
 }
 
 private val regex = Regex("G\\d{3}[A-Z]\\d{4}")
