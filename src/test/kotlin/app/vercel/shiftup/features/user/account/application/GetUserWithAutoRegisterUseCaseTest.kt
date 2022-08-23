@@ -4,11 +4,11 @@ import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
-import app.vercel.shiftup.features.user.invited.domain.model.InvitedUser
-import app.vercel.shiftup.features.user.invited.domain.model.value.FirstManager
-import app.vercel.shiftup.features.user.invited.domain.model.value.Position
-import app.vercel.shiftup.features.user.invited.domain.service.GetInvitedUserDomainService
-import app.vercel.shiftup.features.user.invited.infra.InvitedUserRepository
+import app.vercel.shiftup.features.user.invite.domain.model.Invite
+import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
+import app.vercel.shiftup.features.user.invite.domain.model.value.Position
+import app.vercel.shiftup.features.user.invite.domain.service.GetInviteDomainService
+import app.vercel.shiftup.features.user.invite.infra.InviteRepository
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import io.kotest.core.spec.style.FreeSpec
@@ -22,11 +22,11 @@ import io.mockk.mockk
 
 class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
     val userRepository = mockk<UserRepository>(relaxUnitFun = true)
-    val invitedUserRepository: InvitedUserRepository = mockk()
+    val inviteRepository: InviteRepository = mockk()
     val useCase = GetUserWithAutoRegisterUseCase(
         userRepository = userRepository,
-        getInvitedUserDomainService = GetInvitedUserDomainService(
-            invitedUserRepository = invitedUserRepository,
+        getInviteDomainService = GetInviteDomainService(
+            inviteRepository = inviteRepository,
         )
     )
 
@@ -76,8 +76,8 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
 
             "招待されている場合、ユーザーを登録して返す" - {
                 coEvery {
-                    invitedUserRepository.findByEmail(resultUser.email)
-                } returns InvitedUser(
+                    inviteRepository.findByEmail(resultUser.email)
+                } returns Invite(
                     position = position,
                     studentNumber = resultUser.studentNumber,
                     department = resultUser.department,
@@ -97,7 +97,7 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
 
             "招待されていない場合" - {
                 coEvery {
-                    invitedUserRepository.findByEmail(resultUser.email)
+                    inviteRepository.findByEmail(resultUser.email)
                 } returns null
 
                 "最初のアカウントとして登録可能な場合、ユーザーを登録して返す" {

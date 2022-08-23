@@ -1,4 +1,4 @@
-package app.vercel.shiftup.features.user.invited.domain.model.value
+package app.vercel.shiftup.features.user.invite.domain.model.value
 
 import app.vercel.shiftup.features.user.domain.model.value.Role
 

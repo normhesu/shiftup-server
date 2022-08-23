@@ -1,10 +1,10 @@
-package app.vercel.shiftup.presentation.routes.invitedusers
+package app.vercel.shiftup.presentation.routes.invites
 
 import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.features.user.invited.application.AddInvitedUsersUseCase
-import app.vercel.shiftup.features.user.invited.application.GetAllInvitedUsersUseCase
-import app.vercel.shiftup.features.user.invited.application.RemoveInvitedUsersUseCase
-import app.vercel.shiftup.features.user.invited.application.ReplaceInvitedUsersUseCase
+import app.vercel.shiftup.features.user.invite.application.AddInviteUseCase
+import app.vercel.shiftup.features.user.invite.application.GetAllInvitesUseCase
+import app.vercel.shiftup.features.user.invite.application.RemoveInviteUseCase
+import app.vercel.shiftup.features.user.invite.application.ReplaceInviteUseCase
 import app.vercel.shiftup.presentation.routes.auth.plugins.withRole
 import app.vercel.shiftup.presentation.routes.respondDeleteResult
 import io.ktor.http.*
@@ -20,33 +20,33 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
-fun Application.invitedUsersRouting() {
+fun Application.invitesRouting() {
     routing {
         authenticate {
             withRole(Role.Manager) {
-                get<InvitedUsers> {
-                    val useCase: GetAllInvitedUsersUseCase
-                        by this@invitedUsersRouting.inject()
+                get<Invites> {
+                    val useCase: GetAllInvitesUseCase
+                        by this@invitesRouting.inject()
 
                     call.respond(useCase())
                 }
-                post<InvitedUsers> {
-                    val useCase: AddInvitedUsersUseCase
-                        by this@invitedUsersRouting.inject()
+                post<Invites> {
+                    val useCase: AddInviteUseCase
+                        by this@invitesRouting.inject()
 
                     useCase(call.receive())
                     call.respond(HttpStatusCode.Created)
                 }
-                patch<InvitedUsers> {
-                    val useCase: ReplaceInvitedUsersUseCase
-                        by this@invitedUsersRouting.inject()
+                patch<Invites> {
+                    val useCase: ReplaceInviteUseCase
+                        by this@invitesRouting.inject()
 
                     useCase(call.receive())
                     call.respond(HttpStatusCode.NoContent)
                 }
-                delete<InvitedUsers> {
-                    val useCase: RemoveInvitedUsersUseCase
-                        by this@invitedUsersRouting.inject()
+                delete<Invites> {
+                    val useCase: RemoveInviteUseCase
+                        by this@invitesRouting.inject()
 
                     call.respondDeleteResult(
                         useCase(call.receive())
@@ -58,5 +58,5 @@ fun Application.invitedUsersRouting() {
 }
 
 @Serializable
-@Resource("/invited-users")
-object InvitedUsers
+@Resource("/invites")
+object Invites

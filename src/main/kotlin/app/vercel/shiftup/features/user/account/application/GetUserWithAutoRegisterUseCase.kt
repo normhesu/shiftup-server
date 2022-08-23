@@ -5,8 +5,8 @@ import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.domain.model.value.NeecEmail
-import app.vercel.shiftup.features.user.invited.domain.model.value.FirstManager
-import app.vercel.shiftup.features.user.invited.domain.service.GetInvitedUserDomainService
+import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
+import app.vercel.shiftup.features.user.invite.domain.service.GetInviteDomainService
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.coroutines.runSuspendCatching
 import com.github.michaelbull.result.mapError
@@ -14,7 +14,7 @@ import org.koin.core.annotation.Single
 
 @Single
 class GetUserWithAutoRegisterUseCase(
-    private val getInvitedUserDomainService: GetInvitedUserDomainService,
+    private val getInviteDomainService: GetInviteDomainService,
     private val userRepository: UserRepository,
 ) {
     suspend operator fun invoke(
@@ -25,7 +25,7 @@ class GetUserWithAutoRegisterUseCase(
     ): Result<User, LoginOrRegisterException> = runSuspendCatching {
         userRepository.findById(userId)?.let { return@runSuspendCatching it }
 
-        val invitedUser = getInvitedUserDomainService(
+        val invite = getInviteDomainService(
             firstManager = firstManager,
             email = runCatching(emailFactory).getOrElse {
                 throw LoginOrRegisterException.InvalidUser()
@@ -35,9 +35,9 @@ class GetUserWithAutoRegisterUseCase(
         User(
             id = userId,
             name = name,
-            department = invitedUser.department,
-            studentNumber = invitedUser.studentNumber,
-            roles = invitedUser.roles,
+            department = invite.department,
+            studentNumber = invite.studentNumber,
+            roles = invite.roles,
         ).also {
             userRepository.add(it)
         }

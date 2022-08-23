@@ -1,8 +1,8 @@
-package app.vercel.shiftup.features.user.invited.application
+package app.vercel.shiftup.features.user.invite.application
 
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
-import app.vercel.shiftup.features.user.invited.domain.model.InvitedUser
-import app.vercel.shiftup.features.user.invited.infra.InvitedUserRepository
+import app.vercel.shiftup.features.user.invite.domain.model.Invite
+import app.vercel.shiftup.features.user.invite.infra.InviteRepository
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.FreeSpec
 import io.mockk.clearMocks
@@ -10,19 +10,19 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 
-class AddInvitedUsersUseCaseTest : FreeSpec({
-    val repository: InvitedUserRepository = mockk(relaxUnitFun = true)
-    val useCase = AddInvitedUsersUseCase(
-        invitedUserRepository = repository
+class AddInviteUseCaseTest : FreeSpec({
+    val repository: InviteRepository = mockk(relaxUnitFun = true)
+    val useCase = AddInviteUseCase(
+        inviteRepository = repository
     )
 
     afterEach {
         clearMocks(repository)
     }
 
-    "AddInvitedUsersUseCase" - {
+    "AddInviteUseCase" - {
         val studentNumber = StudentNumber("G000C0000")
-        val invitedUser = InvitedUser(
+        val invite = Invite(
             studentNumber = studentNumber,
             mockk(relaxed = true), mockk(relaxed = true),
         )
@@ -32,22 +32,22 @@ class AddInvitedUsersUseCaseTest : FreeSpec({
                 repository.findByStudentNumber(studentNumber)
             } returns null
 
-            useCase(invitedUser)
+            useCase(invite)
             coVerify(exactly = 1) {
-                repository.add(invitedUser)
+                repository.add(invite)
             }
         }
 
         "ユーザーが既に招待されている場合は、追加せずにIllegalArgumentExceptionを投げる" {
             coEvery {
                 repository.findByStudentNumber(studentNumber)
-            } returns invitedUser
+            } returns invite
 
             shouldThrowExactly<IllegalArgumentException> {
-                useCase(invitedUser)
+                useCase(invite)
             }
             coVerify(exactly = 0) {
-                repository.add(invitedUser)
+                repository.add(invite)
             }
         }
     }
