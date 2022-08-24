@@ -37,7 +37,7 @@ class GetUserWithAutoRegisterUseCase(
             name = name,
             department = invite.department,
             studentNumber = invite.studentNumber,
-            roles = invite.roles,
+            position = invite.position,
         ).also {
             userRepository.add(it)
         }

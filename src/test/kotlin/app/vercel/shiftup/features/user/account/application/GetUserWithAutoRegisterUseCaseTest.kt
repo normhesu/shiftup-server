@@ -37,9 +37,9 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
             val resultUser = User(
                 id = userId,
                 studentNumber = mockk(relaxed = true),
-                roles = mockk(relaxed = true),
                 name = mockk(relaxed = true),
                 department = mockk(relaxed = true),
+                position = mockk(relaxed = true),
             )
             coEvery {
                 userRepository.findById(userId)
@@ -64,7 +64,7 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 name = mockk(relaxed = true),
                 studentNumber = StudentNumber("G000C0000"),
                 department = mockk(relaxed = true),
-                roles = position.roles,
+                position = position,
             )
 
             val notAllowedFirstManager = FirstManager(
@@ -78,9 +78,9 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 coEvery {
                     inviteRepository.findByEmail(resultUser.email)
                 } returns Invite(
-                    position = position,
                     studentNumber = resultUser.studentNumber,
                     department = resultUser.department,
+                    position = position,
                 )
 
                 useCase(

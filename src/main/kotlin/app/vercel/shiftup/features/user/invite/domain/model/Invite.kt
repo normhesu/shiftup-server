@@ -8,7 +8,6 @@ import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import org.litote.kmongo.Id
 import org.litote.kmongo.newId
 
@@ -34,7 +33,4 @@ data class Invite(
             else -> null
         }
     }
-
-    @Transient
-    val roles = position.roles
 }
