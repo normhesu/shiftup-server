@@ -1,17 +1,14 @@
 package app.vercel.shiftup.features.user.account.domain.model
 
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
-import app.vercel.shiftup.features.user.account.domain.model.value.Role
-import app.vercel.shiftup.features.user.account.domain.model.value.SchoolYear
-import app.vercel.shiftup.features.user.domain.model.value.Department
-import app.vercel.shiftup.features.user.domain.model.value.NeecEmail
-import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
+import app.vercel.shiftup.features.user.domain.model.value.*
+import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 @JvmInline
-value class UserId(val value: String)
+value class UserId(@Suppress("unused") private val value: String)
 
 @Serializable
 data class User(
@@ -19,13 +16,16 @@ data class User(
     val name: Name,
     val studentNumber: StudentNumber,
     val department: Department,
-    val roles: Set<Role>,
+    val position: Position,
 ) {
+    val roles: Set<Role>
+        get() = position.roles
+
     val email: NeecEmail
         get() = NeecEmail.of(studentNumber)
+
     val schoolYear: SchoolYear?
-        get() = SchoolYear.of(
-            entranceYear = studentNumber.entranceYear,
+        get() = studentNumber.getSchoolYear(
             tenure = department.tenure,
         )
 }

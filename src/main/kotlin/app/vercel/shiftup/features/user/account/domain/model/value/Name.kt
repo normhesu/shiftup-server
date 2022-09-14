@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @JvmInline
-value class Name(val value: String) {
+value class Name(private val value: String) {
     init {
         require(value.isNotBlank())
     }

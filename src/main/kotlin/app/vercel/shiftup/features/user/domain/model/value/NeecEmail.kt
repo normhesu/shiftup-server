@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @JvmInline
-value class NeecEmail(val value: String) {
+value class NeecEmail(private val value: String) {
     init {
         require(value.endsWith(suffix))
     }

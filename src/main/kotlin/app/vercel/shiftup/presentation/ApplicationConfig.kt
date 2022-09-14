@@ -2,7 +2,7 @@ package app.vercel.shiftup.presentation
 
 import app.vercel.shiftup.features.user.domain.model.value.Department
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
-import app.vercel.shiftup.features.user.invited.domain.model.value.FirstManager
+import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import io.ktor.server.config.*
 
 // Application

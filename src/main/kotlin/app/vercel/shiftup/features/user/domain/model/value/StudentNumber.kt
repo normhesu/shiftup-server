@@ -4,17 +4,19 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @JvmInline
-value class StudentNumber(val value: String) {
+value class StudentNumber(private val value: String) {
     init {
         require(value matches regex)
     }
 
     fun lowercaseValue() = value.lowercase()
 
-    val entranceYear
+    private val entranceYear
         get() = EntranceYear(
             ("2" + value.substring(startIndex = 1, endIndex = 4)).toInt(),
         )
+
+    fun getSchoolYear(tenure: Tenure) = entranceYear.getSchoolYear(tenure)
 }
 
 private val regex = Regex("G\\d{3}[A-Z]\\d{4}")
