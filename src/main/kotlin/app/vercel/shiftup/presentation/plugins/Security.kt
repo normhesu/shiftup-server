@@ -20,6 +20,7 @@ fun Application.configureSecurity() {
         allowMethod(HttpMethod.Delete)
         allowMethod(HttpMethod.Patch)
         allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.Cookie)
         if (allowAllHosts) {
             anyHost()
         } else {
