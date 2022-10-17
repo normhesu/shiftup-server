@@ -9,7 +9,6 @@ import app.vercel.shiftup.features.user.invite.domain.service.InviteRepositoryIn
 import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
-import org.litote.kmongo.coroutine.toList
 import org.litote.kmongo.coroutine.updateOne
 import org.litote.kmongo.eq
 
@@ -32,7 +31,7 @@ class InviteRepository(
     }
 
     suspend fun findAll(): List<Invite> {
-        return collection.find().publisher.toList()
+        return collection.find().toList()
     }
 
     suspend fun add(invite: Invite) {
