@@ -19,6 +19,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
+import org.litote.kmongo.toId
 
 fun Application.invitesRouting() {
     routing {
@@ -44,12 +45,12 @@ fun Application.invitesRouting() {
                     useCase(call.receive())
                     call.respond(HttpStatusCode.NoContent)
                 }
-                delete<Invites> {
+                delete<Invites.Id> {
                     val useCase: RemoveInviteUseCase
                         by this@invitesRouting.inject()
 
                     call.respondDeleteResult(
-                        useCase(call.receive())
+                        useCase(it.id.toString().toId())
                     )
                 }
             }
@@ -59,4 +60,8 @@ fun Application.invitesRouting() {
 
 @Serializable
 @Resource("/invites")
-object Invites
+object Invites {
+    @Serializable
+    @Resource("{id}")
+    class Id(val parent: Invites = Invites, val id: Long)
+}
