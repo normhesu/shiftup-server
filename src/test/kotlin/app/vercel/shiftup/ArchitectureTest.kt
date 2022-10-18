@@ -56,9 +56,15 @@ class ArchitectureTest : FreeSpec({
         }
         "外部" - {
             "プレゼンテーション層以外は、Ktorに依存しない" {
+                val ktor = PackageId.Dependencies.Ktor
                 ArchRuleDefinition.noClasses()
                     .that().resideOutsideOfPackage(PackageId.PRESENTATION)
-                    .should().dependOnClassesThat().resideInAPackage(PackageId.Dependencies.KTOR)
+                    .should().dependOnClassesThat()
+                    .resideInAnyPackage(
+                        ktor.APPLICATION,
+                        ktor.ROUTING,
+                        ktor.RESOURCES,
+                    )
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
@@ -133,8 +139,14 @@ private object PackageId {
     const val PRESENTATION = "$SHIFTUP_PACKAGE.presentation.."
 
     object Dependencies {
-        const val KTOR = "io.ktor.."
         const val KMONGO = "org.litote.kmongo.."
+
+        object Ktor {
+            private const val KTOR_SERVER_PACKAGE = "io.ktor.server"
+            const val APPLICATION = "$KTOR_SERVER_PACKAGE.application.."
+            const val ROUTING = "$KTOR_SERVER_PACKAGE.routing.."
+            const val RESOURCES = "$KTOR_SERVER_PACKAGE.resources.."
+        }
     }
 }
 
