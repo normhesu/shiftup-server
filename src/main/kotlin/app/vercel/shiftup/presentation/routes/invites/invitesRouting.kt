@@ -35,14 +35,14 @@ fun Application.invitesRouting() {
                     val useCase: AddInviteUseCase
                         by this@invitesRouting.inject()
 
-                    useCase(call.receive())
+                    useCase(invite = call.receive())
                     call.respond(HttpStatusCode.Created)
                 }
                 patch<Invites> {
                     val useCase: ReplaceInviteUseCase
                         by this@invitesRouting.inject()
 
-                    useCase(call.receive())
+                    useCase(invite = call.receive())
                     call.respond(HttpStatusCode.NoContent)
                 }
                 delete<Invites.Id> {
@@ -58,6 +58,7 @@ fun Application.invitesRouting() {
     }
 }
 
+@Suppress("unused")
 @Serializable
 @Resource("/invites")
 object Invites {
