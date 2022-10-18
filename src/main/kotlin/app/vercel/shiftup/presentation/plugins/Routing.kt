@@ -28,11 +28,12 @@ fun Application.configureRouting() {
             }
             throw cause
         }
-
-        val respondTextStatusCodes = HttpStatusCode.allStatusCodes.toTypedArray()
-        @Suppress("SpreadOperator")
-        status(*respondTextStatusCodes) { call, status ->
-            call.respondText(status)
+        if (this@configureRouting.developmentMode) {
+            val respondTextStatusCodes = HttpStatusCode.allStatusCodes.toTypedArray()
+            @Suppress("SpreadOperator")
+            status(*respondTextStatusCodes) { call, status ->
+                call.respondText(status)
+            }
         }
     }
     install(AutoHeadResponse)
