@@ -5,6 +5,7 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
@@ -17,6 +18,7 @@ fun Application.configureRouting() {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             when (cause) {
+                is NotFoundException -> call.respond(HttpStatusCode.NotFound)
                 is IllegalArgumentException -> call.respondText(
                     status = HttpStatusCode.UnprocessableEntity,
                     cause = cause,
