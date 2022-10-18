@@ -49,6 +49,7 @@ object Version {
     const val koin = "3.2.0"
     const val koinAnnotations = "1.0.1"
     const val kotlinResult = "1.1.16"
+    const val kotlinxDatetime = "0.4.0"
 }
 
 dependencies {
@@ -78,6 +79,7 @@ dependencies {
     implementation("io.insert-koin:koin-annotations:${Version.koinAnnotations}")
     implementation("com.michael-bull.kotlin-result:kotlin-result:${Version.kotlinResult}")
     implementation("com.michael-bull.kotlin-result:kotlin-result-coroutines:${Version.kotlinResult}")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:${Version.kotlinxDatetime}")
     testImplementation("io.ktor:ktor-server-tests-jvm:${Version.ktor}")
     testImplementation("io.kotest:kotest-runner-junit5:${Version.kotest}")
     testImplementation("io.kotest:kotest-assertions-core:${Version.kotest}")

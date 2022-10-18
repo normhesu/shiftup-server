@@ -27,8 +27,10 @@ data class User(
     val email: NeecEmail
         get() = NeecEmail.of(studentNumber)
 
-    val schoolYear: SchoolYear?
-        get() = studentNumber.getSchoolYear(
-            tenure = department.tenure,
-        )
+    fun inSchool(fiscalYear: Int?) = getSchoolYear(fiscalYear) != null
+
+    private fun getSchoolYear(fiscalYear: Int?) = studentNumber.getSchoolYear(
+        tenure = department.tenure,
+        fiscalYear = fiscalYear,
+    )
 }
