@@ -62,15 +62,11 @@ class ArchitectureTest : FreeSpec({
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
-            "インフラ層以外は、kmongo-idを除くKMongoに依存しない" {
-                val kmongo = PackageId.Dependencies.Kmongo
+            "インフラ層以外は、KMongoに依存しない" {
                 ArchRuleDefinition.noClasses()
                     .that().resideOutsideOfPackage(PackageId.INFRASTRUCTURE)
-                    .should().dependOnClassesThat().resideInAnyPackage(
-                        // Idがorg.litote.kmongoに含まれているので、
-                        // 下記のパッケージを制限して、 データベースに直接アクセスできないようにする
-                        kmongo.REACTIVESTREAMS, kmongo.COROUTINE,
-                    )
+                    .should().dependOnClassesThat()
+                    .resideInAPackage(PackageId.Dependencies.KMONGO)
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
@@ -120,16 +116,6 @@ private object LayerName {
     const val APPLICATION = "アプリケーション層"
     const val INFRASTRUCTURE = "インフラ層"
     const val PRESENTATION = "プレゼンテーション層"
-
-    object Dependencies {
-        const val KTOR = "io.ktor.."
-
-        object Kmongo {
-            private const val KMONGO_PACKAGE = "org.litote.kmongo"
-            const val REACTIVESTREAMS = "$KMONGO_PACKAGE.reactivestreams.."
-            const val COROUTINE = "$KMONGO_PACKAGE.coroutine.."
-        }
-    }
 }
 
 private object PackageId {
@@ -148,12 +134,7 @@ private object PackageId {
 
     object Dependencies {
         const val KTOR = "io.ktor.."
-
-        object Kmongo {
-            private const val KMONGO_PACKAGE = "org.litote.kmongo"
-            const val REACTIVESTREAMS = "$KMONGO_PACKAGE.reactivestreams.."
-            const val COROUTINE = "$KMONGO_PACKAGE.coroutine.."
-        }
+        const val KMONGO = "org.litote.kmongo.."
     }
 }
 

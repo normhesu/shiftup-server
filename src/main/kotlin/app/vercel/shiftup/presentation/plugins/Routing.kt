@@ -12,7 +12,6 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.resources.*
 import io.ktor.server.response.*
 import kotlinx.serialization.json.Json
-import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 
 fun Application.configureRouting() {
     install(StatusPages) {
@@ -45,7 +44,6 @@ fun Application.configureRouting() {
             Json {
                 prettyPrint = true
                 isLenient = true
-                serializersModule = IdKotlinXSerializationModule
             }
         )
     }

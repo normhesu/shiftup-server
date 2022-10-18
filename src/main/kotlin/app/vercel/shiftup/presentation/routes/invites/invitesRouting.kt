@@ -5,6 +5,7 @@ import app.vercel.shiftup.features.user.invite.application.AddInviteUseCase
 import app.vercel.shiftup.features.user.invite.application.GetAllInvitesUseCase
 import app.vercel.shiftup.features.user.invite.application.RemoveInviteUseCase
 import app.vercel.shiftup.features.user.invite.application.ReplaceInviteUseCase
+import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import app.vercel.shiftup.presentation.routes.auth.plugins.withRole
 import app.vercel.shiftup.presentation.routes.respondDeleteResult
 import io.ktor.http.*
@@ -19,7 +20,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-import org.litote.kmongo.toId
 
 fun Application.invitesRouting() {
     routing {
@@ -50,7 +50,7 @@ fun Application.invitesRouting() {
                         by this@invitesRouting.inject()
 
                     call.respondDeleteResult(
-                        useCase(it.id.toString().toId())
+                        useCase(inviteId = InviteId(it.id))
                     )
                 }
             }
@@ -63,5 +63,5 @@ fun Application.invitesRouting() {
 object Invites {
     @Serializable
     @Resource("{id}")
-    class Id(val parent: Invites = Invites, val id: Long)
+    class Id(val parent: Invites = Invites, val id: String)
 }

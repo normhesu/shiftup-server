@@ -72,7 +72,6 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:${Version.logback}")
     implementation("org.mpierce.ktor.csrf:ktor-csrf:${Version.ktorCsrf}")
     implementation("org.litote.kmongo:kmongo-coroutine-serialization:${Version.kmongo}")
-    implementation("org.litote.kmongo:kmongo-id-serialization:${Version.kmongo}")
     implementation("io.insert-koin:koin-core:${Version.koin}")
     implementation("io.insert-koin:koin-ktor:${Version.koin}")
     implementation("io.insert-koin:koin-logger-slf4j:${Version.koin}")
