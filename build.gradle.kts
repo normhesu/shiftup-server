@@ -1,4 +1,5 @@
 import com.bnorm.power.PowerAssertGradleExtension
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
@@ -12,6 +13,7 @@ plugins {
     id("org.jetbrains.dokka") version "1.6.21"
     id("org.dddjava.jig-gradle-plugin") version "2022.7.4"
     id("com.bnorm.power.kotlin-power-assert") version "0.12.0"
+    id("com.github.ben-manes.versions") version "0.43.0"
 }
 
 group = "app.vercel.shiftup"
@@ -134,4 +136,11 @@ configure<PowerAssertGradleExtension> {
         "kotlin.require",
         "kotlin.check",
     )
+}
+
+tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
+    checkForGradleUpdate = true
+    outputFormatter = "html"
+    outputDir = "build/dependencyUpdates"
+    reportfileName = "report"
 }
