@@ -16,7 +16,13 @@ value class StudentNumber(private val value: String) {
             ("2" + value.substring(startIndex = 1, endIndex = 4)).toInt(),
         )
 
-    fun getSchoolYear(tenure: Tenure) = entranceYear.getSchoolYear(tenure)
+    fun getSchoolYear(
+        tenure: Tenure,
+        fiscalYear: Int? = null,
+    ) = entranceYear.getSchoolYear(
+        tenure = tenure,
+        fiscalYear = fiscalYear,
+    )
 }
 
 private val regex = Regex("G\\d{3}[A-Z]\\d{4}")

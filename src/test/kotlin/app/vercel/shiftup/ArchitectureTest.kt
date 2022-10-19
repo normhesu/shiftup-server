@@ -56,21 +56,23 @@ class ArchitectureTest : FreeSpec({
         }
         "外部" - {
             "プレゼンテーション層以外は、Ktorに依存しない" {
+                val ktor = PackageId.Dependencies.Ktor
                 ArchRuleDefinition.noClasses()
                     .that().resideOutsideOfPackage(PackageId.PRESENTATION)
-                    .should().dependOnClassesThat().resideInAPackage(PackageId.Dependencies.KTOR)
+                    .should().dependOnClassesThat()
+                    .resideInAnyPackage(
+                        ktor.APPLICATION,
+                        ktor.ROUTING,
+                        ktor.RESOURCES,
+                    )
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
-            "インフラ層以外は、kmongo-idを除くKMongoに依存しない" {
-                val kmongo = PackageId.Dependencies.Kmongo
+            "インフラ層以外は、KMongoに依存しない" {
                 ArchRuleDefinition.noClasses()
                     .that().resideOutsideOfPackage(PackageId.INFRASTRUCTURE)
-                    .should().dependOnClassesThat().resideInAnyPackage(
-                        // Idがorg.litote.kmongoに含まれているので、
-                        // 下記のパッケージを制限して、 データベースに直接アクセスできないようにする
-                        kmongo.REACTIVESTREAMS, kmongo.COROUTINE,
-                    )
+                    .should().dependOnClassesThat()
+                    .resideInAPackage(PackageId.Dependencies.KMONGO)
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
@@ -120,16 +122,6 @@ private object LayerName {
     const val APPLICATION = "アプリケーション層"
     const val INFRASTRUCTURE = "インフラ層"
     const val PRESENTATION = "プレゼンテーション層"
-
-    object Dependencies {
-        const val KTOR = "io.ktor.."
-
-        object Kmongo {
-            private const val KMONGO_PACKAGE = "org.litote.kmongo"
-            const val REACTIVESTREAMS = "$KMONGO_PACKAGE.reactivestreams.."
-            const val COROUTINE = "$KMONGO_PACKAGE.coroutine.."
-        }
-    }
 }
 
 private object PackageId {
@@ -147,12 +139,13 @@ private object PackageId {
     const val PRESENTATION = "$SHIFTUP_PACKAGE.presentation.."
 
     object Dependencies {
-        const val KTOR = "io.ktor.."
+        const val KMONGO = "org.litote.kmongo.."
 
-        object Kmongo {
-            private const val KMONGO_PACKAGE = "org.litote.kmongo"
-            const val REACTIVESTREAMS = "$KMONGO_PACKAGE.reactivestreams.."
-            const val COROUTINE = "$KMONGO_PACKAGE.coroutine.."
+        object Ktor {
+            private const val KTOR_SERVER_PACKAGE = "io.ktor.server"
+            const val APPLICATION = "$KTOR_SERVER_PACKAGE.application.."
+            const val ROUTING = "$KTOR_SERVER_PACKAGE.routing.."
+            const val RESOURCES = "$KTOR_SERVER_PACKAGE.resources.."
         }
     }
 }

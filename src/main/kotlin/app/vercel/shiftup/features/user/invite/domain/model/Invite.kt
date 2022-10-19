@@ -5,20 +5,23 @@ import app.vercel.shiftup.features.user.domain.model.value.NeecEmail
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.litote.kmongo.Id
-import org.litote.kmongo.newId
+import java.util.*
 
-typealias InviteId = Id<Invite>
+@Serializable
+@JvmInline
+value class InviteId(
+    @Suppress("unused")
+    private val value: String = UUID.randomUUID().toString(),
+)
 
 @Serializable
 data class Invite(
     val studentNumber: StudentNumber,
     val department: Department,
     val position: Position,
-    @SerialName("_id") @Contextual val id: InviteId = newId()
+    @SerialName("_id") val id: InviteId = InviteId()
 ) {
     companion object {
         fun fromFirstManager(

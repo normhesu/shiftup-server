@@ -47,7 +47,7 @@ enum class Department(
     N2(japaneseName = "スポーツ健康学科", Tenure(2)),
     S3(japaneseName = "鍼灸科", Tenure(3)),
     J3(japaneseName = "柔道整復科", Tenure(3)),
-    Mi(japaneseName = "医療事務科", Tenure(2));
+    MI(japaneseName = "医療事務科", Tenure(2));
 
     val symbol: String = name
 }

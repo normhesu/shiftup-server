@@ -18,6 +18,8 @@ formatting:
   autoCorrect: true
   NoWildcardImports:
     active: false
+  ArgumentListWrapping:
+    active: false
 
 processors:
   active: true

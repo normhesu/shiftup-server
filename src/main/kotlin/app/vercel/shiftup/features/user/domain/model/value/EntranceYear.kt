@@ -1,9 +1,9 @@
 package app.vercel.shiftup.features.user.domain.model.value
 
+import app.vercel.shiftup.features.core.domain.model.fiscalYear
+import app.vercel.shiftup.features.core.domain.model.nowTokyoLocalDateTime
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
-import java.time.Month
-import java.time.ZoneId
-import java.time.ZonedDateTime
 
 @Serializable
 @JvmInline
@@ -19,13 +19,12 @@ value class EntranceYear(private val value: Int) {
     /**
      * 入学前や卒業後の場合はnullを返します
      */
-    fun getSchoolYear(tenure: Tenure): SchoolYear? {
-        val currentDate = ZonedDateTime.now(ZoneId.of("Asia/Tokyo"))
-        val fiscalYear = when (currentDate.month) {
-            in Month.JANUARY..Month.MARCH -> currentDate.year - 1
-            else -> currentDate.year
-        }
-        return (fiscalYear - value + SchoolYear.MIN_VALUE)
+    fun getSchoolYear(
+        tenure: Tenure,
+        fiscalYear: Int? = null,
+    ): SchoolYear? {
+        val year = fiscalYear ?: Clock.System.nowTokyoLocalDateTime().fiscalYear()
+        return (year - value + SchoolYear.MIN_VALUE)
             .takeIf {
                 runCatching {
                     Tenure(it)

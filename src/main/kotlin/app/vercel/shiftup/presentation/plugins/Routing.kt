@@ -5,18 +5,19 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.resources.*
 import io.ktor.server.response.*
 import kotlinx.serialization.json.Json
-import org.litote.kmongo.id.serialization.IdKotlinXSerializationModule
 
 fun Application.configureRouting() {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             when (cause) {
+                is NotFoundException -> call.respond(HttpStatusCode.NotFound)
                 is IllegalArgumentException -> call.respondText(
                     status = HttpStatusCode.UnprocessableEntity,
                     cause = cause,
@@ -28,11 +29,12 @@ fun Application.configureRouting() {
             }
             throw cause
         }
-
-        val respondTextStatusCodes = HttpStatusCode.allStatusCodes.toTypedArray()
-        @Suppress("SpreadOperator")
-        status(*respondTextStatusCodes) { call, status ->
-            call.respondText(status)
+        if (this@configureRouting.developmentMode) {
+            val respondTextStatusCodes = HttpStatusCode.allStatusCodes.toTypedArray()
+            @Suppress("SpreadOperator")
+            status(*respondTextStatusCodes) { call, status ->
+                call.respondText(status)
+            }
         }
     }
     install(AutoHeadResponse)
@@ -42,7 +44,6 @@ fun Application.configureRouting() {
             Json {
                 prettyPrint = true
                 isLenient = true
-                serializersModule = IdKotlinXSerializationModule
             }
         )
     }

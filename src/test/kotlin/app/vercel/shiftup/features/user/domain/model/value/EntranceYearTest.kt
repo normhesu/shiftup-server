@@ -1,18 +1,18 @@
 package app.vercel.shiftup.features.user.domain.model.value
 
+import app.vercel.shiftup.features.core.domain.model.nowTokyoLocalDateTime
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.inspectors.forAll
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockkStatic
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
 
 class EntranceYearTest : FreeSpec({
     "EntranceYear" - {
         "getSchoolYear" - {
-            mockkStatic(ZonedDateTime::class)
+            mockkStatic("app.vercel.shiftup.features.core.domain.model.NowTokyoLocalDateTimeKt")
 
             data class Params(
                 val currentYear: Int,
@@ -23,16 +23,12 @@ class EntranceYearTest : FreeSpec({
             )
 
             fun invokeTest(vararg params: Params) {
-                val tokyoZoneId = ZoneId.of("Asia/Tokyo")
                 params.forAll {
                     every {
-                        ZonedDateTime.now(tokyoZoneId)
-                    } returns ZonedDateTime.of(
-                        LocalDateTime.of(
-                            it.currentYear, it.currentMonth,
-                            1, 0, 0,
-                        ),
-                        tokyoZoneId,
+                        Clock.System.nowTokyoLocalDateTime()
+                    } returns LocalDateTime(
+                        it.currentYear, it.currentMonth,
+                        1, 0, 0,
                     )
 
                     EntranceYear(it.entranceYearValue).getSchoolYear(

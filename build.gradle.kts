@@ -1,17 +1,19 @@
 import com.bnorm.power.PowerAssertGradleExtension
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
 plugins {
     application
-    kotlin("jvm") version "1.7.10"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.10"
+    kotlin("jvm") version "1.7.20"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.20"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("io.gitlab.arturbosch.detekt") version "1.21.0"
-    id("com.google.devtools.ksp") version "1.7.10-1.0.6"
-    id("org.jetbrains.dokka") version "1.6.21"
-    id("org.dddjava.jig-gradle-plugin") version "2022.7.4"
+    id("io.gitlab.arturbosch.detekt") version "1.22.0-RC2"
+    id("com.google.devtools.ksp") version "1.7.20-1.0.7"
+    id("org.jetbrains.dokka") version "1.7.20"
+    id("org.dddjava.jig-gradle-plugin") version "2022.10.1"
     id("com.bnorm.power.kotlin-power-assert") version "0.12.0"
+    id("com.github.ben-manes.versions") version "0.43.0"
 }
 
 group = "app.vercel.shiftup"
@@ -37,18 +39,19 @@ repositories {
 }
 
 object Version {
-    const val ktor = "2.0.3"
-    const val logback = "1.2.3"
+    const val ktor = "2.1.2"
+    const val logback = "1.4.4"
     const val ktorCsrf = "1.0.0"
-    const val detekt = "1.21.0"
-    const val kotest = "5.4.0"
+    const val detekt = "1.22.0-RC2"
+    const val kotest = "5.5.1"
     const val kotestAssertionsKtor = "1.0.3"
-    const val archUnit = "1.0.0-rc1"
-    const val mockK = "1.12.4"
-    const val kmongo = "4.6.1"
-    const val koin = "3.2.0"
-    const val koinAnnotations = "1.0.1"
+    const val archUnit = "1.0.0"
+    const val mockK = "1.13.2"
+    const val kmongo = "4.7.1"
+    const val koin = "3.2.2"
+    const val koinAnnotations = "1.0.3"
     const val kotlinResult = "1.1.16"
+    const val kotlinxDatetime = "0.4.0"
 }
 
 dependencies {
@@ -72,13 +75,13 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:${Version.logback}")
     implementation("org.mpierce.ktor.csrf:ktor-csrf:${Version.ktorCsrf}")
     implementation("org.litote.kmongo:kmongo-coroutine-serialization:${Version.kmongo}")
-    implementation("org.litote.kmongo:kmongo-id-serialization:${Version.kmongo}")
     implementation("io.insert-koin:koin-core:${Version.koin}")
     implementation("io.insert-koin:koin-ktor:${Version.koin}")
     implementation("io.insert-koin:koin-logger-slf4j:${Version.koin}")
     implementation("io.insert-koin:koin-annotations:${Version.koinAnnotations}")
     implementation("com.michael-bull.kotlin-result:kotlin-result:${Version.kotlinResult}")
     implementation("com.michael-bull.kotlin-result:kotlin-result-coroutines:${Version.kotlinResult}")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:${Version.kotlinxDatetime}")
     testImplementation("io.ktor:ktor-server-tests-jvm:${Version.ktor}")
     testImplementation("io.kotest:kotest-runner-junit5:${Version.kotest}")
     testImplementation("io.kotest:kotest-assertions-core:${Version.kotest}")
@@ -133,4 +136,11 @@ configure<PowerAssertGradleExtension> {
         "kotlin.require",
         "kotlin.check",
     )
+}
+
+tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
+    checkForGradleUpdate = true
+    outputFormatter = "html"
+    outputDir = "build/dependencyUpdates"
+    reportfileName = "report"
 }
