@@ -5,6 +5,7 @@ import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
+import org.litote.kmongo.`in`
 
 @Single
 class UserRepository(
@@ -18,5 +19,9 @@ class UserRepository(
 
     suspend fun findById(id: UserId): User? {
         return collection.findOneById(id)
+    }
+
+    suspend fun findByIds(ids: Iterable<UserId>): List<User> {
+        return collection.find(User::id `in` ids).toList()
     }
 }
