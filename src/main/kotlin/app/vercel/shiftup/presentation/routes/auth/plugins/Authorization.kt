@@ -10,11 +10,14 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import org.koin.ktor.ext.inject
 
-fun Route.withRole(role: Role, route: Route.() -> Unit) {
-    install(AuthorizationPlugin) {
-        allowRole = role
+// プラグインを誤って複数回インストールしないようにroutingで囲む
+fun Application.routingWithRole(role: Role, route: Route.() -> Unit) = routing {
+    authenticate {
+        install(AuthorizationPlugin) {
+            allowRole = role
+        }
+        route()
     }
-    route()
 }
 
 private val AuthorizationPlugin = createRouteScopedPlugin(
