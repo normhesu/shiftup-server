@@ -24,27 +24,27 @@ import org.koin.ktor.ext.inject
 fun Application.invitesRouting() = routingWithRole(Role.Manager) {
     get<Invites> {
         val useCase: GetAllInvitesUseCase
-            by this@invitesRouting.inject()
+            by application.inject()
 
         call.respond(useCase())
     }
     post<Invites> {
         val useCase: AddInviteUseCase
-            by this@invitesRouting.inject()
+            by application.inject()
 
         useCase(invite = call.receive())
         call.respond(HttpStatusCode.Created)
     }
     patch<Invites> {
         val useCase: ReplaceInviteUseCase
-            by this@invitesRouting.inject()
+            by application.inject()
 
         useCase(invite = call.receive())
         call.respond(HttpStatusCode.NoContent)
     }
     delete<Invites.Id> {
         val useCase: RemoveInviteUseCase
-            by this@invitesRouting.inject()
+            by application.inject()
 
         call.respondDeleteResult(
             useCase(inviteId = InviteId(it.id))
