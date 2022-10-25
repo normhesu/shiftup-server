@@ -11,7 +11,7 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.22.0-RC2"
     id("com.google.devtools.ksp") version "1.7.20-1.0.7"
     id("org.jetbrains.dokka") version "1.7.20"
-    id("org.dddjava.jig-gradle-plugin") version "2022.10.1"
+    id("org.dddjava.jig-gradle-plugin") version "2022.10.3"
     id("com.bnorm.power.kotlin-power-assert") version "0.12.0"
     id("com.github.ben-manes.versions") version "0.43.0"
 }
@@ -43,7 +43,7 @@ object Version {
     const val logback = "1.4.4"
     const val ktorCsrf = "1.0.0"
     const val detekt = "1.22.0-RC2"
-    const val kotest = "5.5.1"
+    const val kotest = "5.5.2"
     const val kotestAssertionsKtor = "1.0.3"
     const val archUnit = "1.0.0"
     const val mockK = "1.13.2"
