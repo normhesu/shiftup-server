@@ -23,16 +23,14 @@ value class EntranceYear(private val value: Int) {
         tenure: Tenure,
         fiscalYear: Int? = null,
     ): SchoolYear? {
-        val year = fiscalYear ?: Clock.System.nowTokyoLocalDateTime().fiscalYear()
-        return (year - value + SchoolYear.MIN_VALUE)
-            .takeIf {
-                runCatching {
-                    Tenure(it)
-                }.getOrElse {
-                    return null
-                } in Tenure.MIN..tenure
-            }
-            ?.let(::SchoolYear)
+        val argOrNowFiscalYear = fiscalYear ?: Clock.System.nowTokyoLocalDateTime().fiscalYear()
+        val schoolYear = argOrNowFiscalYear - value + SchoolYear.MIN_VALUE
+        return schoolYear.takeIf {
+            runCatching { Tenure(schoolYear) }.fold(
+                onSuccess = { it in Tenure.MIN..tenure },
+                onFailure = { false }
+            )
+        }?.let(::SchoolYear)
     }
 }
 
