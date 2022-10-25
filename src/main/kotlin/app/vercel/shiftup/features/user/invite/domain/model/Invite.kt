@@ -13,7 +13,7 @@ import java.util.*
 @JvmInline
 value class InviteId(
     @Suppress("unused")
-    private val value: String = UUID.randomUUID().toString(),
+    private val value: StudentNumber,
 )
 
 @Serializable
@@ -21,7 +21,7 @@ data class Invite(
     val studentNumber: StudentNumber,
     val department: Department,
     val position: Position,
-    @SerialName("_id") val id: InviteId = InviteId()
+    @SerialName("_id") val id: InviteId = InviteId(studentNumber),
 ) {
     companion object {
         fun fromFirstManager(
