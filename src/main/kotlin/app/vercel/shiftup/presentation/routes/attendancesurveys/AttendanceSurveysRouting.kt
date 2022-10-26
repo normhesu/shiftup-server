@@ -83,15 +83,12 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
     }
 
     put<AttendanceSurveys.Id.Available> {
-        @Serializable
-        data class Params(val available: Boolean)
-
         val useCase: ChangeAvailableAttendanceSurveyUseCase
             by application.inject()
 
         useCase(
             attendanceSurveyId = it.parent.attendanceSurveyId,
-            available = call.receive<Params>().available,
+            available = call.receiveText().toBooleanStrict(),
         )
         call.respond(HttpStatusCode.NoContent)
     }

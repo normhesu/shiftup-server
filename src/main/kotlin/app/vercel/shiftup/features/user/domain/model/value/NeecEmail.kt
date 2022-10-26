@@ -12,7 +12,7 @@ value class NeecEmail(private val value: String) {
     companion object {
         private const val suffix = "@g.neec.ac.jp"
 
-        fun of(studentNumber: StudentNumber): NeecEmail {
+        operator fun invoke(studentNumber: StudentNumber): NeecEmail {
             return NeecEmail(studentNumber.lowercaseValue() + suffix)
         }
     }

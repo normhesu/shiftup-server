@@ -21,7 +21,7 @@ data class AttendanceSurvey private constructor(
     @SerialName("_id") val id: AttendanceSurveyId,
 ) {
     companion object {
-        fun of(
+        operator fun invoke(
             name: String,
             openCampusSchedule: OpenCampusDates,
         ) = AttendanceSurvey(

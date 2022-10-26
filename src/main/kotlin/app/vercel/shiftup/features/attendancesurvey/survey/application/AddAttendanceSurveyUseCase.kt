@@ -13,7 +13,7 @@ class AddAttendanceSurveyUseCase(
         name: String,
         openCampusSchedule: OpenCampusDates,
     ) = attendanceSurveyRepository.addSurvey(
-        AttendanceSurvey.of(
+        AttendanceSurvey(
             name = name,
             openCampusSchedule = openCampusSchedule,
         )

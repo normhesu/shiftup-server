@@ -13,7 +13,7 @@ import java.util.*
 @JvmInline
 value class InviteId(
     @Suppress("unused")
-    private val value: String = UUID.randomUUID().toString(),
+    private val value: StudentNumber,
 )
 
 @Serializable
@@ -21,14 +21,14 @@ data class Invite(
     val studentNumber: StudentNumber,
     val department: Department,
     val position: Position,
-    @SerialName("_id") val id: InviteId = InviteId()
+    @SerialName("_id") val id: InviteId = InviteId(studentNumber),
 ) {
     companion object {
-        fun fromFirstManager(
+        operator fun invoke(
             email: NeecEmail,
             firstManager: FirstManager,
         ) = when (email) {
-            NeecEmail.of(firstManager.studentNumber) -> Invite(
+            NeecEmail(firstManager.studentNumber) -> Invite(
                 position = Position.Manager,
                 studentNumber = firstManager.studentNumber,
                 department = firstManager.department,
@@ -36,4 +36,13 @@ data class Invite(
             else -> null
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as Invite
+        return id == other.id
+    }
+
+    override fun hashCode() = id.hashCode()
 }

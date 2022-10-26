@@ -25,7 +25,7 @@ data class User(
         get() = position.roles
 
     val email: NeecEmail
-        get() = NeecEmail.of(studentNumber)
+        get() = NeecEmail(studentNumber)
 
     fun inSchool(fiscalYear: Int?) = getSchoolYear(fiscalYear) != null
 
@@ -33,4 +33,13 @@ data class User(
         tenure = department.tenure,
         fiscalYear = fiscalYear,
     )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as User
+        return id == other.id
+    }
+
+    override fun hashCode() = id.hashCode()
 }

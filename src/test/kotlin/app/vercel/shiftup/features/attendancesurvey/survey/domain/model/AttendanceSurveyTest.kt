@@ -32,7 +32,7 @@ class AttendanceSurveyTest : FreeSpec({
             "正常系" - {
                 "名前が空白文字や空ではなく、日程が全て同じ年度で呼び出し日以降の場合、生成できる" {
                     shouldNotThrowAny {
-                        AttendanceSurvey.of(
+                        AttendanceSurvey(
                             name = "テスト",
                             openCampusSchedule = OpenCampusDates(
                                 setOf(
@@ -47,7 +47,7 @@ class AttendanceSurveyTest : FreeSpec({
             "異常系" - {
                 "オープンキャンパスの日程が空の場合、IllegalArgumentExceptionを投げる" {
                     shouldThrowExactly<IllegalArgumentException> {
-                        AttendanceSurvey.of(
+                        AttendanceSurvey(
                             name = "テスト",
                             openCampusSchedule = OpenCampusDates(emptySet()),
                         )
@@ -55,7 +55,7 @@ class AttendanceSurveyTest : FreeSpec({
                 }
                 "オープンキャンパスの日程が現在より古い場合、IllegalArgumentExceptionを投げる" {
                     shouldThrowExactly<IllegalArgumentException> {
-                        AttendanceSurvey.of(
+                        AttendanceSurvey(
                             name = "テスト",
                             openCampusSchedule = OpenCampusDates(
                                 setOf(OpenCampusDate(LocalDate(year = 2021, monthNumber = 12, dayOfMonth = 31)))
@@ -65,7 +65,7 @@ class AttendanceSurveyTest : FreeSpec({
                 }
                 "名前が空の場合、IllegalArgumentExceptionを投げる" {
                     shouldThrowExactly<IllegalArgumentException> {
-                        AttendanceSurvey.of(
+                        AttendanceSurvey(
                             name = "",
                             openCampusSchedule = mockk(relaxed = true),
                         )
@@ -73,7 +73,7 @@ class AttendanceSurveyTest : FreeSpec({
                 }
                 "名前が空白文字のみの場合、IllegalArgumentExceptionを投げる" {
                     shouldThrowExactly<IllegalArgumentException> {
-                        AttendanceSurvey.of(
+                        AttendanceSurvey(
                             name = " ",
                             openCampusSchedule = mockk(relaxed = true),
                         )
@@ -89,7 +89,7 @@ class AttendanceSurveyTest : FreeSpec({
                     OpenCampusDate(LocalDate(2022, 1, 20)),
                     OpenCampusDate(LocalDate(2022, 1, 31)),
                 )
-                val survey = AttendanceSurvey.of(
+                val survey = AttendanceSurvey(
                     name = "テスト",
                     openCampusSchedule = OpenCampusDates(openCampusDatesValue),
                 )
@@ -168,7 +168,7 @@ class AttendanceSurveyTest : FreeSpec({
         }
         "異常系" - {
             "回答のsurveyIdがアンケートと異なる場合、IllegalArgumentExceptionを投げる" {
-                val survey = AttendanceSurvey.of(
+                val survey = AttendanceSurvey(
                     name = "テスト",
                     openCampusSchedule = OpenCampusDates(
                         setOf(

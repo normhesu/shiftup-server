@@ -6,9 +6,11 @@ import app.vercel.shiftup.features.attendancesurvey.survey.domain.model.Attendan
 import app.vercel.shiftup.features.attendancesurvey.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.core.domain.model.nowTokyoLocalDateTime
 import app.vercel.shiftup.features.user.account.domain.model.Cast
+import com.github.michaelbull.result.Err
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -25,7 +27,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
 
         val surveyRepository: AttendanceSurveyRepositoryInterface = mockk()
         val factory = AttendanceSurveyAnswerFactory(surveyRepository)
-        val fakeOpenCampus = AttendanceSurvey.of(
+        val fakeOpenCampus = AttendanceSurvey(
             name = "テスト",
             openCampusSchedule = OpenCampusDates(
                 setOf(
@@ -49,27 +51,24 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                 }
             }
             "異常系" - {
-                "アンケートが見つからない場合、IllegalArgumentExceptionを投げる" {
+                "アンケートが見つからない場合、Err(AttendanceSurveyAnswerFactoryException.NotFoundSurvey()を返す" {
                     coEvery { surveyRepository.findById(any()) } returns null
-                    shouldThrow<IllegalArgumentException> {
-                        factory(
-                            mockk(relaxed = true),
-                            mockk(relaxed = true), mockk(relaxed = true),
-                        )
-                    }
+                    val actual = factory(
+                        mockk(relaxed = true),
+                        mockk(relaxed = true), mockk(relaxed = true),
+                    )
+                    actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.NotFoundSurvey>>()
                 }
-                "アンケートが回答受付を終了している場合、IllegalArgumentExceptionを投げる" {
+                "アンケートが回答受付を終了している場合、Err(AttendanceSurveyAnswerFactoryException.NotAvailableSurvey())を返す" {
                     coEvery {
                         surveyRepository.findById(any())
                     } returns fakeOpenCampus.changeAvailable(false)
 
-                    shouldThrow<IllegalArgumentException> {
-                        factory(
-                            mockk(relaxed = true),
-                            mockk(relaxed = true),
-                            mockk(relaxed = true),
-                        )
-                    }
+                    val actual = factory(
+                        mockk(relaxed = true),
+                        mockk(relaxed = true), mockk(relaxed = true),
+                    )
+                    actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.NotAvailableSurvey>>()
                 }
                 "アンケート内のオープンキャンパス開催日に学生が在籍していない場合、IllegalArgumentExceptionを投げる" {
                     val cast: Cast = mockk(relaxed = true)

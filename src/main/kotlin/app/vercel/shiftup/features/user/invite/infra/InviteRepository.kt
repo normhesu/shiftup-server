@@ -12,7 +12,7 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.coroutine.updateOne
 import org.litote.kmongo.eq
 
-@Single(binds = [InviteRepositoryInterface::class])
+@Single
 class InviteRepository(
     private val database: CoroutineDatabase
 ) : InviteRepositoryInterface {
