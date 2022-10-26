@@ -27,7 +27,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
 
         val surveyRepository: AttendanceSurveyRepositoryInterface = mockk()
         val factory = AttendanceSurveyAnswerFactory(surveyRepository)
-        val fakeOpenCampus = AttendanceSurvey.of(
+        val fakeOpenCampus = AttendanceSurvey(
             name = "テスト",
             openCampusSchedule = OpenCampusDates(
                 setOf(
