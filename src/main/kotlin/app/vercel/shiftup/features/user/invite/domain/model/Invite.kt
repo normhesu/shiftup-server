@@ -24,7 +24,7 @@ data class Invite(
     @SerialName("_id") val id: InviteId = InviteId(studentNumber),
 ) {
     companion object {
-        fun fromFirstManager(
+        operator fun invoke(
             email: NeecEmail,
             firstManager: FirstManager,
         ) = when (email) {

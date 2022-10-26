@@ -14,7 +14,7 @@ class GetInviteDomainService(
         firstManager: FirstManager,
     ): Invite? {
         return inviteRepository.findByEmail(email)
-            ?: Invite.fromFirstManager(
+            ?: Invite(
                 email = email,
                 firstManager = firstManager,
             )
