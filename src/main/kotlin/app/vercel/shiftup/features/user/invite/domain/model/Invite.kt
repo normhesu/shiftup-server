@@ -28,7 +28,7 @@ data class Invite(
             email: NeecEmail,
             firstManager: FirstManager,
         ) = when (email) {
-            NeecEmail.of(firstManager.studentNumber) -> Invite(
+            NeecEmail(firstManager.studentNumber) -> Invite(
                 position = Position.Manager,
                 studentNumber = firstManager.studentNumber,
                 department = firstManager.department,

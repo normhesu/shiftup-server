@@ -25,7 +25,7 @@ data class User(
         get() = position.roles
 
     val email: NeecEmail
-        get() = NeecEmail.of(studentNumber)
+        get() = NeecEmail(studentNumber)
 
     fun inSchool(fiscalYear: Int?) = getSchoolYear(fiscalYear) != null
 
