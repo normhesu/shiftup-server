@@ -1,7 +1,7 @@
 package app.vercel.shiftup.features.user.invite.domain.model
 
 import app.vercel.shiftup.features.user.domain.model.value.Department
-import app.vercel.shiftup.features.user.domain.model.value.NeecEmail
+import app.vercel.shiftup.features.user.domain.model.value.Email
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
@@ -25,10 +25,10 @@ data class Invite(
 ) {
     companion object {
         operator fun invoke(
-            email: NeecEmail,
+            email: Email,
             firstManager: FirstManager,
         ) = when (email) {
-            NeecEmail(firstManager.studentNumber) -> Invite(
+            firstManager.email -> Invite(
                 position = Position.Manager,
                 studentNumber = firstManager.studentNumber,
                 department = firstManager.department,

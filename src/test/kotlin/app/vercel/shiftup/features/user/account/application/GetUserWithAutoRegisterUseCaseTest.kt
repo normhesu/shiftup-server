@@ -3,7 +3,7 @@ package app.vercel.shiftup.features.user.account.application
 import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.infra.UserRepository
-import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
+import app.vercel.shiftup.features.user.domain.model.value.Email
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
@@ -36,7 +36,7 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
         "アカウント登録済みの場合、ユーザーを返す" {
             val resultUser = User(
                 id = userId,
-                studentNumber = mockk(relaxed = true),
+                email = Email("g020c0000@g.neec.ac.jp"),
                 name = mockk(relaxed = true),
                 department = mockk(relaxed = true),
                 position = mockk(relaxed = true),
@@ -62,14 +62,14 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
             val resultUser = User(
                 id = userId,
                 name = mockk(relaxed = true),
-                studentNumber = StudentNumber("G000C0000"),
+                email = Email("g000c0000@g.neec.ac.jp"),
                 department = mockk(relaxed = true),
                 position = position,
             )
 
             val notAllowedFirstManager = FirstManager(
-                studentNumber = StudentNumber("G999C9999").also {
-                    it shouldNotBe resultUser.studentNumber
+                email = Email("g999c9999@g.neec.ac.jp").also {
+                    it shouldNotBe resultUser.email
                 },
                 department = mockk(relaxed = true),
             )
@@ -106,7 +106,7 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                         name = resultUser.name,
                         emailFactory = { resultUser.email },
                         firstManager = FirstManager(
-                            studentNumber = resultUser.studentNumber,
+                            email = resultUser.email,
                             department = resultUser.department,
                         )
                     ) shouldBe Ok(resultUser)
