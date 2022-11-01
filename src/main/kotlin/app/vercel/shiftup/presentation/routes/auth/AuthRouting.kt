@@ -62,23 +62,19 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                     }.onFailure {
                         when (it) {
                             is LoginOrRegisterException.InvalidUser -> {
-                                call.respondRedirect(InvalidUser.PATH)
+                                call.respondRedirect(
+                                    config.topPageUrl + "/error/invalid-user",
+                                )
                             }
                             is LoginOrRegisterException.Other -> {
                                 application.log.error(it.message)
-                                call.respondRedirect(LoginFailure.PATH)
+                                call.respondRedirect(
+                                    config.topPageUrl + "/error/authentication-error",
+                                )
                             }
                         }
                     }
                 }
-            }
-
-            get<InvalidUser> {
-                call.respondText("アカウント登録が許可されていません")
-            }
-
-            get<LoginFailure> {
-                call.respondText("ログインに失敗しました")
             }
 
             get<Logout> {
@@ -121,18 +117,6 @@ class Login {
         @Suppress("unused")
         val parent: Login = Login()
     )
-}
-
-@Serializable
-@Resource(InvalidUser.PATH)
-object InvalidUser {
-    const val PATH = "/invalid-user"
-}
-
-@Serializable
-@Resource(LoginFailure.PATH)
-object LoginFailure {
-    const val PATH = "/login-failure"
 }
 
 @Serializable
