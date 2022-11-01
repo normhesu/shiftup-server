@@ -1,8 +1,6 @@
 package app.vercel.shiftup.features.user.invite.domain.model
 
-import app.vercel.shiftup.features.user.domain.model.value.Department
-import app.vercel.shiftup.features.user.domain.model.value.Email
-import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
+import app.vercel.shiftup.features.user.domain.model.value.*
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import kotlinx.serialization.SerialName
@@ -23,6 +21,13 @@ data class Invite(
     val position: Position,
     @SerialName("_id") val id: InviteId = InviteId(studentNumber),
 ) {
+
+    init {
+        val isNeec = studentNumber is NeecStudentNumber && department is NeecDepartment
+        val isTeu = studentNumber is TeuStudentNumber && department is TeuDepartment
+        require(isNeec || isTeu)
+    }
+
     companion object {
         operator fun invoke(
             email: Email,

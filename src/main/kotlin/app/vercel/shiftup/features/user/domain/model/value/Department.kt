@@ -1,10 +1,36 @@
+@file:Suppress("MagicNumber")
+
 package app.vercel.shiftup.features.user.domain.model.value
 
-@Suppress("MagicNumber")
-enum class Department(
-    val japaneseName: String,
-    val tenure: Tenure,
-) {
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
+@Serializable(DepartmentSerializer::class)
+sealed interface Department {
+    val japaneseName: String
+    val tenure: Tenure
+    val symbol: String
+
+    companion object {
+        fun valueOf(value: String): Department = sequenceOf(TeuDepartment::valueOf, NeecDepartment::valueOf)
+            .map { runCatching { it(value) } }
+            .find { it.isSuccess }
+            .let {
+                requireNotNull(it) { "No enum constant Department.$it" }
+            }
+            .getOrThrow()
+    }
+}
+
+@Serializable
+enum class NeecDepartment(
+    override val japaneseName: String,
+    override val tenure: Tenure,
+) : Department {
     // クリエイターズカレッジ
     B2(japaneseName = "放送芸術科", Tenure(2)),
     T2(japaneseName = "声優・演劇科", Tenure(2)),
@@ -49,5 +75,35 @@ enum class Department(
     J3(japaneseName = "柔道整復科", Tenure(3)),
     MI(japaneseName = "医療事務科", Tenure(2));
 
-    val symbol: String = name
+    override val symbol: String = name
+}
+
+@Serializable
+enum class TeuDepartment(
+    override val japaneseName: String,
+) : Department {
+    BT("応用生物学部"),
+    CS("コンピュータサイエンス学部"),
+    MS("メディア学部"),
+    ES("工学部"),
+    DS("デザイン学部"),
+    HS("医療保健学部");
+
+    override val tenure = Tenure(4)
+    override val symbol: String = name
+}
+
+object DepartmentSerializer : KSerializer<Department> {
+    override val descriptor = PrimitiveSerialDescriptor(
+        serialName = "app.vercel.shiftup.features.user.domain.model.value.DepartmentSerializer",
+        kind = PrimitiveKind.STRING,
+    )
+
+    override fun serialize(encoder: Encoder, value: Department) {
+        encoder.encodeString(value.symbol)
+    }
+
+    override fun deserialize(decoder: Decoder): Department {
+        return Department.valueOf(decoder.decodeString())
+    }
 }

@@ -5,6 +5,7 @@ import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.domain.model.value.Email
+import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.service.GetInviteDomainService
 import com.github.michaelbull.result.Result
@@ -36,8 +37,10 @@ class GetUserWithAutoRegisterUseCase(
         User(
             id = userId,
             name = name,
-            department = invite.department,
-            email = email,
+            schoolProfile = SchoolProfile(
+                email = email,
+                department = invite.department,
+            ),
             position = invite.position,
         ).also {
             userRepository.add(it)

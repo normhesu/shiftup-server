@@ -17,11 +17,12 @@ value class UserId(
 data class User(
     @SerialName("_id") val id: UserId,
     val name: Name,
-    val email: Email,
-    val department: Department,
+    val schoolProfile: SchoolProfile,
     val position: Position,
 ) {
-    val studentNumber: StudentNumber by lazy { email.studentNumber }
+    val email: Email by lazy { schoolProfile.email }
+    val department: Department by lazy { schoolProfile.department }
+    val studentNumber: StudentNumber by lazy { schoolProfile.studentNumber }
 
     val roles: Set<Role>
         get() = position.roles

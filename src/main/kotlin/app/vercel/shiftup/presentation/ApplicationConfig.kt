@@ -2,6 +2,7 @@ package app.vercel.shiftup.presentation
 
 import app.vercel.shiftup.features.user.domain.model.value.Department
 import app.vercel.shiftup.features.user.domain.model.value.Email
+import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import io.ktor.server.config.*
 
@@ -34,8 +35,10 @@ val ApplicationConfig.sessionSignKey
 
 val ApplicationConfig.firstManager
     get() = FirstManager(
-        email = firstManagerEmail,
-        department = firstManagerDepartment,
+        SchoolProfile(
+            email = firstManagerEmail,
+            department = firstManagerDepartment,
+        )
     )
 
 private val ApplicationConfig.firstManagerEmail
