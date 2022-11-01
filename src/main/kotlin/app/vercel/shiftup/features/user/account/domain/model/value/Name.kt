@@ -1,6 +1,6 @@
 package app.vercel.shiftup.features.user.account.domain.model.value
 
-import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
+import app.vercel.shiftup.features.user.domain.model.value.NeecStudentNumber
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -24,13 +24,7 @@ value class Name(private val value: String) {
 private fun getName(
     familyName: String,
     givenName: String,
-): String {
-    return arrayOf(
-        familyName to givenName,
-        givenName to familyName,
-    ).find {
-        runCatching {
-            StudentNumber(it.first.trim())
-        }.isSuccess
-    }?.second ?: (familyName + givenName)
-}
+): String = runCatching { NeecStudentNumber(familyName) }.fold(
+    onSuccess = { givenName.replace(" ", "") },
+    onFailure = { familyName },
+)

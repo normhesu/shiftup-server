@@ -2,19 +2,19 @@ package app.vercel.shiftup.presentation.routes.auth
 
 import app.vercel.shiftup.features.user.account.application.GetUserWithAutoRegisterUseCase
 import app.vercel.shiftup.features.user.account.application.LoginOrRegisterException
+import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
-import app.vercel.shiftup.features.user.domain.model.value.NeecEmail
+import app.vercel.shiftup.features.user.domain.model.value.Email
 import app.vercel.shiftup.presentation.firstManager
 import app.vercel.shiftup.presentation.routes.auth.plugins.AUTH_OAUTH_GOOGLE_NAME
 import app.vercel.shiftup.presentation.routes.auth.plugins.UserSession
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureAuthentication
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureSessions
 import app.vercel.shiftup.presentation.topPageUrl
-import com.github.michaelbull.result.getOrElse
+import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
-import com.github.michaelbull.result.runCatching
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -29,7 +29,6 @@ import io.ktor.server.resources.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
-import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -55,13 +54,9 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                         return@get
                     }
 
-                    this@authRouting.getUserWithAutoRegister(
+                    application.getUserWithAutoRegister(
                         userInfo,
-                    ).getOrElse {
-                        this@authRouting.log.error(it.message)
-                        call.respondRedirect(LoginFailure.PATH)
-                        return@get
-                    }.onSuccess { user ->
+                    ).onSuccess { user ->
                         call.sessions.set(UserSession(user.id))
                         call.respondRedirect(config.topPageUrl)
                     }.onFailure {
@@ -70,7 +65,7 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                                 call.respondRedirect(InvalidUser.PATH)
                             }
                             is LoginOrRegisterException.Other -> {
-                                this@authRouting.log.error(it.message)
+                                application.log.error(it.message)
                                 call.respondRedirect(LoginFailure.PATH)
                             }
                         }
@@ -96,20 +91,17 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
 
 private suspend fun Application.getUserWithAutoRegister(
     userInfo: UserInfo,
-) = runCatching {
-    val getUserWithAutoRegisterUseCase: GetUserWithAutoRegisterUseCase by inject()
-    val firstManager = environment.config.firstManager
-    coroutineScope {
-        getUserWithAutoRegisterUseCase(
-            userId = UserId(userInfo.id),
-            name = Name(
-                familyName = userInfo.familyName,
-                givenName = userInfo.givenName,
-            ),
-            emailFactory = { NeecEmail(userInfo.email) },
-            firstManager = firstManager,
-        )
-    }
+): Result<User, LoginOrRegisterException> {
+    val useCase: GetUserWithAutoRegisterUseCase by inject()
+    return useCase(
+        userId = UserId(userInfo.id),
+        name = Name(
+            familyName = userInfo.familyName,
+            givenName = userInfo.givenName,
+        ),
+        emailFactory = { Email(userInfo.email) },
+        firstManager = environment.config.firstManager,
+    )
 }
 
 private suspend fun OAuthAccessTokenResponse.OAuth2.getUserInfo(): UserInfo {

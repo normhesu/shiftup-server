@@ -101,7 +101,7 @@ detekt {
 }
 
 jig {
-    modelPattern = "^(?=.+\\.domain\\..+)(?!.*\\\$)(?!.*Kt$).*\$"
+    modelPattern = "^(?=.+\\.domain\\..+)(?!.*\\\$)(?!.*Kt$)(?!.*Serializer$).*\$"
     outputOmitPrefix = ".+\\.features\\."
     linkPrefix = "https://github.com/normhesu/shiftup-server/tree/develop/src/main/kotlin"
 }

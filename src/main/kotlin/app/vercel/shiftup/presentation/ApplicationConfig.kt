@@ -1,7 +1,8 @@
 package app.vercel.shiftup.presentation
 
 import app.vercel.shiftup.features.user.domain.model.value.Department
-import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
+import app.vercel.shiftup.features.user.domain.model.value.Email
+import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import io.ktor.server.config.*
 
@@ -34,15 +35,17 @@ val ApplicationConfig.sessionSignKey
 
 val ApplicationConfig.firstManager
     get() = FirstManager(
-        studentNumber = firstManagerStudentNumber,
-        department = firstManagerDepartment,
+        SchoolProfile(
+            email = firstManagerEmail,
+            department = firstManagerDepartment,
+        )
     )
 
-private val ApplicationConfig.firstManagerStudentNumber
+private val ApplicationConfig.firstManagerEmail
     get() = this
-        .property(ApplicationConfPath.Ktor.Auth.firstManagerStudentNumber)
+        .property(ApplicationConfPath.Ktor.Auth.firstManagerEmail)
         .getString()
-        .let(::StudentNumber)
+        .let { Email(it) }
 
 private val ApplicationConfig.firstManagerDepartment
     get() = this
@@ -77,7 +80,7 @@ private object ApplicationConfPath {
             const val googleClientId = "$PATH.google-client-id"
             const val googleClientSecret = "$PATH.google-client-secret"
             const val sessionSignKey = "$PATH.session-sign-key"
-            const val firstManagerStudentNumber = "$PATH.first-manager-student-number"
+            const val firstManagerEmail = "$PATH.first-manager-email"
             const val firstManagerDepartment = "$PATH.first-manager-department"
         }
 

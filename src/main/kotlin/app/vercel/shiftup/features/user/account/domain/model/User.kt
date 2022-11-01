@@ -17,15 +17,15 @@ value class UserId(
 data class User(
     @SerialName("_id") val id: UserId,
     val name: Name,
-    val studentNumber: StudentNumber,
-    val department: Department,
+    val schoolProfile: SchoolProfile,
     val position: Position,
 ) {
+    val email: Email by lazy { schoolProfile.email }
+    val department: Department by lazy { schoolProfile.department }
+    val studentNumber: StudentNumber by lazy { schoolProfile.studentNumber }
+
     val roles: Set<Role>
         get() = position.roles
-
-    val email: NeecEmail
-        get() = NeecEmail(studentNumber)
 
     fun inSchool(fiscalYear: Int?) = getSchoolYear(fiscalYear) != null
 
