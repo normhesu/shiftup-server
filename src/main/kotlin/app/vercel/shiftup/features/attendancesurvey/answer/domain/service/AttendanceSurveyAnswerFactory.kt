@@ -6,8 +6,8 @@ import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampu
 import app.vercel.shiftup.features.attendancesurvey.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.coroutines.runSuspendCatching
 import com.github.michaelbull.result.mapError
-import com.github.michaelbull.result.runCatching
 import org.koin.core.annotation.Single
 
 @Single
@@ -18,7 +18,7 @@ class AttendanceSurveyAnswerFactory(
         attendanceSurveyId: AttendanceSurveyId,
         cast: Cast,
         availableDays: OpenCampusDates,
-    ): Result<AttendanceSurveyAnswer, AttendanceSurveyAnswerFactoryException> = runCatching {
+    ): Result<AttendanceSurveyAnswer, AttendanceSurveyAnswerFactoryException> = runSuspendCatching {
         attendanceSurveyRepository.findById(
             attendanceSurveyId,
         ).also { survey ->
