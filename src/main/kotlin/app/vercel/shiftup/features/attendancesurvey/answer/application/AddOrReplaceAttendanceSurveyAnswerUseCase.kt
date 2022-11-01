@@ -16,7 +16,7 @@ import io.ktor.server.plugins.*
 import org.koin.core.annotation.Single
 
 @Single
-class AddOrUpdateAttendanceSurveyAnswerUseCase(
+class AddOrReplaceAttendanceSurveyAnswerUseCase(
     private val attendanceSurveyAnswerFactory: AttendanceSurveyAnswerFactory,
     private val userRepository: UserRepository,
     private val attendanceSurveyAnswerRepository: AttendanceSurveyAnswerRepository,

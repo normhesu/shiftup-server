@@ -1,6 +1,6 @@
 package app.vercel.shiftup.presentation.routes.attendancesurveys
 
-import app.vercel.shiftup.features.attendancesurvey.answer.application.AddOrUpdateAttendanceSurveyAnswerUseCase
+import app.vercel.shiftup.features.attendancesurvey.answer.application.AddOrReplaceAttendanceSurveyAnswerUseCase
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.AttendanceSurveyId
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDates
@@ -34,7 +34,7 @@ fun Application.attendanceSurveysRouting() {
 
 private fun Application.castRouting() = routingWithRole(Role.Cast) {
     put<AttendanceSurveys.Id.Answers> {
-        val useCase: AddOrUpdateAttendanceSurveyAnswerUseCase
+        val useCase: AddOrReplaceAttendanceSurveyAnswerUseCase
             by application.inject()
 
         useCase(
