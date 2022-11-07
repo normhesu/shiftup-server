@@ -1,10 +1,10 @@
 package app.vercel.shiftup.presentation.routes.attendancesurveys
 
-import app.vercel.shiftup.features.attendancesurvey.answer.application.AddOrReplaceAttendanceSurveyAnswerUseCase
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.AttendanceSurveyId
+import app.vercel.shiftup.features.attendancesurvey.application.*
+import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurvey
+import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDates
-import app.vercel.shiftup.features.attendancesurvey.survey.application.*
 import app.vercel.shiftup.features.user.account.application.GetUsersUseCase
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.domain.model.value.Role
@@ -24,6 +24,8 @@ import io.ktor.server.resources.put
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
@@ -52,10 +54,27 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
 
 private fun Application.managerRouting() = routingWithRole(Role.Manager) {
     get<AttendanceSurveys> {
+        @Serializable
+        data class ResponseItem(
+            val name: String,
+            val openCampusSchedule: OpenCampusDates,
+            val creationDate: LocalDate,
+            val isAvailable: Boolean,
+            @SerialName("_id") val id: AttendanceSurveyId,
+        ) {
+            constructor(survey: AttendanceSurvey) : this(
+                name = survey.name,
+                openCampusSchedule = survey.openCampusSchedule,
+                creationDate = survey.creationDate,
+                isAvailable = survey.isAvailable,
+                id = survey.id,
+            )
+        }
+
         val useCase: GetAllAttendanceSurveyUseCase
             by application.inject()
 
-        call.respond(useCase())
+        call.respond(useCase().map(::ResponseItem))
     }
 
     post<AttendanceSurveys> {

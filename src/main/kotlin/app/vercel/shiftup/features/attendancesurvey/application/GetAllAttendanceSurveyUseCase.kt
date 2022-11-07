@@ -1,6 +1,6 @@
-package app.vercel.shiftup.features.attendancesurvey.survey.application
+package app.vercel.shiftup.features.attendancesurvey.application
 
-import app.vercel.shiftup.features.attendancesurvey.survey.infra.AttendanceSurveyRepository
+import app.vercel.shiftup.features.attendancesurvey.infra.AttendanceSurveyRepository
 import org.koin.core.annotation.Single
 
 @Single

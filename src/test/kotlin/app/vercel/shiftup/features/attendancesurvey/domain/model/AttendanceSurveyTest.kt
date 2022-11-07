@@ -1,11 +1,6 @@
-package app.vercel.shiftup.features.attendancesurvey.survey.domain.model
+package app.vercel.shiftup.features.attendancesurvey.domain.model
 
-import app.vercel.shiftup.features.attendancesurvey.answer.domain.model.AttendanceSurveyAnswer
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.AttendanceSurveyId
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDate
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDates
-import app.vercel.shiftup.features.attendancesurvey.survey.domain.model.value.AttendanceSurveyAnswers
-import app.vercel.shiftup.features.attendancesurvey.survey.domain.model.value.OpenCampus
+import app.vercel.shiftup.features.attendancesurvey.domain.model.value.*
 import app.vercel.shiftup.features.core.domain.model.nowTokyoLocalDateTime
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
@@ -95,10 +90,8 @@ class AttendanceSurveyTest : FreeSpec({
                 )
 
                 "回答が無い場合、キャスト一覧は空になる" {
-                    val actual = AttendanceSurveyAnswers(emptySet()).let(survey::tally)
-                    val expected = OpenCampusDates(openCampusDatesValue).map(::OpenCampus)
-
-                    actual shouldBe expected
+                    survey.answers shouldBe AttendanceSurveyAnswers.empty(survey.id)
+                    survey.tally() shouldBe OpenCampusDates(openCampusDatesValue).map(::OpenCampus)
                 }
 
                 "回答がある場合、キャスト一覧にCastIdが保存される" {
@@ -138,7 +131,9 @@ class AttendanceSurveyTest : FreeSpec({
                                 )
                             ),
                         ),
-                    ).let { survey.tally(AttendanceSurveyAnswers(it)) }
+                    ).fold(survey) { survey, answer ->
+                        survey.addOrReplaceAnswer(answer)
+                    }.tally()
 
                     val openCampusConstructor = OpenCampus::class.primaryConstructor!!.apply {
                         isAccessible = true
@@ -163,31 +158,6 @@ class AttendanceSurveyTest : FreeSpec({
                     )
 
                     actual shouldBe expected
-                }
-            }
-        }
-        "異常系" - {
-            "回答のsurveyIdがアンケートと異なる場合、IllegalArgumentExceptionを投げる" {
-                val survey = AttendanceSurvey(
-                    name = "テスト",
-                    openCampusSchedule = OpenCampusDates(
-                        setOf(
-                            OpenCampusDate(LocalDate(2022, 1, 15)),
-                        ),
-                    ),
-                )
-
-                val answers = AttendanceSurveyAnswers(
-                    setOf(
-                        AttendanceSurveyAnswer.fromFactory(
-                            availableCastId = mockk(relaxed = true),
-                            availableDays = mockk(relaxed = true),
-                            surveyId = AttendanceSurveyId(""),
-                        ),
-                    )
-                )
-                shouldThrowExactly<IllegalArgumentException> {
-                    survey.tally(answers)
                 }
             }
         }

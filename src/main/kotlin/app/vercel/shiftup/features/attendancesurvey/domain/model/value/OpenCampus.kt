@@ -1,7 +1,5 @@
-package app.vercel.shiftup.features.attendancesurvey.survey.domain.model.value
+package app.vercel.shiftup.features.attendancesurvey.domain.model.value
 
-import app.vercel.shiftup.features.attendancesurvey.answer.domain.model.AttendanceSurveyAnswer
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import kotlinx.serialization.Serializable
 
@@ -23,6 +21,7 @@ data class OpenCampus private constructor(
         in answer.availableDays -> addAvailableCastId(
             answer.availableCastId
         )
+
         else -> this
     }
 
