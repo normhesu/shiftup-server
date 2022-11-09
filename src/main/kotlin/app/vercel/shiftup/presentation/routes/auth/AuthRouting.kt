@@ -2,7 +2,6 @@ package app.vercel.shiftup.presentation.routes.auth
 
 import app.vercel.shiftup.features.user.account.application.GetUserWithAutoRegisterUseCase
 import app.vercel.shiftup.features.user.account.application.LoginOrRegisterException
-import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Email
@@ -12,7 +11,8 @@ import app.vercel.shiftup.presentation.routes.auth.plugins.UserSession
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureAuthentication
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureSessions
 import app.vercel.shiftup.presentation.topPageUrl
-import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.coroutines.binding.binding
+import com.github.michaelbull.result.coroutines.runSuspendCatching
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
 import io.ktor.client.*
@@ -48,37 +48,43 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                 }
 
                 get<Login.Verify> {
-                    val principal: OAuthAccessTokenResponse.OAuth2? = call.principal()
-                    val userInfo: UserInfo = principal?.getUserInfo() ?: run {
-                        call.respondRedirect(config.topPageUrl)
-                        return@get
-                    }
+                    binding {
+                        val userInfo = runSuspendCatching {
+                            val principal: OAuthAccessTokenResponse.OAuth2 = requireNotNull(call.principal())
+                            httpClient.get("https://www.googleapis.com/oauth2/v2/userinfo") {
+                                headers {
+                                    append(HttpHeaders.Authorization, "Bearer ${principal.accessToken}")
+                                }
+                            }.body<UserInfo>()
+                        }.bind()
 
-                    application.getUserWithAutoRegister(
-                        userInfo,
-                    ).onSuccess { user ->
+                        val useCase by runSuspendCatching {
+                            application.inject<GetUserWithAutoRegisterUseCase>()
+                        }.bind()
+                        useCase(
+                            userId = UserId(userInfo.id),
+                            name = Name(
+                                familyName = userInfo.familyName,
+                                givenName = userInfo.givenName,
+                            ),
+                            emailFactory = { Email(userInfo.email) },
+                            firstManager = application.environment.config.firstManager,
+                        ).bind()
+                    }.onSuccess { user ->
                         call.sessions.set(UserSession(user.id))
                         call.respondRedirect(config.topPageUrl)
                     }.onFailure {
+                        application.log.error(it.message)
                         when (it) {
-                            is LoginOrRegisterException.InvalidUser -> {
-                                call.respondRedirect(InvalidUser.PATH)
-                            }
-                            is LoginOrRegisterException.Other -> {
-                                application.log.error(it.message)
-                                call.respondRedirect(LoginFailure.PATH)
-                            }
+                            is LoginOrRegisterException.InvalidUser -> call.respondRedirect(
+                                config.topPageUrl + "/error/invalid-user",
+                            )
+                            else -> call.respondRedirect(
+                                config.topPageUrl + "/error/authentication-error",
+                            )
                         }
                     }
                 }
-            }
-
-            get<InvalidUser> {
-                call.respondText("アカウント登録が許可されていません")
-            }
-
-            get<LoginFailure> {
-                call.respondText("ログインに失敗しました")
             }
 
             get<Logout> {
@@ -89,50 +95,15 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
     }
 }
 
-private suspend fun Application.getUserWithAutoRegister(
-    userInfo: UserInfo,
-): Result<User, LoginOrRegisterException> {
-    val useCase: GetUserWithAutoRegisterUseCase by inject()
-    return useCase(
-        userId = UserId(userInfo.id),
-        name = Name(
-            familyName = userInfo.familyName,
-            givenName = userInfo.givenName,
-        ),
-        emailFactory = { Email(userInfo.email) },
-        firstManager = environment.config.firstManager,
-    )
-}
-
-private suspend fun OAuthAccessTokenResponse.OAuth2.getUserInfo(): UserInfo {
-    return httpClient.get("https://www.googleapis.com/oauth2/v2/userinfo") {
-        headers {
-            append(HttpHeaders.Authorization, "Bearer $accessToken")
-        }
-    }.body()
-}
-
+@Suppress("unused")
 @Serializable
 @Resource("/login")
 class Login {
     @Serializable
     @Resource("verify")
     class Verify(
-        @Suppress("unused")
         val parent: Login = Login()
     )
-}
-
-@Serializable
-@Resource(InvalidUser.PATH)
-object InvalidUser {
-    const val PATH = "/invalid-user"
-}
-
-@Serializable
-@Resource(LoginFailure.PATH)
-object LoginFailure {
-    const val PATH = "/login-failure"
 }
 
 @Serializable

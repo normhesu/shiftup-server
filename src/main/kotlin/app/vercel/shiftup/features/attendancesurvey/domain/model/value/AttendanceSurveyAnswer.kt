@@ -1,7 +1,6 @@
-package app.vercel.shiftup.features.attendancesurvey.answer.domain.model
+package app.vercel.shiftup.features.attendancesurvey.domain.model.value
 
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.AttendanceSurveyId
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
