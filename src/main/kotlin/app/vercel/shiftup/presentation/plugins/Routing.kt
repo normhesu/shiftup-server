@@ -22,12 +22,13 @@ fun Application.configureRouting() {
                     status = HttpStatusCode.UnprocessableEntity,
                     cause = cause,
                 )
+
                 else -> call.respondText(
                     status = HttpStatusCode.InternalServerError,
                     cause = cause.takeIf { call.application.developmentMode }
                 )
             }
-            throw cause
+            if (call.application.developmentMode) throw cause
         }
         if (this@configureRouting.developmentMode) {
             val respondTextStatusCodes = HttpStatusCode.allStatusCodes.toTypedArray()
