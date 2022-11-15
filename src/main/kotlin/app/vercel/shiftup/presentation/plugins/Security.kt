@@ -15,12 +15,12 @@ fun Application.configureSecurity() {
         .split("://")
 
     install(CORS) {
-        allowMethod(HttpMethod.Options)
-        allowMethod(HttpMethod.Put)
-        allowMethod(HttpMethod.Delete)
-        allowMethod(HttpMethod.Patch)
+        HttpMethod.DefaultMethods.forEach(::allowMethod)
+        allowHeader(HttpHeaders.Accept)
         allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.Cookie)
+        allowHeader(HttpHeaders.Origin)
         if (allowAllHosts) {
             anyHost()
         } else {
