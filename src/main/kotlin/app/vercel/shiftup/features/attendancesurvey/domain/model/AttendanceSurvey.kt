@@ -1,7 +1,7 @@
 package app.vercel.shiftup.features.attendancesurvey.domain.model
 
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.*
-import app.vercel.shiftup.features.core.domain.model.nowTokyoLocalDateTime
+import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
@@ -35,7 +35,7 @@ data class AttendanceSurvey private constructor(
                 name = name,
                 openCampusSchedule = openCampusSchedule,
                 answers = AttendanceSurveyAnswers.empty(id),
-                creationDate = Clock.System.nowTokyoLocalDateTime().date,
+                creationDate = Clock.System.now().toTokyoLocalDateTime().date,
                 isAvailable = true,
                 id = id,
             )
