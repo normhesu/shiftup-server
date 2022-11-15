@@ -21,13 +21,16 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
+import org.mpierce.ktor.csrf.noCsrfProtection
 
 fun Application.invitesRouting() = routingWithRole(Role.Manager) {
-    get<Invites> {
-        val useCase: GetAllInvitesUseCase
-            by application.inject()
+    noCsrfProtection {
+        get<Invites> {
+            val useCase: GetAllInvitesUseCase
+                by application.inject()
 
-        call.respond(useCase())
+            call.respond(useCase())
+        }
     }
     post<Invites> {
         val useCase: AddInviteUseCase

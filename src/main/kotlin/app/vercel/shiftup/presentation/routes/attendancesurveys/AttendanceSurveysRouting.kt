@@ -28,6 +28,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
+import org.mpierce.ktor.csrf.noCsrfProtection
 
 fun Application.attendanceSurveysRouting() {
     castRouting()
@@ -53,28 +54,30 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
 }
 
 private fun Application.managerRouting() = routingWithRole(Role.Manager) {
-    get<AttendanceSurveys> {
-        @Serializable
-        data class ResponseItem(
-            val name: String,
-            val openCampusSchedule: OpenCampusDates,
-            val creationDate: LocalDate,
-            val isAvailable: Boolean,
-            @SerialName("_id") val id: AttendanceSurveyId,
-        ) {
-            constructor(survey: AttendanceSurvey) : this(
-                name = survey.name,
-                openCampusSchedule = survey.openCampusSchedule,
-                creationDate = survey.creationDate,
-                isAvailable = survey.isAvailable,
-                id = survey.id,
-            )
+    noCsrfProtection {
+        get<AttendanceSurveys> {
+            @Serializable
+            data class ResponseItem(
+                val name: String,
+                val openCampusSchedule: OpenCampusDates,
+                val creationDate: LocalDate,
+                val isAvailable: Boolean,
+                @SerialName("_id") val id: AttendanceSurveyId,
+            ) {
+                constructor(survey: AttendanceSurvey) : this(
+                    name = survey.name,
+                    openCampusSchedule = survey.openCampusSchedule,
+                    creationDate = survey.creationDate,
+                    isAvailable = survey.isAvailable,
+                    id = survey.id,
+                )
+            }
+
+            val useCase: GetAllAttendanceSurveyUseCase
+                by application.inject()
+
+            call.respond(useCase().map(::ResponseItem))
         }
-
-        val useCase: GetAllAttendanceSurveyUseCase
-            by application.inject()
-
-        call.respond(useCase().map(::ResponseItem))
     }
 
     post<AttendanceSurveys> {
@@ -115,37 +118,39 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
     surveyResultsRoute()
 }
 
-private fun Route.surveyResultsRoute() = get<AttendanceSurveys.Id.Results> { resource ->
-    @Serializable
-    data class ResponseItem(
-        val date: OpenCampusDate,
-        val availableCasts: Set<Cast>,
-    )
-
-    val tallyUseCase: TallyAttendanceSurveyUseCase
-        by application.inject()
-    val getUsersUseCase: GetUsersUseCase
-        by application.inject()
-
-    val tallyResult = tallyUseCase(resource.parent.attendanceSurveyId)
-    val availableCastUserIds = tallyResult
-        .map { it.availableCastIds }
-        .flatten()
-        .distinct()
-        .map { it.value }
-    val casts = getUsersUseCase(availableCastUserIds)
-        .map(::Cast)
-        .associateBy { it.id }
-
-    val result = tallyResult.map { openCampus ->
-        ResponseItem(
-            date = openCampus.date,
-            availableCasts = openCampus.availableCastIds
-                .mapNotNull { casts[it] }
-                .toSet()
+private fun Route.surveyResultsRoute() = noCsrfProtection {
+    get<AttendanceSurveys.Id.Results> { resource ->
+        @Serializable
+        data class ResponseItem(
+            val date: OpenCampusDate,
+            val availableCasts: Set<Cast>,
         )
+
+        val tallyUseCase: TallyAttendanceSurveyUseCase
+            by application.inject()
+        val getUsersUseCase: GetUsersUseCase
+            by application.inject()
+
+        val tallyResult = tallyUseCase(resource.parent.attendanceSurveyId)
+        val availableCastUserIds = tallyResult
+            .map { it.availableCastIds }
+            .flatten()
+            .distinct()
+            .map { it.value }
+        val casts = getUsersUseCase(availableCastUserIds)
+            .map(::Cast)
+            .associateBy { it.id }
+
+        val result = tallyResult.map { openCampus ->
+            ResponseItem(
+                date = openCampus.date,
+                availableCasts = openCampus.availableCastIds
+                    .mapNotNull { casts[it] }
+                    .toSet()
+            )
+        }
+        call.respond(result)
     }
-    call.respond(result)
 }
 
 @Suppress("unused")
