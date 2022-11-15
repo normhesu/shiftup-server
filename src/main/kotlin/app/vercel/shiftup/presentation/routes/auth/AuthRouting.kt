@@ -11,10 +11,7 @@ import app.vercel.shiftup.presentation.routes.auth.plugins.UserSession
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureAuthentication
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureSessions
 import app.vercel.shiftup.presentation.topPageUrl
-import com.github.michaelbull.result.coroutines.binding.binding
-import com.github.michaelbull.result.coroutines.runSuspendCatching
-import com.github.michaelbull.result.onFailure
-import com.github.michaelbull.result.onSuccess
+import com.github.michaelbull.result.getOrThrow
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -48,29 +45,25 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                 }
 
                 get<Login.Verify> {
-                    binding {
-                        val userInfo = runSuspendCatching {
-                            val principal: OAuthAccessTokenResponse.OAuth2 = requireNotNull(call.principal())
-                            httpClient.get("https://www.googleapis.com/oauth2/v2/userinfo") {
-                                headers {
-                                    append(HttpHeaders.Authorization, "Bearer ${principal.accessToken}")
-                                }
-                            }.body<UserInfo>()
-                        }.bind()
+                    runCatching {
+                        val principal: OAuthAccessTokenResponse.OAuth2 = requireNotNull(call.principal())
+                        val userInfo = httpClient.get("https://www.googleapis.com/oauth2/v2/userinfo") {
+                            headers {
+                                append(HttpHeaders.Authorization, "Bearer ${principal.accessToken}")
+                            }
+                        }.body<UserInfo>()
 
-                        val useCase by runSuspendCatching {
-                            application.inject<GetUserWithAutoRegisterUseCase>()
-                        }.bind()
-                        useCase(
+                        val useCase by application.inject<GetUserWithAutoRegisterUseCase>()
+                        val user = useCase(
                             userId = UserId(userInfo.id),
                             name = Name(
                                 familyName = userInfo.familyName,
                                 givenName = userInfo.givenName,
                             ),
                             emailFactory = { Email(userInfo.email) },
-                            firstManager = application.environment.config.firstManager,
-                        ).bind()
-                    }.onSuccess { user ->
+                            firstManager = config.firstManager,
+                        ).getOrThrow()
+
                         call.sessions.set(UserSession(user.id))
                         call.respondRedirect(config.topPageUrl)
                     }.onFailure {
@@ -79,6 +72,7 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                             is LoginOrRegisterException.InvalidUser -> call.respondRedirect(
                                 config.topPageUrl + "/error/invalid-user",
                             )
+
                             else -> call.respondRedirect(
                                 config.topPageUrl + "/error/authentication-error",
                             )
