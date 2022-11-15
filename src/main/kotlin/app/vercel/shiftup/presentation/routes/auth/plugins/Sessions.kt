@@ -13,7 +13,6 @@ const val USER_SESSION_NAME = "user_session"
 
 fun Application.configureSessions() {
     val config = environment.config
-    val productMode = !developmentMode
     install(Sessions) {
         cookie<UserSession>(
             USER_SESSION_NAME,
@@ -24,8 +23,8 @@ fun Application.configureSessions() {
         ) {
             cookie.apply {
                 path = "/"
-                secure = productMode
                 httpOnly = true
+                extensions["SameSite"] = "lax"
             }
             transform(
                 SessionTransportTransformerMessageAuthentication(
