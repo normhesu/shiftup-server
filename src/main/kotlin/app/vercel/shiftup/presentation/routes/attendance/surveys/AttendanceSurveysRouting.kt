@@ -1,4 +1,4 @@
-package app.vercel.shiftup.presentation.routes.attendancesurveys
+package app.vercel.shiftup.presentation.routes.attendance.surveys
 
 import app.vercel.shiftup.features.attendancesurvey.application.*
 import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurvey
@@ -8,6 +8,7 @@ import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampu
 import app.vercel.shiftup.features.user.account.application.GetUsersUseCase
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.domain.model.value.Role
+import app.vercel.shiftup.presentation.routes.attendance.Attendance
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.respondDeleteResult
@@ -36,7 +37,7 @@ fun Application.attendanceSurveysRouting() {
 }
 
 private fun Application.castRouting() = routingWithRole(Role.Cast) {
-    put<AttendanceSurveys.Id.Answers> {
+    put<Surveys.Id.Answers> {
         val useCase: AddOrReplaceAttendanceSurveyAnswerUseCase
             by application.inject()
 
@@ -55,7 +56,7 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
 
 private fun Application.managerRouting() = routingWithRole(Role.Manager) {
     noCsrfProtection {
-        get<AttendanceSurveys> {
+        get<Surveys> {
             @Serializable
             data class ResponseItem(
                 val name: String,
@@ -80,7 +81,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         }
     }
 
-    post<AttendanceSurveys> {
+    post<Surveys> {
         @Serializable
         data class Params(
             val name: String,
@@ -95,7 +96,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         call.respond(HttpStatusCode.Created)
     }
 
-    delete<AttendanceSurveys.Id> {
+    delete<Surveys.Id> {
         val useCase: RemoveAttendanceSurveyUseCase
             by application.inject()
 
@@ -104,7 +105,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         )
     }
 
-    put<AttendanceSurveys.Id.Available> {
+    put<Surveys.Id.Available> {
         val useCase: ChangeAvailableAttendanceSurveyUseCase
             by application.inject()
 
@@ -119,7 +120,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
 }
 
 private fun Route.surveyResultsRoute() = noCsrfProtection {
-    get<AttendanceSurveys.Id.Results> { resource ->
+    get<Surveys.Id.Results> { resource ->
         @Serializable
         data class ResponseItem(
             val date: OpenCampusDate,
@@ -156,11 +157,11 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
 @Suppress("unused")
 @Serializable
 @Resource("/surveys")
-object AttendanceSurveys {
+class Surveys(val parent: Attendance = Attendance) {
     @Serializable
     @Resource("{id}")
     class Id(
-        val parent: AttendanceSurveys = AttendanceSurveys,
+        val parent: Surveys,
         val id: String,
     ) {
         val attendanceSurveyId get() = AttendanceSurveyId(id)
