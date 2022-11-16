@@ -61,14 +61,14 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
                 val name: String,
                 val openCampusSchedule: OpenCampusDates,
                 val creationDate: LocalDate,
-                val isAvailable: Boolean,
+                val available: Boolean,
                 @SerialName("_id") val id: AttendanceSurveyId,
             ) {
                 constructor(survey: AttendanceSurvey) : this(
                     name = survey.name,
                     openCampusSchedule = survey.openCampusSchedule,
                     creationDate = survey.creationDate,
-                    isAvailable = survey.isAvailable,
+                    available = survey.available,
                     id = survey.id,
                 )
             }

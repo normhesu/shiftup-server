@@ -14,7 +14,7 @@ class ChangeAvailableAttendanceSurveyUseCase(
         available: Boolean,
     ) {
         val survey = attendanceSurveyRepository.findById(attendanceSurveyId) ?: throw NotFoundException()
-        if (survey.isAvailable == available) return
+        if (survey.available == available) return
 
         attendanceSurveyRepository.replace(
             survey.changeAvailable(available = available),
