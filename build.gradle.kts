@@ -5,15 +5,15 @@ import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
 plugins {
     application
-    kotlin("jvm") version "1.7.20"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.20"
+    kotlin("jvm") version "1.7.21"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("io.gitlab.arturbosch.detekt") version "1.22.0-RC3"
-    id("com.google.devtools.ksp") version "1.7.20-1.0.8"
+    id("io.gitlab.arturbosch.detekt") version "1.22.0"
+    id("com.google.devtools.ksp") version "1.7.21-1.0.8"
     id("org.jetbrains.dokka") version "1.7.20"
-    id("org.dddjava.jig-gradle-plugin") version "2022.10.3"
+    id("org.dddjava.jig-gradle-plugin") version "2022.11.1"
     id("com.bnorm.power.kotlin-power-assert") version "0.12.0"
-    id("com.github.ben-manes.versions") version "0.43.0"
+    id("com.github.ben-manes.versions") version "0.44.0"
 }
 
 group = "app.vercel.shiftup"
@@ -40,9 +40,9 @@ repositories {
 
 object Version {
     const val ktor = "2.1.3"
-    const val logback = "1.4.4"
+    const val logback = "1.4.5"
     const val ktorCsrf = "1.0.0"
-    const val detekt = "1.22.0-RC3"
+    const val detekt = "1.22.0"
     const val kotest = "5.5.4"
     const val kotestAssertionsKtor = "1.0.3"
     const val archUnit = "1.0.0"
