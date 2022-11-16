@@ -10,9 +10,9 @@ import org.mpierce.ktor.csrf.OriginMatchesKnownHost
 
 fun Application.configureSecurity() {
     val allowAllHosts = environment.config.allowAllHosts
-    val (scheme, host) = environment.config.topPageUrl
-        .dropLastWhile { it == '/' }
-        .split("://")
+    val (scheme, host) = Url(environment.config.topPageUrl).run {
+        protocol.name to host
+    }
 
     install(CORS) {
         HttpMethod.DefaultMethods.forEach(::allowMethod)
