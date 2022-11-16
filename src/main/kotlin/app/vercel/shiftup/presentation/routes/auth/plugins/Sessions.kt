@@ -8,6 +8,7 @@ import io.ktor.server.sessions.*
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
 import java.io.File
+import kotlin.time.Duration.Companion.days
 
 const val USER_SESSION_NAME = "user_session"
 
@@ -24,6 +25,7 @@ fun Application.configureSessions() {
             cookie.apply {
                 path = "/"
                 httpOnly = true
+                maxAge = UserSession.MAX_AGE
                 extensions["SameSite"] = "lax"
             }
             transform(
@@ -36,6 +38,13 @@ fun Application.configureSessions() {
 }
 
 @Serializable
-data class UserSession(val userId: UserId) : Principal
+data class UserSession(
+    val userId: UserId,
+    val creationInstantISOString: String,
+) : Principal {
+    companion object {
+        val MAX_AGE = 7.days
+    }
+}
 
 val CurrentSession.userId get() = get<UserSession>()?.userId

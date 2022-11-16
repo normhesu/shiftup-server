@@ -26,6 +26,7 @@ import io.ktor.server.resources.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import kotlinx.datetime.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -64,7 +65,12 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                             firstManager = config.firstManager,
                         ).getOrThrow()
 
-                        call.sessions.set(UserSession(user.id))
+                        call.sessions.set(
+                            UserSession(
+                                userId = user.id,
+                                creationInstantISOString = Clock.System.now().toString()
+                            )
+                        )
                         call.respondRedirect(config.topPageUrl)
                     }.onFailure {
                         application.log.error(it.message)
