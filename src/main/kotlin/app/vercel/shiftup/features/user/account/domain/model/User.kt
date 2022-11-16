@@ -14,12 +14,29 @@ value class UserId(
 )
 
 @Serializable
-data class User(
+@Suppress("DataClassPrivateConstructor")
+data class User private constructor(
     @SerialName("_id") val id: UserId,
     val name: Name,
     val schoolProfile: SchoolProfile,
     val position: Position,
+    val available: Boolean,
 ) {
+    companion object {
+        operator fun invoke(
+            id: UserId,
+            name: Name,
+            schoolProfile: SchoolProfile,
+            position: Position,
+        ) = User(
+            id = id,
+            name = name,
+            schoolProfile = schoolProfile,
+            position = position,
+            available = true,
+        )
+    }
+
     val email: Email by lazy { schoolProfile.email }
     val department: Department by lazy { schoolProfile.department }
     val studentNumber: StudentNumber by lazy { schoolProfile.studentNumber }
