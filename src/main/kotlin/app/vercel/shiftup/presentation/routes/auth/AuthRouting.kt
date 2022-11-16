@@ -91,6 +91,12 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                 call.sessions.clear<UserSession>()
                 call.respondRedirect(config.topPageUrl)
             }
+
+            authenticate {
+                get<SessionAvailable> {
+                    call.respond(HttpStatusCode.OK)
+                }
+            }
         }
     }
 }
@@ -109,6 +115,10 @@ class Login {
 @Serializable
 @Resource("/logout")
 object Logout
+
+@Serializable
+@Resource("/session-available")
+object SessionAvailable
 
 private val httpClient = HttpClient(CIO) {
     install(ContentNegotiation) {
