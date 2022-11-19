@@ -2,6 +2,7 @@ package app.vercel.shiftup.presentation.routes.auth
 
 import app.vercel.shiftup.features.user.account.application.GetUserWithAutoRegisterUseCase
 import app.vercel.shiftup.features.user.account.application.LoginOrRegisterException
+import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Email
@@ -26,12 +27,14 @@ import io.ktor.server.resources.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import io.ktor.util.pipeline.*
 import kotlinx.datetime.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.koin.ktor.ext.inject
 import org.mpierce.ktor.csrf.noCsrfProtection
+import kotlin.time.Duration
 
 fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presentation.routes.auth.httpClient) {
     val config = environment.config
@@ -47,30 +50,19 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
 
                 get<Login.Verify> {
                     runCatching {
-                        val principal: OAuthAccessTokenResponse.OAuth2 = requireNotNull(call.principal())
-                        val userInfo = httpClient.get("https://www.googleapis.com/oauth2/v2/userinfo") {
-                            headers {
-                                append(HttpHeaders.Authorization, "Bearer ${principal.accessToken}")
-                            }
-                        }.body<UserInfo>()
-
-                        val useCase by application.inject<GetUserWithAutoRegisterUseCase>()
-                        val user = useCase(
-                            userId = UserId(userInfo.id),
-                            name = Name(
-                                familyName = userInfo.familyName,
-                                givenName = userInfo.givenName,
-                            ),
-                            emailFactory = { Email(userInfo.email) },
-                            firstManager = config.firstManager,
-                        ).getOrThrow()
-
-                        call.sessions.set(
-                            UserSession(
-                                userId = user.id,
-                                creationInstantISOString = Clock.System.now().toString()
+                        val user = getUserFromPrincipal()
+                        call.apply {
+                            // セッションIDはhttpOnlyで読み取れないので、ログイン判定用のCookieも保存する
+                            response.cookies.append(
+                                loggedInCookie(value = true, maxAge = UserSession.MAX_AGE)
                             )
-                        )
+                            sessions.set(
+                                UserSession(
+                                    userId = user.id,
+                                    creationInstantISOString = Clock.System.now().toString()
+                                )
+                            )
+                        }
                         call.respondRedirect(config.topPageUrl)
                     }.onFailure {
                         application.log.error(it.message)
@@ -88,7 +80,12 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
             }
 
             get<Logout> {
-                call.sessions.clear<UserSession>()
+                call.apply {
+                    response.cookies.append(
+                        loggedInCookie(value = false, maxAge = Duration.ZERO)
+                    )
+                    sessions.clear<UserSession>()
+                }
                 call.respondRedirect(config.topPageUrl)
             }
 
@@ -98,6 +95,28 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                 }
             }
         }
+    }
+}
+
+private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(): User {
+    val principal: OAuthAccessTokenResponse.OAuth2 = requireNotNull(call.principal())
+    val userInfo = httpClient.get("https://www.googleapis.com/oauth2/v2/userinfo") {
+        headers {
+            append(HttpHeaders.Authorization, "Bearer ${principal.accessToken}")
+        }
+    }.body<UserInfo>()
+
+    val useCase by application.inject<GetUserWithAutoRegisterUseCase>()
+    return userInfo.run {
+        useCase(
+            userId = UserId(id),
+            name = Name(
+                familyName = familyName,
+                givenName = givenName,
+            ),
+            emailFactory = { Email(email) },
+            firstManager = application.environment.config.firstManager,
+        ).getOrThrow()
     }
 }
 
@@ -137,3 +156,12 @@ private data class UserInfo(
     @SerialName("family_name") val familyName: String,
     @SerialName("given_name") val givenName: String,
 )
+
+private fun loggedInCookie(value: Boolean, maxAge: Duration) =
+    Cookie(
+        name = "logged_in",
+        value = value.toString(),
+        path = "/",
+        maxAge = maxAge.inWholeSeconds.toInt(),
+        extensions = mapOf("SameSite" to "lax")
+    )
