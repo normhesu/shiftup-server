@@ -10,13 +10,11 @@ import kotlinx.serialization.Serializable
 import java.io.File
 import kotlin.time.Duration.Companion.days
 
-const val USER_SESSION_NAME = "user_session"
-
 fun Application.configureSessions() {
     val config = environment.config
     install(Sessions) {
         cookie<UserSession>(
-            USER_SESSION_NAME,
+            "user_session",
             directorySessionStorage(
                 rootDir = File("build/.sessions"),
                 cached = true,
