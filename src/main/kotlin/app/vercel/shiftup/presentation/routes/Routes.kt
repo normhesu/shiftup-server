@@ -4,6 +4,7 @@ import app.vercel.shiftup.presentation.routes.attendance.surveys.attendanceSurve
 import app.vercel.shiftup.presentation.routes.auth.authRouting
 import app.vercel.shiftup.presentation.routes.healthcheck.healthCheckRouting
 import app.vercel.shiftup.presentation.routes.invites.invitesRouting
+import app.vercel.shiftup.presentation.routes.users.usersRouting
 import io.ktor.server.application.*
 
 fun Application.routes() {
@@ -11,4 +12,5 @@ fun Application.routes() {
     authRouting()
     invitesRouting()
     attendanceSurveysRouting()
+    usersRouting()
 }
