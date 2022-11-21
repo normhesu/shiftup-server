@@ -120,7 +120,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
 }
 
 private fun Route.surveyResultsRoute() = noCsrfProtection {
-    get<Surveys.Id.Results> { resource ->
+    get<Surveys.Id.Result> { resource ->
         @Serializable
         data class ResponseItem(
             val date: OpenCampusDate,
@@ -171,8 +171,8 @@ class Surveys(val parent: Attendance = Attendance) {
         class Available(val parent: Id)
 
         @Serializable
-        @Resource("results")
-        class Results(val parent: Id)
+        @Resource("result")
+        class Result(val parent: Id)
 
         @Serializable
         @Resource("answers")
