@@ -180,8 +180,8 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
 
 @Suppress("unused")
 @Serializable
-@Resource("/surveys")
-class Surveys(val parent: Attendance = Attendance) {
+@Resource("surveys")
+class Surveys(val parent: Attendance) {
     @Serializable
     @Resource("{id}")
     class Id(

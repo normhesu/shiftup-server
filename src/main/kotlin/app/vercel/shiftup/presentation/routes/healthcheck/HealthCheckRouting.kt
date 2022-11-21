@@ -50,17 +50,17 @@ fun Application.healthCheckRouting() {
 
 @Suppress("unused")
 @Serializable
-@Resource("/health-check")
-object HealthCheck {
+@Resource("health-check")
+class HealthCheck {
     @Serializable
     @Resource("db")
-    class DB(val parent: HealthCheck = HealthCheck)
+    class DB(val parent: HealthCheck)
 
     @Serializable
     @Resource("csrf")
-    class CSRF(val parent: HealthCheck = HealthCheck)
+    class CSRF(val parent: HealthCheck)
 
     @Serializable
     @Resource("authentication")
-    class Authentication(val parent: HealthCheck = HealthCheck)
+    class Authentication(val parent: HealthCheck)
 }

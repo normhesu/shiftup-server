@@ -4,5 +4,5 @@ import io.ktor.resources.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Resource("/attendance")
-object Attendance
+@Resource("attendance")
+class Attendance

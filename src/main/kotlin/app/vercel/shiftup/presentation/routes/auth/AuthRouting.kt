@@ -122,22 +122,20 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(
 
 @Suppress("unused")
 @Serializable
-@Resource("/login")
+@Resource("login")
 class Login {
     @Serializable
     @Resource("verify")
-    class Verify(
-        val parent: Login = Login()
-    )
+    class Verify(val parent: Login)
 }
 
 @Serializable
-@Resource("/logout")
-object Logout
+@Resource("logout")
+class Logout
 
 @Serializable
-@Resource("/session-available")
-object SessionAvailable
+@Resource("session-available")
+class SessionAvailable
 
 private val httpClient = HttpClient(CIO) {
     install(ContentNegotiation) {

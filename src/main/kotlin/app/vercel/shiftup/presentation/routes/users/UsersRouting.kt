@@ -31,13 +31,13 @@ fun Application.usersRouting() = routing {
 
 @Suppress("unused")
 @Serializable
-@Resource("/users")
-object Users {
+@Resource("users")
+class Users {
     @Serializable
     @Resource("me")
-    class Me(val parent: Users = Users) {
+    class Me(val parent: Users) {
         @Serializable
         @Resource("roles")
-        class Roles(val parent: Me = Me())
+        class Roles(val parent: Me)
     }
 }

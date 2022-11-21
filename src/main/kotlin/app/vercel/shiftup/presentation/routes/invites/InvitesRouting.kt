@@ -77,9 +77,9 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
 
 @Suppress("unused")
 @Serializable
-@Resource("/invites")
-object Invites {
+@Resource("invites")
+class Invites {
     @Serializable
     @Resource("{id}")
-    class Id(val parent: Invites = Invites, val id: String)
+    class Id(val parent: Invites, val id: String)
 }
