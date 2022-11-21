@@ -1,13 +1,16 @@
 package app.vercel.shiftup.presentation.routes.attendance.surveys
 
 import app.vercel.shiftup.features.attendancesurvey.application.*
-import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurvey
 import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDates
 import app.vercel.shiftup.features.user.account.application.GetUsersUseCase
 import app.vercel.shiftup.features.user.account.domain.model.Cast
+import app.vercel.shiftup.features.user.account.domain.model.UserId
+import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Role
+import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
+import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.attendance.Attendance
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
@@ -26,7 +29,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.datetime.LocalDate
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 import org.mpierce.ktor.csrf.noCsrfProtection
@@ -59,25 +61,27 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         get<Surveys> {
             @Serializable
             data class ResponseItem(
+                val id: AttendanceSurveyId,
                 val name: String,
                 val openCampusSchedule: OpenCampusDates,
                 val creationDate: LocalDate,
                 val available: Boolean,
-                @SerialName("_id") val id: AttendanceSurveyId,
-            ) {
-                constructor(survey: AttendanceSurvey) : this(
-                    name = survey.name,
-                    openCampusSchedule = survey.openCampusSchedule,
-                    creationDate = survey.creationDate,
-                    available = survey.available,
-                    id = survey.id,
-                )
-            }
+            )
 
             val useCase: GetAllAttendanceSurveyUseCase
                 by application.inject()
 
-            call.respond(useCase().map(::ResponseItem))
+            val response = useCase().map {
+                ResponseItem(
+                    id = it.id,
+                    name = it.name,
+                    openCampusSchedule = it.openCampusSchedule,
+                    creationDate = it.creationDate,
+                    available = it.available,
+                )
+            }
+
+            call.respond(response)
         }
     }
 
@@ -122,9 +126,18 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
 private fun Route.surveyResultsRoute() = noCsrfProtection {
     get<Surveys.Id.Result> { resource ->
         @Serializable
+        data class ResponseCast(
+            val id: UserId,
+            val name: Name,
+            val schoolProfile: SchoolProfile,
+            val position: Position,
+            val available: Boolean,
+        )
+
+        @Serializable
         data class ResponseItem(
             val date: OpenCampusDate,
-            val availableCasts: Set<Cast>,
+            val availableCasts: Set<ResponseCast>,
         )
 
         val tallyUseCase: TallyAttendanceSurveyUseCase
@@ -141,8 +154,18 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
         val casts = getUsersUseCase(availableCastUserIds)
             .map(::Cast)
             .associateBy { it.id }
+            .mapValues { (_, cast) ->
+                val user = cast.value
+                ResponseCast(
+                    id = user.id,
+                    name = user.name,
+                    schoolProfile = user.schoolProfile,
+                    position = user.position,
+                    available = user.available,
+                )
+            }
 
-        val result = tallyResult.map { openCampus ->
+        val response = tallyResult.map { openCampus ->
             ResponseItem(
                 date = openCampus.date,
                 availableCasts = openCampus.availableCastIds
@@ -150,7 +173,8 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
                     .toSet()
             )
         }
-        call.respond(result)
+
+        call.respond(response)
     }
 }
 

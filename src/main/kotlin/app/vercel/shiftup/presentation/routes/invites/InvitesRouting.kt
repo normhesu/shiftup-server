@@ -1,5 +1,6 @@
 package app.vercel.shiftup.presentation.routes.invites
 
+import app.vercel.shiftup.features.user.domain.model.value.Department
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.application.AddInviteUseCase
@@ -7,6 +8,7 @@ import app.vercel.shiftup.features.user.invite.application.GetAllInvitesUseCase
 import app.vercel.shiftup.features.user.invite.application.RemoveInviteUseCase
 import app.vercel.shiftup.features.user.invite.application.ReplaceInviteUseCase
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
+import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.respondDeleteResult
 import io.ktor.http.*
@@ -26,10 +28,27 @@ import org.mpierce.ktor.csrf.noCsrfProtection
 fun Application.invitesRouting() = routingWithRole(Role.Manager) {
     noCsrfProtection {
         get<Invites> {
+            @Serializable
+            data class ResponseItem(
+                val id: InviteId,
+                val studentNumber: StudentNumber,
+                val department: Department,
+                val position: Position,
+            )
+
             val useCase: GetAllInvitesUseCase
                 by application.inject()
 
-            call.respond(useCase())
+            val response = useCase().map {
+                ResponseItem(
+                    id = it.id,
+                    studentNumber = it.studentNumber,
+                    department = it.department,
+                    position = it.position
+                )
+            }
+
+            call.respond(response)
         }
     }
     post<Invites> {
