@@ -23,7 +23,7 @@ class AttendanceSurveyRepository(
         return collection.find().toList()
     }
 
-    suspend fun addSurvey(survey: AttendanceSurvey) {
+    suspend fun add(survey: AttendanceSurvey) {
         collection.insertOne(survey).orThrow()
     }
 

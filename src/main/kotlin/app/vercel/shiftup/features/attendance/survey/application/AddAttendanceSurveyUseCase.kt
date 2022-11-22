@@ -12,7 +12,7 @@ class AddAttendanceSurveyUseCase(
     suspend operator fun invoke(
         name: String,
         openCampusSchedule: OpenCampusDates,
-    ) = attendanceSurveyRepository.addSurvey(
+    ) = attendanceSurveyRepository.add(
         AttendanceSurvey(
             name = name,
             openCampusSchedule = openCampusSchedule,
