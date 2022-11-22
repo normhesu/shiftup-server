@@ -68,7 +68,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
                 val available: Boolean,
             )
 
-            val useCase: GetAllAttendanceSurveyUseCase
+            val useCase: GetCanSendAttendanceRequestAttendanceSurveyUseCase
                 by application.inject()
 
             val response = useCase().map {

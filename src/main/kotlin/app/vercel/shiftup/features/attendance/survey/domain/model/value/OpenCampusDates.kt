@@ -17,6 +17,7 @@ value class OpenCampusDates(private val value: Set<OpenCampusDate>) {
     fun isNotEmpty() = value.isNotEmpty()
 
     fun earliestDateOrThrow() = value.min()
+    fun laterDateOrThrow() = value.max()
 
     fun <R> map(transform: (OpenCampusDate) -> R): List<R> = value.map(transform)
 
