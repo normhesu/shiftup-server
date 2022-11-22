@@ -99,7 +99,7 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
 }
 
 private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(): User {
-    val principal: OAuthAccessTokenResponse.OAuth2 = requireNotNull(call.principal())
+    val principal: OAuthAccessTokenResponse.OAuth2 = checkNotNull(call.principal())
     val userInfo = httpClient.get("https://www.googleapis.com/oauth2/v2/userinfo") {
         headers {
             append(HttpHeaders.Authorization, "Bearer ${principal.accessToken}")

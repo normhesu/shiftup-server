@@ -45,7 +45,7 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
 
         useCase(
             attendanceSurveyId = it.parent.attendanceSurveyId,
-            userId = requireNotNull(call.sessions.userId),
+            userId = checkNotNull(call.sessions.userId),
             availableDays = call.receive(),
         ).onSuccess {
             call.respond(HttpStatusCode.NoContent)
