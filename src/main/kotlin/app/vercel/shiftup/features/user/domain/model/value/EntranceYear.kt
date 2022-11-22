@@ -1,7 +1,7 @@
 package app.vercel.shiftup.features.user.domain.model.value
 
 import app.vercel.shiftup.features.core.domain.model.fiscalYear
-import app.vercel.shiftup.features.core.domain.model.nowTokyoLocalDateTime
+import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 
@@ -23,7 +23,7 @@ value class EntranceYear(private val value: Int) {
         tenure: Tenure,
         fiscalYear: Int? = null,
     ): SchoolYear? {
-        val argOrNowFiscalYear = fiscalYear ?: Clock.System.nowTokyoLocalDateTime().fiscalYear()
+        val argOrNowFiscalYear = fiscalYear ?: Clock.System.now().toTokyoLocalDateTime().fiscalYear()
         val schoolYear = argOrNowFiscalYear - value + SchoolYear.MIN_VALUE
         return schoolYear.takeIf {
             runCatching { Tenure(schoolYear) }.fold(

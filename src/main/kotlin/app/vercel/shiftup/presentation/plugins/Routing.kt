@@ -18,22 +18,23 @@ fun Application.configureRouting() {
         exception<Throwable> { call, cause ->
             when (cause) {
                 is NotFoundException -> call.respond(HttpStatusCode.NotFound)
-                is IllegalArgumentException -> call.respondText(
+                is IllegalArgumentException -> call.respondStatusOrMessage(
                     status = HttpStatusCode.UnprocessableEntity,
                     cause = cause,
                 )
-                else -> call.respondText(
+
+                else -> call.respondStatusOrMessage(
                     status = HttpStatusCode.InternalServerError,
-                    cause = cause.takeIf { call.application.developmentMode }
+                    cause = cause,
                 )
             }
-            throw cause
+            if (call.application.developmentMode) throw cause
         }
         if (this@configureRouting.developmentMode) {
             val respondTextStatusCodes = HttpStatusCode.allStatusCodes.toTypedArray()
             @Suppress("SpreadOperator")
             status(*respondTextStatusCodes) { call, status ->
-                call.respondText(status)
+                call.respondStatusOrMessage(status)
             }
         }
     }
@@ -50,12 +51,17 @@ fun Application.configureRouting() {
     routes()
 }
 
-private suspend fun ApplicationCall.respondText(
+private suspend fun ApplicationCall.respondStatusOrMessage(
     status: HttpStatusCode,
     cause: Throwable? = null,
     contentType: ContentType? = null,
     configure: OutgoingContent.() -> Unit = {}
 ) {
+    if (application.developmentMode.not()) {
+        this.respond(status)
+        return
+    }
+
     val statusText = "${status.value} ${status.description}"
     val causeText = cause?.let { "\n\n$it" }.orEmpty()
     this.respondText(

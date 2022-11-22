@@ -1,18 +1,18 @@
 package app.vercel.shiftup.features.user.domain.model.value
 
-import app.vercel.shiftup.features.core.domain.model.nowTokyoLocalDateTime
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.inspectors.forAll
 import io.kotest.matchers.shouldBe
 import io.mockk.every
-import io.mockk.mockkStatic
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.Instant
 
 class EntranceYearTest : FreeSpec({
     "EntranceYear" - {
         "getSchoolYear" - {
-            mockkStatic("app.vercel.shiftup.features.core.domain.model.NowTokyoLocalDateTimeKt")
+            mockkObject(Clock.System)
 
             data class Params(
                 val currentYear: Int,
@@ -24,11 +24,11 @@ class EntranceYearTest : FreeSpec({
 
             fun invokeTest(vararg params: Params) {
                 params.forAll {
+                    val currentMonthText = it.currentMonth.toString().padStart(2, '0')
                     every {
-                        Clock.System.nowTokyoLocalDateTime()
-                    } returns LocalDateTime(
-                        it.currentYear, it.currentMonth,
-                        1, 0, 0,
+                        Clock.System.now()
+                    } returns Instant.parse(
+                        "${it.currentYear}-$currentMonthText-01T00:00:00+09:00",
                     )
 
                     EntranceYear(it.entranceYearValue).getSchoolYear(
@@ -103,6 +103,7 @@ class EntranceYearTest : FreeSpec({
                     ),
                 )
             }
+            unmockkObject(Clock.System)
         }
     }
 })

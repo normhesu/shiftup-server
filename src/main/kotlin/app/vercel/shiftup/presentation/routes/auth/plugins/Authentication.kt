@@ -8,6 +8,8 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 const val AUTH_OAUTH_GOOGLE_NAME = "auth-oauth-google"
 
@@ -43,7 +45,11 @@ fun Application.configureAuthentication(httpClient: HttpClient) {
         }
 
         session<UserSession> {
-            validate { it }
+            validate {
+                it.takeIf {
+                    Instant.parse(it.creationInstantISOString) + UserSession.MAX_AGE >= Clock.System.now()
+                }
+            }
             challenge {
                 call.respond(HttpStatusCode.Unauthorized)
             }

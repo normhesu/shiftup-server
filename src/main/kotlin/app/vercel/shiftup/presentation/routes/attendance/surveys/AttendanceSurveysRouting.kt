@@ -1,13 +1,17 @@
-package app.vercel.shiftup.presentation.routes.attendancesurveys
+package app.vercel.shiftup.presentation.routes.attendance.surveys
 
 import app.vercel.shiftup.features.attendancesurvey.application.*
-import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurvey
 import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDates
 import app.vercel.shiftup.features.user.account.application.GetUsersUseCase
 import app.vercel.shiftup.features.user.account.domain.model.Cast
+import app.vercel.shiftup.features.user.account.domain.model.UserId
+import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Role
+import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
+import app.vercel.shiftup.features.user.invite.domain.model.value.Position
+import app.vercel.shiftup.presentation.routes.attendance.Attendance
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.respondDeleteResult
@@ -25,9 +29,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.datetime.LocalDate
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
+import org.mpierce.ktor.csrf.noCsrfProtection
 
 fun Application.attendanceSurveysRouting() {
     castRouting()
@@ -35,7 +39,7 @@ fun Application.attendanceSurveysRouting() {
 }
 
 private fun Application.castRouting() = routingWithRole(Role.Cast) {
-    put<AttendanceSurveys.Id.Answers> {
+    put<Surveys.Id.Answers> {
         val useCase: AddOrReplaceAttendanceSurveyAnswerUseCase
             by application.inject()
 
@@ -53,31 +57,35 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
 }
 
 private fun Application.managerRouting() = routingWithRole(Role.Manager) {
-    get<AttendanceSurveys> {
-        @Serializable
-        data class ResponseItem(
-            val name: String,
-            val openCampusSchedule: OpenCampusDates,
-            val creationDate: LocalDate,
-            val isAvailable: Boolean,
-            @SerialName("_id") val id: AttendanceSurveyId,
-        ) {
-            constructor(survey: AttendanceSurvey) : this(
-                name = survey.name,
-                openCampusSchedule = survey.openCampusSchedule,
-                creationDate = survey.creationDate,
-                isAvailable = survey.isAvailable,
-                id = survey.id,
+    noCsrfProtection {
+        get<Surveys> {
+            @Serializable
+            data class ResponseItem(
+                val id: AttendanceSurveyId,
+                val name: String,
+                val openCampusSchedule: OpenCampusDates,
+                val creationDate: LocalDate,
+                val available: Boolean,
             )
+
+            val useCase: GetAllAttendanceSurveyUseCase
+                by application.inject()
+
+            val response = useCase().map {
+                ResponseItem(
+                    id = it.id,
+                    name = it.name,
+                    openCampusSchedule = it.openCampusSchedule,
+                    creationDate = it.creationDate,
+                    available = it.available,
+                )
+            }
+
+            call.respond(response)
         }
-
-        val useCase: GetAllAttendanceSurveyUseCase
-            by application.inject()
-
-        call.respond(useCase().map(::ResponseItem))
     }
 
-    post<AttendanceSurveys> {
+    post<Surveys> {
         @Serializable
         data class Params(
             val name: String,
@@ -92,7 +100,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         call.respond(HttpStatusCode.Created)
     }
 
-    delete<AttendanceSurveys.Id> {
+    delete<Surveys.Id> {
         val useCase: RemoveAttendanceSurveyUseCase
             by application.inject()
 
@@ -101,7 +109,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         )
     }
 
-    put<AttendanceSurveys.Id.Available> {
+    put<Surveys.Id.Available> {
         val useCase: ChangeAvailableAttendanceSurveyUseCase
             by application.inject()
 
@@ -115,47 +123,69 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
     surveyResultsRoute()
 }
 
-private fun Route.surveyResultsRoute() = get<AttendanceSurveys.Id.Results> { resource ->
-    @Serializable
-    data class ResponseItem(
-        val date: OpenCampusDate,
-        val availableCasts: Set<Cast>,
-    )
-
-    val tallyUseCase: TallyAttendanceSurveyUseCase
-        by application.inject()
-    val getUsersUseCase: GetUsersUseCase
-        by application.inject()
-
-    val tallyResult = tallyUseCase(resource.parent.attendanceSurveyId)
-    val availableCastUserIds = tallyResult
-        .map { it.availableCastIds }
-        .flatten()
-        .distinct()
-        .map { it.value }
-    val casts = getUsersUseCase(availableCastUserIds)
-        .map(::Cast)
-        .associateBy { it.id }
-
-    val result = tallyResult.map { openCampus ->
-        ResponseItem(
-            date = openCampus.date,
-            availableCasts = openCampus.availableCastIds
-                .mapNotNull { casts[it] }
-                .toSet()
+private fun Route.surveyResultsRoute() = noCsrfProtection {
+    get<Surveys.Id.Result> { resource ->
+        @Serializable
+        data class ResponseCast(
+            val id: UserId,
+            val name: Name,
+            val schoolProfile: SchoolProfile,
+            val position: Position,
+            val available: Boolean,
         )
+
+        @Serializable
+        data class ResponseItem(
+            val date: OpenCampusDate,
+            val availableCasts: Set<ResponseCast>,
+        )
+
+        val tallyUseCase: TallyAttendanceSurveyUseCase
+            by application.inject()
+        val getUsersUseCase: GetUsersUseCase
+            by application.inject()
+
+        val tallyResult = tallyUseCase(resource.parent.attendanceSurveyId)
+        val availableCastUserIds = tallyResult
+            .map { it.availableCastIds }
+            .flatten()
+            .distinct()
+            .map { it.value }
+        val casts = getUsersUseCase(availableCastUserIds)
+            .map(::Cast)
+            .associateBy { it.id }
+            .mapValues { (_, cast) ->
+                val user = cast.value
+                ResponseCast(
+                    id = user.id,
+                    name = user.name,
+                    schoolProfile = user.schoolProfile,
+                    position = user.position,
+                    available = user.available,
+                )
+            }
+
+        val response = tallyResult.map { openCampus ->
+            ResponseItem(
+                date = openCampus.date,
+                availableCasts = openCampus.availableCastIds
+                    .mapNotNull { casts[it] }
+                    .toSet()
+            )
+        }
+
+        call.respond(response)
     }
-    call.respond(result)
 }
 
 @Suppress("unused")
 @Serializable
-@Resource("/surveys")
-object AttendanceSurveys {
+@Resource("surveys")
+class Surveys(val parent: Attendance) {
     @Serializable
     @Resource("{id}")
     class Id(
-        val parent: AttendanceSurveys = AttendanceSurveys,
+        val parent: Surveys,
         val id: String,
     ) {
         val attendanceSurveyId get() = AttendanceSurveyId(id)
@@ -165,8 +195,8 @@ object AttendanceSurveys {
         class Available(val parent: Id)
 
         @Serializable
-        @Resource("results")
-        class Results(val parent: Id)
+        @Resource("result")
+        class Result(val parent: Id)
 
         @Serializable
         @Resource("answers")

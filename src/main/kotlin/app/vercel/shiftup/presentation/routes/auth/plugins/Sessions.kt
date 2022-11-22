@@ -8,15 +8,13 @@ import io.ktor.server.sessions.*
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
 import java.io.File
-
-const val USER_SESSION_NAME = "user_session"
+import kotlin.time.Duration.Companion.days
 
 fun Application.configureSessions() {
     val config = environment.config
-    val productMode = !developmentMode
     install(Sessions) {
         cookie<UserSession>(
-            USER_SESSION_NAME,
+            "user_session",
             directorySessionStorage(
                 rootDir = File("build/.sessions"),
                 cached = true,
@@ -24,8 +22,9 @@ fun Application.configureSessions() {
         ) {
             cookie.apply {
                 path = "/"
-                secure = productMode
                 httpOnly = true
+                maxAge = UserSession.MAX_AGE
+                extensions["SameSite"] = "lax"
             }
             transform(
                 SessionTransportTransformerMessageAuthentication(
@@ -37,6 +36,13 @@ fun Application.configureSessions() {
 }
 
 @Serializable
-data class UserSession(val userId: UserId) : Principal
+data class UserSession(
+    val userId: UserId,
+    val creationInstantISOString: String,
+) : Principal {
+    companion object {
+        val MAX_AGE = 7.days
+    }
+}
 
 val CurrentSession.userId get() = get<UserSession>()?.userId

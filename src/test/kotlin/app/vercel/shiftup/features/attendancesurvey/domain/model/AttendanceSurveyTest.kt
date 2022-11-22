@@ -1,7 +1,6 @@
 package app.vercel.shiftup.features.attendancesurvey.domain.model
 
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.*
-import app.vercel.shiftup.features.core.domain.model.nowTokyoLocalDateTime
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import io.kotest.assertions.throwables.shouldNotThrowAny
@@ -10,18 +9,22 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
 
 class AttendanceSurveyTest : FreeSpec({
     "AttendanceSurvey" - {
-        mockkStatic("app.vercel.shiftup.features.core.domain.model.NowTokyoLocalDateTimeKt")
+        mockkObject(Clock.System)
         every {
-            Clock.System.nowTokyoLocalDateTime().date
-        } returns LocalDate(2022, 1, 1)
+            Clock.System.now()
+        } returns Instant.parse(
+            "2022-01-01T00:00:00+09:00",
+        )
 
         "生成" - {
             "正常系" - {
@@ -161,5 +164,6 @@ class AttendanceSurveyTest : FreeSpec({
                 }
             }
         }
+        unmockkObject(Clock.System)
     }
 })

@@ -1,7 +1,7 @@
 package app.vercel.shiftup.features.attendancesurvey.domain.model
 
 import app.vercel.shiftup.features.attendancesurvey.domain.model.value.*
-import app.vercel.shiftup.features.core.domain.model.nowTokyoLocalDateTime
+import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
@@ -22,7 +22,7 @@ data class AttendanceSurvey private constructor(
     val openCampusSchedule: OpenCampusDates,
     val answers: AttendanceSurveyAnswers,
     val creationDate: LocalDate,
-    val isAvailable: Boolean,
+    val available: Boolean,
     @SerialName("_id") val id: AttendanceSurveyId,
 ) {
     companion object {
@@ -35,8 +35,8 @@ data class AttendanceSurvey private constructor(
                 name = name,
                 openCampusSchedule = openCampusSchedule,
                 answers = AttendanceSurveyAnswers.empty(id),
-                creationDate = Clock.System.nowTokyoLocalDateTime().date,
-                isAvailable = true,
+                creationDate = Clock.System.now().toTokyoLocalDateTime().date,
+                available = true,
                 id = id,
             )
         }
@@ -52,7 +52,7 @@ data class AttendanceSurvey private constructor(
 
     val fiscalYear = openCampusSchedule.fiscalYear
 
-    fun changeAvailable(available: Boolean) = copy(isAvailable = available)
+    fun changeAvailable(available: Boolean) = copy(available = available)
 
     fun addOrReplaceAnswer(answer: AttendanceSurveyAnswer) = copy(
         answers = answers.addOrReplace(answer)
