@@ -22,8 +22,8 @@ class AttendanceSurveyAnswerFactory(
             attendanceSurveyId,
         ).also { survey ->
             when {
-                survey == null -> throw AttendanceSurveyAnswerFactoryException.NotFoundSurvey()
-                survey.available.not() -> throw AttendanceSurveyAnswerFactoryException.NotAvailableSurvey()
+                survey == null -> throw AttendanceSurveyAnswerFactoryException.NotFoundSurvey
+                survey.available.not() -> throw AttendanceSurveyAnswerFactoryException.NotAvailableSurvey
                 else -> {
                     require(cast.inSchool(survey.fiscalYear))
                     require(availableDays.all { it in survey.openCampusSchedule })
@@ -44,6 +44,6 @@ class AttendanceSurveyAnswerFactory(
 }
 
 sealed interface AttendanceSurveyAnswerFactoryException {
-    class NotFoundSurvey : Exception(), AttendanceSurveyAnswerFactoryException
-    class NotAvailableSurvey : Exception(), AttendanceSurveyAnswerFactoryException
+    object NotFoundSurvey : Exception(), AttendanceSurveyAnswerFactoryException
+    object NotAvailableSurvey : Exception(), AttendanceSurveyAnswerFactoryException
 }

@@ -52,7 +52,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                 }
             }
             "異常系" - {
-                "アンケートが見つからない場合、Err(AttendanceSurveyAnswerFactoryException.NotFoundSurvey()を返す" {
+                "アンケートが見つからない場合、Err(AttendanceSurveyAnswerFactoryException.NotFoundSurveyを返す" {
                     coEvery { surveyRepository.findById(any()) } returns null
                     val actual = factory(
                         mockk(relaxed = true),
@@ -60,7 +60,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                     )
                     actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.NotFoundSurvey>>()
                 }
-                "アンケートが回答受付を終了している場合、Err(AttendanceSurveyAnswerFactoryException.NotAvailableSurvey())を返す" {
+                "アンケートが回答受付を終了している場合、Err(AttendanceSurveyAnswerFactoryException.NotAvailableSurvey)を返す" {
                     coEvery {
                         surveyRepository.findById(any())
                     } returns fakeOpenCampus.changeAvailable(false)
