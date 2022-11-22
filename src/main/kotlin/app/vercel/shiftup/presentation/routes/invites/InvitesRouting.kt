@@ -59,6 +59,11 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
             .onSuccess {
                 call.respond(HttpStatusCode.Created)
             }.onFailure {
+                call.response.headers.append(
+                    name = HttpHeaders.Allow,
+                    value = listOf(HttpMethod.Get, HttpMethod.Delete)
+                        .joinToString { it.value },
+                )
                 call.respond(HttpStatusCode.MethodNotAllowed)
             }
     }

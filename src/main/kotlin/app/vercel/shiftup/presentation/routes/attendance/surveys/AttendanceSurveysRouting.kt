@@ -41,7 +41,7 @@ fun Application.attendanceSurveysRouting() {
 private fun Application.castRouting() = routingWithRole(Role.Cast) {
     put<Surveys.Id.Answers> {
         val useCase: AddOrReplaceAttendanceSurveyAnswerUseCase
-                by application.inject()
+            by application.inject()
 
         useCase(
             attendanceSurveyId = it.parent.attendanceSurveyId,
@@ -50,7 +50,7 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
         ).onSuccess {
             call.respond(HttpStatusCode.NoContent)
         }.onFailure {
-            call.response.headers.append("Allow", "")
+            call.response.headers.append(HttpHeaders.Allow, "")
             call.respond(HttpStatusCode.MethodNotAllowed)
         }
     }
@@ -69,7 +69,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
             )
 
             val useCase: GetAllAttendanceSurveyUseCase
-                    by application.inject()
+                by application.inject()
 
             val response = useCase().map {
                 ResponseItem(
@@ -93,7 +93,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         )
 
         val useCase: AddAttendanceSurveyUseCase
-                by application.inject()
+            by application.inject()
         val (name, openCampusSchedule) = call.receive<Params>()
 
         useCase(name = name, openCampusSchedule = openCampusSchedule)
@@ -102,7 +102,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
 
     delete<Surveys.Id> {
         val useCase: RemoveAttendanceSurveyUseCase
-                by application.inject()
+            by application.inject()
 
         call.respondDeleteResult(
             useCase(attendanceSurveyId = it.attendanceSurveyId)
@@ -111,7 +111,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
 
     put<Surveys.Id.Available> {
         val useCase: ChangeAvailableAttendanceSurveyUseCase
-                by application.inject()
+            by application.inject()
 
         useCase(
             attendanceSurveyId = it.parent.attendanceSurveyId,
@@ -141,9 +141,9 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
         )
 
         val tallyUseCase: TallyAttendanceSurveyUseCase
-                by application.inject()
+            by application.inject()
         val getUsersUseCase: GetUsersUseCase
-                by application.inject()
+            by application.inject()
 
         val tallyResult = tallyUseCase(resource.parent.attendanceSurveyId)
         val availableCastUserIds = tallyResult
