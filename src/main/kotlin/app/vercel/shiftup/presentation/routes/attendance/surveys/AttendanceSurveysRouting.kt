@@ -1,8 +1,8 @@
 package app.vercel.shiftup.presentation.routes.attendance.surveys
 
+import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.application.*
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
 import app.vercel.shiftup.features.user.account.application.GetUsersUseCase
 import app.vercel.shiftup.features.user.account.domain.model.Cast
@@ -41,7 +41,7 @@ fun Application.attendanceSurveysRouting() {
 private fun Application.castRouting() = routingWithRole(Role.Cast) {
     put<Surveys.Id.Answers> {
         val useCase: AddOrReplaceAttendanceSurveyAnswerUseCase
-            by application.inject()
+                by application.inject()
 
         useCase(
             attendanceSurveyId = it.parent.attendanceSurveyId,
@@ -69,7 +69,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
             )
 
             val useCase: GetAllAttendanceSurveyUseCase
-                by application.inject()
+                    by application.inject()
 
             val response = useCase().map {
                 ResponseItem(
@@ -93,7 +93,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         )
 
         val useCase: AddAttendanceSurveyUseCase
-            by application.inject()
+                by application.inject()
         val (name, openCampusSchedule) = call.receive<Params>()
 
         useCase(name = name, openCampusSchedule = openCampusSchedule)
@@ -102,7 +102,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
 
     delete<Surveys.Id> {
         val useCase: RemoveAttendanceSurveyUseCase
-            by application.inject()
+                by application.inject()
 
         call.respondDeleteResult(
             useCase(attendanceSurveyId = it.attendanceSurveyId)
@@ -111,7 +111,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
 
     put<Surveys.Id.Available> {
         val useCase: ChangeAvailableAttendanceSurveyUseCase
-            by application.inject()
+                by application.inject()
 
         useCase(
             attendanceSurveyId = it.parent.attendanceSurveyId,
@@ -141,9 +141,9 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
         )
 
         val tallyUseCase: TallyAttendanceSurveyUseCase
-            by application.inject()
+                by application.inject()
         val getUsersUseCase: GetUsersUseCase
-            by application.inject()
+                by application.inject()
 
         val tallyResult = tallyUseCase(resource.parent.attendanceSurveyId)
         val availableCastUserIds = tallyResult
