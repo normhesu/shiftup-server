@@ -1,11 +1,11 @@
-package app.vercel.shiftup.features.attendancesurvey.answer.domain.service
+package app.vercel.shiftup.features.attendance.survey.answer.domain.service
 
-import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurvey
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDate
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDates
-import app.vercel.shiftup.features.attendancesurvey.domain.service.AttendanceSurveyAnswerFactory
-import app.vercel.shiftup.features.attendancesurvey.domain.service.AttendanceSurveyAnswerFactoryException
-import app.vercel.shiftup.features.attendancesurvey.domain.service.AttendanceSurveyRepositoryInterface
+import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDate
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyAnswerFactory
+import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyAnswerFactoryException
+import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import com.github.michaelbull.result.Err
 import io.kotest.assertions.throwables.shouldNotThrowAny

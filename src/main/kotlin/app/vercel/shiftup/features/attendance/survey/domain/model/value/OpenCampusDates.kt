@@ -1,4 +1,4 @@
-package app.vercel.shiftup.features.attendancesurvey.domain.model.value
+package app.vercel.shiftup.features.attendance.survey.domain.model.value
 
 import kotlinx.serialization.Serializable
 

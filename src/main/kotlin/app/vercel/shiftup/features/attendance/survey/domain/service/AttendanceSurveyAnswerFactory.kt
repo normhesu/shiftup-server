@@ -1,8 +1,8 @@
-package app.vercel.shiftup.features.attendancesurvey.domain.service
+package app.vercel.shiftup.features.attendance.survey.domain.service
 
-import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.AttendanceSurveyAnswer
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.AttendanceSurveyAnswer
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.coroutines.runSuspendCatching

@@ -1,8 +1,8 @@
-package app.vercel.shiftup.features.attendancesurvey.application
+package app.vercel.shiftup.features.attendance.survey.application
 
-import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurvey
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDates
-import app.vercel.shiftup.features.attendancesurvey.infra.AttendanceSurveyRepository
+import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.infra.AttendanceSurveyRepository
 import org.koin.core.annotation.Single
 
 @Single

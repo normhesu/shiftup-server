@@ -1,9 +1,9 @@
 package app.vercel.shiftup.presentation.routes.attendance.surveys
 
-import app.vercel.shiftup.features.attendancesurvey.application.*
-import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDate
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.application.*
+import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDate
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
 import app.vercel.shiftup.features.user.account.application.GetUsersUseCase
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.account.domain.model.UserId

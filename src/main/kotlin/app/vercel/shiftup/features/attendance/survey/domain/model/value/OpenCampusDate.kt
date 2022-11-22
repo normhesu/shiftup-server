@@ -1,4 +1,4 @@
-package app.vercel.shiftup.features.attendancesurvey.domain.model.value
+package app.vercel.shiftup.features.attendance.survey.domain.model.value
 
 import app.vercel.shiftup.features.core.domain.model.fiscalYear
 import kotlinx.datetime.LocalDate

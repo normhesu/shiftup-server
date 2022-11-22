@@ -1,8 +1,8 @@
-package app.vercel.shiftup.features.attendancesurvey.infra
+package app.vercel.shiftup.features.attendance.survey.infra
 
-import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurvey
-import app.vercel.shiftup.features.attendancesurvey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendancesurvey.domain.service.AttendanceSurveyRepositoryInterface
+import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
+import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
+import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.core.infra.orThrow
 import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single

@@ -1,6 +1,6 @@
-package app.vercel.shiftup.features.attendancesurvey.domain.model
+package app.vercel.shiftup.features.attendance.survey.domain.model
 
-import app.vercel.shiftup.features.attendancesurvey.domain.model.value.*
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.*
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import io.kotest.assertions.throwables.shouldNotThrowAny
