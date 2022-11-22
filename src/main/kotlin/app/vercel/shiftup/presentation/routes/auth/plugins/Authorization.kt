@@ -26,11 +26,14 @@ private val AuthorizationPlugin = createRouteScopedPlugin(
 ) {
     val getUserUseCase: GetUserUseCase by application.inject()
     on(AuthenticationChecked) { call ->
-        val userRoles = call.sessions.userId?.let {
-            getUserUseCase(it)?.roles
-        }.orEmpty()
+        val user = call.sessions.userId?.let {
+            getUserUseCase(it)
+        }
+        val allow = pluginConfig.allowRole?.let {
+            user?.hasRole(it)
+        } ?: false
 
-        if (pluginConfig.allowRole !in userRoles) {
+        if (!allow) {
             call.respond(HttpStatusCode.Forbidden)
         }
     }

@@ -46,6 +46,8 @@ data class User private constructor(
 
     fun inSchool(fiscalYear: Int?) = getSchoolYear(fiscalYear) != null
 
+    fun hasRole(role: Role) = role in roles
+
     private fun getSchoolYear(fiscalYear: Int?) = studentNumber.getSchoolYear(
         tenure = department.tenure,
         fiscalYear = fiscalYear,

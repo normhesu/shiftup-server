@@ -13,6 +13,6 @@ value class Cast(val value: User) {
     fun inSchool(fiscalYear: Int?) = value.inSchool(fiscalYear)
 
     init {
-        require(Role.Cast in value.roles)
+        require(value.hasRole(Role.Cast))
     }
 }
