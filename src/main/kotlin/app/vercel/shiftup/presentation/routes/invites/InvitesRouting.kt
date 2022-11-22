@@ -11,6 +11,8 @@ import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.respondDeleteResult
+import com.github.michaelbull.result.onFailure
+import com.github.michaelbull.result.onSuccess
 import io.ktor.http.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
@@ -56,7 +58,11 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
             by application.inject()
 
         useCase(invite = call.receive())
-        call.respond(HttpStatusCode.Created)
+            .onSuccess {
+                call.respond(HttpStatusCode.Created)
+            }.onFailure {
+                call.respond(HttpStatusCode.MethodNotAllowed)
+            }
     }
     patch<Invites> {
         val useCase: ReplaceInviteUseCase

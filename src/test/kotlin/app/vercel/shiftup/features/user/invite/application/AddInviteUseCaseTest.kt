@@ -3,8 +3,9 @@ package app.vercel.shiftup.features.user.invite.application
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.infra.InviteRepository
-import io.kotest.assertions.throwables.shouldThrowExactly
+import com.github.michaelbull.result.Err
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -38,14 +39,12 @@ class AddInviteUseCaseTest : FreeSpec({
             }
         }
 
-        "ユーザーが既に招待されている場合は、追加せずにIllegalArgumentExceptionを投げる" {
+        "ユーザーが既に招待されている場合は、追加せずにErr(InvitedException())を返す" {
             coEvery {
                 repository.findByStudentNumber(studentNumber)
             } returns invite
 
-            shouldThrowExactly<IllegalArgumentException> {
-                useCase(invite)
-            }
+            useCase(invite).shouldBeInstanceOf<Err<InvitedException>>()
             coVerify(exactly = 0) {
                 repository.add(invite)
             }
