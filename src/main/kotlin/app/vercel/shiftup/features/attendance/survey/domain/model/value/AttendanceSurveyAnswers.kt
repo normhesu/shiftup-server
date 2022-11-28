@@ -19,6 +19,8 @@ data class AttendanceSurveyAnswers(
         require(answers.all { it.surveyId == surveyId })
     }
 
+    val size = answers.size
+
     fun addOrReplace(answer: AttendanceSurveyAnswer): AttendanceSurveyAnswers {
         require(answer.surveyId == this.surveyId)
         return copy(

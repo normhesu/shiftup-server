@@ -66,6 +66,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
                 val openCampusSchedule: OpenCampusDates,
                 val creationDate: LocalDate,
                 val available: Boolean,
+                val answerCount: Int,
             )
 
             val useCase: GetCanSendAttendanceRequestAttendanceSurveyUseCase
@@ -78,6 +79,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
                     openCampusSchedule = it.openCampusSchedule,
                     creationDate = it.creationDate,
                     available = it.available,
+                    answerCount = it.answers.size,
                 )
             }
 
