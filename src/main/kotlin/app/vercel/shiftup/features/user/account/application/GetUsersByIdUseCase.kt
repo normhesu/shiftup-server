@@ -5,7 +5,7 @@ import app.vercel.shiftup.features.user.account.infra.UserRepository
 import org.koin.core.annotation.Single
 
 @Single
-class GetUsersUseCase(
+class GetUsersByIdUseCase(
     private val userRepository: UserRepository,
 ) {
     suspend operator fun invoke(

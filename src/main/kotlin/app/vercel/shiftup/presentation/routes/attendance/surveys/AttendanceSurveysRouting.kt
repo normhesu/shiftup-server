@@ -4,7 +4,7 @@ import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.application.*
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
-import app.vercel.shiftup.features.user.account.application.GetUsersUseCase
+import app.vercel.shiftup.features.user.account.application.GetUsersByIdUseCase
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
@@ -144,7 +144,7 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
 
         val tallyUseCase: TallyAttendanceSurveyUseCase
             by application.inject()
-        val getUsersUseCase: GetUsersUseCase
+        val getUsersByIdUseCase: GetUsersByIdUseCase
             by application.inject()
 
         val tallyResult = tallyUseCase(resource.parent.attendanceSurveyId)
@@ -153,7 +153,7 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
             .flatten()
             .distinct()
             .map { it.value }
-        val casts = getUsersUseCase(availableCastUserIds)
+        val casts = getUsersByIdUseCase(availableCastUserIds)
             .map(::Cast)
             .associateBy { it.id }
             .mapValues { (_, cast) ->
