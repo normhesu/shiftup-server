@@ -133,7 +133,6 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
             val name: Name,
             val schoolProfile: SchoolProfile,
             val position: Position,
-            val available: Boolean,
         )
 
         @Serializable
@@ -163,7 +162,6 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
                     name = user.name,
                     schoolProfile = user.schoolProfile,
                     position = user.position,
-                    available = user.available,
                 )
             }
 
