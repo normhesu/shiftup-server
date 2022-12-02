@@ -90,7 +90,7 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 )
             )
 
-            "招待されている場合、ユーザーを登録して返す" - {
+            "招待されている場合、ユーザーを登録して返す" {
                 coEvery {
                     inviteRepository.findByEmail(resultUser.email)
                 } returns Invite(
