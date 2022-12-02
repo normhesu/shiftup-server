@@ -4,7 +4,9 @@ import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.domain.model.value.Email
+import app.vercel.shiftup.features.user.domain.model.value.NeecDepartment
 import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
+import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
@@ -35,14 +37,21 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
         val userId: UserId = mockk(relaxed = true)
 
         "アカウント登録済みの場合、ユーザーを返す" {
+            coEvery {
+                inviteRepository.findByEmail(Email("g020c0000@g.neec.ac.jp"))
+            } returns Invite(
+                department = NeecDepartment.C2,
+                position = Position.Cast,
+                studentNumber = StudentNumber("G020C0000"),
+            )
             val resultUser = User(
                 id = userId,
                 name = mockk(relaxed = true),
                 schoolProfile = SchoolProfile(
                     email = Email("g020c0000@g.neec.ac.jp"),
-                    department = mockk(relaxed = true),
+                    department = NeecDepartment.C2,
                 ),
-                position = mockk(relaxed = true),
+                position = Position.Cast,
             )
             coEvery {
                 userRepository.findById(userId)
@@ -50,9 +59,9 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
 
             useCase(
                 userId = userId,
-                mockk(relaxed = true),
-                mockk(relaxed = true),
-                mockk(relaxed = true),
+                emailFactory = { Email("g020c0000@g.neec.ac.jp") },
+                name = mockk(relaxed = true),
+                firstManager = mockk(relaxed = true),
             ) shouldBe Ok(resultUser)
         }
 

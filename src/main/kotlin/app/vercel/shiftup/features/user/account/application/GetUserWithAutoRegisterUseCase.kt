@@ -24,17 +24,16 @@ class GetUserWithAutoRegisterUseCase(
         emailFactory: () -> Email,
         firstManager: FirstManager,
     ): Result<User, LoginOrRegisterException> = runSuspendCatching {
-        userRepository.findById(userId)?.let { return@runSuspendCatching it }
-
         val email = runCatching(emailFactory).getOrElse {
             throw LoginOrRegisterException.InvalidUser()
         }
+
         val invite = getInviteDomainService(
             firstManager = firstManager,
             email = email,
         ) ?: throw LoginOrRegisterException.InvalidUser()
 
-        User(
+        userRepository.findById(userId) ?: User(
             id = userId,
             name = name,
             schoolProfile = SchoolProfile(
