@@ -30,7 +30,7 @@ class AddOrReplaceAttendanceSurveyAnswerUseCase(
     ): Result<Unit, AttendanceSurveyAnswerFactoryException.NotAvailableSurvey> = mutex.withLock {
         val survey = attendanceSurveyRepository.findById(attendanceSurveyId)
             .let(::requireNotNull)
-        val cast = userRepository.findById(userId)
+        val cast = userRepository.findAvailableUserById(userId)
             .let(::requireNotNull)
             .let(::Cast)
         val answer = attendanceSurveyAnswerFactory(

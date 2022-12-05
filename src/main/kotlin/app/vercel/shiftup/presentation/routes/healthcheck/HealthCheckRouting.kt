@@ -1,6 +1,6 @@
 package app.vercel.shiftup.presentation.routes.healthcheck
 
-import app.vercel.shiftup.features.user.account.application.GetUserUseCase
+import app.vercel.shiftup.features.user.account.application.GetAvailableUsersByIdUseCase
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import io.ktor.resources.*
 import io.ktor.server.application.*
@@ -23,8 +23,8 @@ fun Application.healthCheckRouting() {
                 call.respondText("OK")
             }
             get<HealthCheck.DB> {
-                val getUserUseCase: GetUserUseCase by application.inject()
-                getUserUseCase(UserId(""))
+                val getAvailableUsersByIdUseCase: GetAvailableUsersByIdUseCase by application.inject()
+                getAvailableUsersByIdUseCase(listOf(UserId("")))
                 call.respondText("DB OK")
             }
             authenticate {

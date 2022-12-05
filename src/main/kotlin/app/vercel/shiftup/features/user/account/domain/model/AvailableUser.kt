@@ -3,7 +3,6 @@ package app.vercel.shiftup.features.user.account.domain.model
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.*
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,8 +13,8 @@ value class UserId(
 )
 
 @Serializable
-data class User(
-    @SerialName("_id") val id: UserId,
+data class AvailableUser(
+    val id: UserId,
     val name: Name,
     val schoolProfile: SchoolProfile,
     val position: Position,
@@ -39,7 +38,7 @@ data class User(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-        other as User
+        other as AvailableUser
         return id == other.id
     }
 

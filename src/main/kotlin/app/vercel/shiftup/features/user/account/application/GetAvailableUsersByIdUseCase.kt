@@ -5,10 +5,10 @@ import app.vercel.shiftup.features.user.account.infra.UserRepository
 import org.koin.core.annotation.Single
 
 @Single
-class GetUserUseCase(
+class GetAvailableUsersByIdUseCase(
     private val userRepository: UserRepository,
 ) {
     suspend operator fun invoke(
-        userId: UserId,
-    ) = userRepository.findById(userId)
+        userId: Iterable<UserId>,
+    ) = userRepository.findAvailableUserByIds(userId)
 }

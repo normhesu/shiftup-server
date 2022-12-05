@@ -1,12 +1,11 @@
 package app.vercel.shiftup.presentation.routes.auth
 
-import app.vercel.shiftup.features.user.account.application.GetUserWithAutoRegisterUseCase
+import app.vercel.shiftup.features.user.account.application.GetAvailableUserWithAutoRegisterUseCase
 import app.vercel.shiftup.features.user.account.application.LoginOrRegisterException
-import app.vercel.shiftup.features.user.account.domain.model.User
+import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Email
-import app.vercel.shiftup.presentation.firstManager
 import app.vercel.shiftup.presentation.routes.auth.plugins.AUTH_OAUTH_GOOGLE_NAME
 import app.vercel.shiftup.presentation.routes.auth.plugins.UserSession
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureAuthentication
@@ -98,7 +97,7 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
     }
 }
 
-private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(): User {
+private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(): AvailableUser {
     val principal: OAuthAccessTokenResponse.OAuth2 = checkNotNull(call.principal())
     val userInfo = httpClient.get("https://www.googleapis.com/oauth2/v2/userinfo") {
         headers {
@@ -106,7 +105,7 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(
         }
     }.body<UserInfo>()
 
-    val useCase by application.inject<GetUserWithAutoRegisterUseCase>()
+    val useCase by application.inject<GetAvailableUserWithAutoRegisterUseCase>()
     return userInfo.run {
         useCase(
             userId = UserId(id),
@@ -115,7 +114,6 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(
                 givenName = givenName,
             ),
             emailFactory = { Email(email) },
-            firstManager = application.environment.config.firstManager,
         ).getOrThrow()
     }
 }

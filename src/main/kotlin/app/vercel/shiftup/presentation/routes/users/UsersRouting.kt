@@ -1,6 +1,6 @@
 package app.vercel.shiftup.presentation.routes.users
 
-import app.vercel.shiftup.features.user.account.application.GetUserUseCase
+import app.vercel.shiftup.features.user.account.application.GetUserRolesUseCase
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import io.ktor.http.*
 import io.ktor.resources.*
@@ -19,9 +19,9 @@ fun Application.usersRouting() = routing {
     authenticate {
         noCsrfProtection {
             get<Users.Me.Roles> {
-                val useCase: GetUserUseCase by application.inject()
+                val getUserRolesUseCase: GetUserRolesUseCase by application.inject()
                 val roles = call.sessions.userId?.let {
-                    useCase(it)?.roles
+                    getUserRolesUseCase(it)
                 } ?: throw NotFoundException()
                 call.respond(roles)
             }

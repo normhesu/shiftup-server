@@ -1,6 +1,6 @@
 package app.vercel.shiftup.presentation.routes.invites
 
-import app.vercel.shiftup.features.user.account.application.GetUsersByStudentNumberUseCase
+import app.vercel.shiftup.features.user.account.application.GetAvailableUsersByStudentNumberUseCase
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Department
 import app.vercel.shiftup.features.user.domain.model.value.Role
@@ -41,11 +41,11 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
 
             val getAllInvitesUseCase: GetAllInvitesUseCase
                 by application.inject()
-            val getUsersByStudentNumberUseCase: GetUsersByStudentNumberUseCase
+            val getAvailableUsersByStudentNumberUseCase: GetAvailableUsersByStudentNumberUseCase
                 by application.inject()
 
             val invites = getAllInvitesUseCase()
-            val names: Map<StudentNumber, Name> = getUsersByStudentNumberUseCase(
+            val names: Map<StudentNumber, Name> = getAvailableUsersByStudentNumberUseCase(
                 invites.map { it.studentNumber },
             ).associate {
                 it.studentNumber to it.name

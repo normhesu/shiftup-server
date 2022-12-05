@@ -30,16 +30,12 @@ data class Invite(
 
     companion object {
         operator fun invoke(
-            email: Email,
             firstManager: FirstManager,
-        ) = when (email) {
-            firstManager.email -> Invite(
-                position = Position.Manager,
-                studentNumber = firstManager.studentNumber,
-                department = firstManager.department,
-            )
-            else -> null
-        }
+        ) = Invite(
+            position = Position.Manager,
+            studentNumber = firstManager.studentNumber,
+            department = firstManager.department,
+        )
     }
 
     override fun equals(other: Any?): Boolean {
