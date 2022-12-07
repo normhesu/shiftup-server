@@ -22,7 +22,7 @@ fun Application.usersRouting() = routing {
                 val getUserRolesUseCase: GetUserRolesUseCase by application.inject()
                 val roles = call.sessions.userId?.let {
                     getUserRolesUseCase(it)
-                } ?: throw NotFoundException()
+                }.let(::checkNotNull)
                 call.respond(roles)
             }
         }
