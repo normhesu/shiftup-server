@@ -11,6 +11,7 @@ import app.vercel.shiftup.features.user.invite.application.RemoveInviteUseCase
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
+import app.vercel.shiftup.presentation.routes.inject
 import app.vercel.shiftup.presentation.routes.respondDeleteResult
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
@@ -24,7 +25,6 @@ import io.ktor.server.resources.post
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
-import org.koin.ktor.ext.inject
 import org.mpierce.ktor.csrf.noCsrfProtection
 
 fun Application.invitesRouting() = routingWithRole(Role.Manager) {
@@ -39,10 +39,8 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
                 val position: Position,
             )
 
-            val getAllInvitesUseCase: GetAllInvitesUseCase
-                by application.inject()
-            val getAvailableUsersByStudentNumberUseCase: GetAvailableUsersByStudentNumberUseCase
-                by application.inject()
+            val getAllInvitesUseCase: GetAllInvitesUseCase by inject()
+            val getAvailableUsersByStudentNumberUseCase: GetAvailableUsersByStudentNumberUseCase by inject()
 
             val invites = getAllInvitesUseCase()
             val names: Map<StudentNumber, Name> = getAvailableUsersByStudentNumberUseCase(
@@ -64,9 +62,7 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
         }
     }
     post<Invites> {
-        val useCase: AddInviteUseCase
-            by application.inject()
-
+        val useCase: AddInviteUseCase by inject()
         useCase(invite = call.receive())
             .onSuccess {
                 call.respond(HttpStatusCode.Created)
@@ -80,9 +76,7 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
             }
     }
     delete<Invites.Id> {
-        val useCase: RemoveInviteUseCase
-            by application.inject()
-
+        val useCase: RemoveInviteUseCase by inject()
         call.respondDeleteResult(
             useCase(inviteId = InviteId(StudentNumber(it.id)))
         )

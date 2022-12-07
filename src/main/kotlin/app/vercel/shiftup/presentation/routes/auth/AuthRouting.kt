@@ -10,6 +10,7 @@ import app.vercel.shiftup.presentation.routes.auth.plugins.AUTH_OAUTH_GOOGLE_NAM
 import app.vercel.shiftup.presentation.routes.auth.plugins.UserSession
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureAuthentication
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureSessions
+import app.vercel.shiftup.presentation.routes.inject
 import app.vercel.shiftup.presentation.topPageUrl
 import com.github.michaelbull.result.getOrThrow
 import io.ktor.client.*
@@ -31,7 +32,6 @@ import kotlinx.datetime.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.koin.ktor.ext.inject
 import org.mpierce.ktor.csrf.noCsrfProtection
 import kotlin.time.Duration
 
@@ -105,7 +105,7 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(
         }
     }.body<UserInfo>()
 
-    val useCase by application.inject<GetAvailableUserWithAutoRegisterUseCase>()
+    val useCase: GetAvailableUserWithAutoRegisterUseCase by inject()
     return userInfo.run {
         useCase(
             userId = UserId(id),
