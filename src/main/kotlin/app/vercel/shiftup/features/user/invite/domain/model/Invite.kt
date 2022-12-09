@@ -15,7 +15,8 @@ value class InviteId(
 )
 
 @Serializable
-data class Invite(
+@Suppress("DataClassPrivateConstructor")
+data class Invite private constructor(
     val studentNumber: StudentNumber,
     val department: Department,
     val position: Position,
@@ -29,6 +30,16 @@ data class Invite(
     }
 
     companion object {
+        operator fun invoke(
+            studentNumber: StudentNumber,
+            department: Department,
+            position: Position,
+        ) = Invite(
+            studentNumber = studentNumber,
+            department = department,
+            position = position,
+        )
+
         operator fun invoke(
             firstManager: FirstManager,
         ) = Invite(
