@@ -9,6 +9,7 @@ import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrowExactly
+import io.kotest.core.annotation.DoNotParallelize
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -21,15 +22,22 @@ import kotlinx.datetime.LocalDate
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
 
+@DoNotParallelize
 class AttendanceSurveyTest : FreeSpec({
-    "AttendanceSurvey" - {
+    beforeSpec {
         mockkObject(Clock.System)
         every {
             Clock.System.now()
         } returns Instant.parse(
             "2022-01-01T00:00:00+09:00",
         )
+    }
 
+    afterSpec {
+        unmockkObject(Clock.System)
+    }
+
+    "AttendanceSurvey" - {
         "生成" - {
             "正常系" - {
                 "名前が空白文字や空ではなく、日程が全て同じ年度で呼び出し日以降の場合、生成できる" {
@@ -60,7 +68,7 @@ class AttendanceSurveyTest : FreeSpec({
                         AttendanceSurvey(
                             name = "テスト",
                             openCampusSchedule = OpenCampusDates(
-                                setOf(OpenCampusDate(LocalDate(year = 2021, monthNumber = 12, dayOfMonth = 31)))
+                                setOf(OpenCampusDate(LocalDate(2021, 12, 31)))
                             ),
                         )
                     }
@@ -102,72 +110,78 @@ class AttendanceSurveyTest : FreeSpec({
                 }
 
                 "回答がある場合、キャスト一覧にCastIdが保存される" {
-                    val actual = setOf(
-                        AttendanceSurveyAnswer.fromFactory(
-                            surveyId = survey.id,
-                            availableCastId = CastId(UserId("A")),
-                            availableDays = OpenCampusDates(emptySet())
-                        ),
-                        AttendanceSurveyAnswer.fromFactory(
-                            surveyId = survey.id,
-                            availableCastId = CastId(UserId("B")),
-                            availableDays = OpenCampusDates(
-                                setOf(
-                                    openCampusDatesValue.elementAt(0),
-                                    openCampusDatesValue.elementAt(1),
-                                    openCampusDatesValue.elementAt(3),
-                                )
+                    val actual = run {
+                        val answers = setOf(
+                            AttendanceSurveyAnswer.fromFactory(
+                                surveyId = survey.id,
+                                availableCastId = CastId(UserId("A")),
+                                availableDays = OpenCampusDates(emptySet())
                             ),
-                        ),
-                        AttendanceSurveyAnswer.fromFactory(
-                            surveyId = survey.id,
-                            availableCastId = CastId(UserId("C")),
-                            availableDays = OpenCampusDates(
-                                setOf(
-                                    openCampusDatesValue.elementAt(1),
-                                )
+                            AttendanceSurveyAnswer.fromFactory(
+                                surveyId = survey.id,
+                                availableCastId = CastId(UserId("B")),
+                                availableDays = OpenCampusDates(
+                                    setOf(
+                                        openCampusDatesValue.elementAt(0),
+                                        openCampusDatesValue.elementAt(1),
+                                        openCampusDatesValue.elementAt(3),
+                                    )
+                                ),
                             ),
-                        ),
-                        AttendanceSurveyAnswer.fromFactory(
-                            surveyId = survey.id,
-                            availableCastId = CastId(UserId("D")),
-                            availableDays = OpenCampusDates(
-                                setOf(
-                                    openCampusDatesValue.elementAt(0),
-                                    openCampusDatesValue.elementAt(3),
-                                )
+                            AttendanceSurveyAnswer.fromFactory(
+                                surveyId = survey.id,
+                                availableCastId = CastId(UserId("C")),
+                                availableDays = OpenCampusDates(
+                                    setOf(
+                                        openCampusDatesValue.elementAt(1),
+                                    )
+                                ),
                             ),
-                        ),
-                    ).fold(survey) { survey, answer ->
-                        survey.addOrReplaceAnswer(answer)
-                    }.tally()
-
-                    val openCampusConstructor = OpenCampus::class.primaryConstructor!!.apply {
-                        isAccessible = true
-                    }
-                    val expected = setOf(
-                        openCampusConstructor.call(
-                            openCampusDatesValue.elementAt(0),
-                            setOf(CastId(UserId("B")), CastId(UserId("D")))
-                        ),
-                        openCampusConstructor.call(
-                            openCampusDatesValue.elementAt(1),
-                            setOf(CastId(UserId("B")), CastId(UserId("C")))
-                        ),
-                        openCampusConstructor.call(
-                            openCampusDatesValue.elementAt(2),
-                            emptySet<CastId>(),
-                        ),
-                        openCampusConstructor.call(
-                            openCampusDatesValue.elementAt(3),
-                            setOf(CastId(UserId("B")), CastId(UserId("D"))),
+                            AttendanceSurveyAnswer.fromFactory(
+                                surveyId = survey.id,
+                                availableCastId = CastId(UserId("D")),
+                                availableDays = OpenCampusDates(
+                                    setOf(
+                                        openCampusDatesValue.elementAt(0),
+                                        openCampusDatesValue.elementAt(3),
+                                    )
+                                ),
+                            ),
                         )
-                    )
+
+                        answers.fold(survey) { survey, answer ->
+                            survey.addOrReplaceAnswer(answer)
+                        }.tally()
+                    }
+
+                    val expected = run {
+                        val openCampusConstructor = OpenCampus::class.primaryConstructor!!.apply {
+                            isAccessible = true
+                        }
+
+                        setOf(
+                            openCampusConstructor.call(
+                                openCampusDatesValue.elementAt(0),
+                                setOf(CastId(UserId("B")), CastId(UserId("D")))
+                            ),
+                            openCampusConstructor.call(
+                                openCampusDatesValue.elementAt(1),
+                                setOf(CastId(UserId("B")), CastId(UserId("C")))
+                            ),
+                            openCampusConstructor.call(
+                                openCampusDatesValue.elementAt(2),
+                                emptySet<CastId>(),
+                            ),
+                            openCampusConstructor.call(
+                                openCampusDatesValue.elementAt(3),
+                                setOf(CastId(UserId("B")), CastId(UserId("D"))),
+                            )
+                        )
+                    }
 
                     actual shouldBe expected
                 }
             }
         }
-        unmockkObject(Clock.System)
     }
 })

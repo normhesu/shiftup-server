@@ -24,30 +24,31 @@ import io.mockk.coVerify
 import io.mockk.mockk
 
 class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
-    val userRepository = mockk<UserRepository>(relaxUnitFun = true)
-    val inviteRepository: InviteRepository = mockk()
+    val mockUserRepository = mockk<UserRepository>(relaxUnitFun = true)
+    val mockInviteRepository: InviteRepository = mockk()
+
+    val mockUserId: UserId = mockk(relaxed = true)
 
     "GetUserWithAutoRegisterUseCase" - {
-        val userId: UserId = mockk(relaxed = true)
-
         "アカウント登録済みの場合、ユーザーを返す" {
             val useCase = GetAvailableUserWithAutoRegisterUseCase(
-                userRepository = userRepository,
+                userRepository = mockUserRepository,
                 getInviteDomainService = GetInviteDomainService(
-                    inviteRepository = inviteRepository,
+                    inviteRepository = mockInviteRepository,
                     firstManager = mockk(relaxed = true),
                 )
             )
 
             coEvery {
-                inviteRepository.findByEmail(Email("g020c0000@g.neec.ac.jp"))
+                mockInviteRepository.findByEmail(Email("g020c0000@g.neec.ac.jp"))
             } returns Invite(
                 department = NeecDepartment.C2,
                 position = Position.Cast,
                 studentNumber = StudentNumber("G020C0000"),
             )
+
             val resultUser = AvailableUser(
-                id = userId,
+                id = mockUserId,
                 name = mockk(relaxed = true),
                 schoolProfile = SchoolProfile(
                     email = Email("g020c0000@g.neec.ac.jp"),
@@ -56,11 +57,11 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 position = Position.Cast,
             )
             coEvery {
-                userRepository.findAvailableUserById(userId)
+                mockUserRepository.findAvailableUserById(mockUserId)
             } returns resultUser
 
             useCase(
-                userId = userId,
+                userId = mockk(relaxed = true),
                 emailFactory = { Email("g020c0000@g.neec.ac.jp") },
                 name = mockk(relaxed = true),
             ) shouldBe Ok(resultUser)
@@ -68,12 +69,12 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
 
         "アカウント未登録の場合" - {
             coEvery {
-                userRepository.findAvailableUserById(userId)
+                mockUserRepository.findAvailableUserById(mockUserId)
             } returns null
 
             val position = Position.Manager
             val resultUser = AvailableUser(
-                id = userId,
+                id = mockUserId,
                 name = mockk(relaxed = true),
                 schoolProfile = SchoolProfile(
                     email = Email("g000c0000@g.neec.ac.jp"),
@@ -93,15 +94,15 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
 
             "招待されている場合、ユーザーを登録して返す" {
                 val useCase = GetAvailableUserWithAutoRegisterUseCase(
-                    userRepository = userRepository,
+                    userRepository = mockUserRepository,
                     getInviteDomainService = GetInviteDomainService(
-                        inviteRepository = inviteRepository,
+                        inviteRepository = mockInviteRepository,
                         firstManager = notAllowedFirstManager,
                     )
                 )
 
                 coEvery {
-                    inviteRepository.findByEmail(resultUser.email)
+                    mockInviteRepository.findByEmail(resultUser.email)
                 } returns Invite(
                     studentNumber = resultUser.studentNumber,
                     department = resultUser.department,
@@ -109,26 +110,26 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 )
 
                 useCase(
-                    userId = userId,
+                    userId = mockk(relaxed = true),
                     name = resultUser.name,
                     emailFactory = { resultUser.email },
                 ) shouldBe Ok(resultUser)
 
                 coVerify {
-                    userRepository.add(resultUser)
+                    mockUserRepository.add(resultUser)
                 }
             }
 
             "招待されていない場合" - {
                 coEvery {
-                    inviteRepository.findByEmail(resultUser.email)
+                    mockInviteRepository.findByEmail(resultUser.email)
                 } returns null
 
                 "最初のアカウントとして登録可能な場合、ユーザーを登録して返す" {
                     val useCase = GetAvailableUserWithAutoRegisterUseCase(
-                        userRepository = userRepository,
+                        userRepository = mockUserRepository,
                         getInviteDomainService = GetInviteDomainService(
-                            inviteRepository = inviteRepository,
+                            inviteRepository = mockInviteRepository,
                             firstManager = FirstManager(
                                 SchoolProfile(
                                     email = resultUser.email,
@@ -138,26 +139,26 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                         ),
                     )
                     useCase(
-                        userId = userId,
+                        userId = mockk(relaxed = true),
                         name = resultUser.name,
                         emailFactory = { resultUser.email },
                     ) shouldBe Ok(resultUser)
 
                     coVerify {
-                        userRepository.add(resultUser)
+                        mockUserRepository.add(resultUser)
                     }
                 }
 
                 "最初のアカウントとして登録不可な場合、Err(LoginOrRegisterException.InvalidUser())を返す" {
                     val useCase = GetAvailableUserWithAutoRegisterUseCase(
-                        userRepository = userRepository,
+                        userRepository = mockUserRepository,
                         getInviteDomainService = GetInviteDomainService(
-                            inviteRepository = inviteRepository,
+                            inviteRepository = mockInviteRepository,
                             firstManager = notAllowedFirstManager,
                         ),
                     )
                     useCase(
-                        userId = userId,
+                        userId = mockk(relaxed = true),
                         name = resultUser.name,
                         emailFactory = { resultUser.email },
                     ).shouldBeInstanceOf<Err<LoginOrRegisterException.InvalidUser>>()
@@ -167,15 +168,15 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
 
         "その他の理由で失敗した場合、Err(LoginOrRegisterException.Other())を返す" {
             val useCase = GetAvailableUserWithAutoRegisterUseCase(
-                userRepository = userRepository,
+                userRepository = mockUserRepository,
                 getInviteDomainService = GetInviteDomainService(
-                    inviteRepository = inviteRepository,
+                    inviteRepository = mockInviteRepository,
                     firstManager = mockk(relaxed = true),
                 )
             )
 
             coEvery {
-                userRepository.findAvailableUserById(UserId(any()))
+                mockUserRepository.findAvailableUserById(UserId(any()))
             } throws IOException()
 
             useCase(

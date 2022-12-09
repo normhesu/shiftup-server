@@ -6,22 +6,17 @@ import app.vercel.shiftup.features.user.invite.infra.InviteRepository
 import com.github.michaelbull.result.Err
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 
 class AddInviteUseCaseTest : FreeSpec({
-    val repository: InviteRepository = mockk(relaxUnitFun = true)
-    val useCase = AddInviteUseCase(
-        inviteRepository = repository
-    )
-
-    afterEach {
-        clearMocks(repository)
-    }
-
     "AddInviteUseCase" - {
+        val repository: InviteRepository = mockk(relaxUnitFun = true)
+        val useCase = AddInviteUseCase(
+            inviteRepository = repository,
+        )
+
         val studentNumber = StudentNumber("G000C0000")
         val invite = Invite(
             studentNumber = studentNumber,

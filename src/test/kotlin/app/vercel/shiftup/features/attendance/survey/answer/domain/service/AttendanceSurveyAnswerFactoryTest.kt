@@ -10,24 +10,33 @@ import app.vercel.shiftup.features.user.account.domain.model.Cast
 import com.github.michaelbull.result.Err
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.DoNotParallelize
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 
+@DoNotParallelize
 class AttendanceSurveyAnswerFactoryTest : FreeSpec({
-    "AttendanceSurveyAnswerFactory" - {
+    beforeSpec {
         mockkObject(Clock.System)
         every {
             Clock.System.now()
         } returns Instant.parse(
             "2022-01-01T00:00:00+09:00",
         )
+    }
 
-        val surveyRepository: AttendanceSurveyRepositoryInterface = mockk()
-        val factory = AttendanceSurveyAnswerFactory(surveyRepository)
+    afterSpec {
+        unmockkObject(Clock.System)
+    }
+
+    "AttendanceSurveyAnswerFactory" - {
+        val mockSurveyRepository: AttendanceSurveyRepositoryInterface = mockk()
+        val factory = AttendanceSurveyAnswerFactory(mockSurveyRepository)
         val fakeOpenCampus = AttendanceSurvey(
             name = "テスト",
             openCampusSchedule = OpenCampusDates(
@@ -39,47 +48,49 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
 
         "生成" - {
             "正常系" {
-                val cast: Cast = mockk(relaxed = true)
-                every { cast.inSchool(any()) } returns true
-                coEvery { surveyRepository.findById(any()) } returns fakeOpenCampus
+                val mockCast: Cast = mockk(relaxed = true)
+                every { mockCast.inSchool(any()) } returns true
+                coEvery { mockSurveyRepository.findById(any()) } returns fakeOpenCampus
 
                 shouldNotThrowAny {
                     factory(
-                        mockk(relaxed = true),
-                        cast = cast,
-                        mockk(relaxed = true),
+                        attendanceSurveyId = mockk(relaxed = true),
+                        cast = mockCast,
+                        availableDays = mockk(relaxed = true),
                     )
                 }
             }
             "異常系" - {
                 "アンケートが見つからない場合、Err(AttendanceSurveyAnswerFactoryException.NotFoundSurveyを返す" {
-                    coEvery { surveyRepository.findById(any()) } returns null
+                    coEvery { mockSurveyRepository.findById(any()) } returns null
                     val actual = factory(
-                        mockk(relaxed = true),
-                        mockk(relaxed = true), mockk(relaxed = true),
+                        attendanceSurveyId = mockk(relaxed = true),
+                        cast = mockk(relaxed = true),
+                        availableDays = mockk(relaxed = true),
                     )
                     actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.NotFoundSurvey>>()
                 }
                 "アンケートが回答受付を終了している場合、Err(AttendanceSurveyAnswerFactoryException.NotAvailableSurvey)を返す" {
                     coEvery {
-                        surveyRepository.findById(any())
+                        mockSurveyRepository.findById(any())
                     } returns fakeOpenCampus.changeAvailable(false)
 
                     val actual = factory(
-                        mockk(relaxed = true),
-                        mockk(relaxed = true), mockk(relaxed = true),
+                        attendanceSurveyId = mockk(relaxed = true),
+                        cast = mockk(relaxed = true),
+                        availableDays = mockk(relaxed = true),
                     )
                     actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.NotAvailableSurvey>>()
                 }
                 "アンケート内のオープンキャンパス開催日に学生が在籍していない場合、IllegalArgumentExceptionを投げる" {
-                    val cast: Cast = mockk(relaxed = true)
-                    every { cast.inSchool(any()) } returns false
-                    coEvery { surveyRepository.findById(any()) } returns fakeOpenCampus
+                    val mockCast: Cast = mockk(relaxed = true)
+                    every { mockCast.inSchool(any()) } returns false
+                    coEvery { mockSurveyRepository.findById(any()) } returns fakeOpenCampus
 
                     shouldThrow<IllegalArgumentException> {
                         factory(
-                            mockk(relaxed = true),
-                            cast = cast,
+                            attendanceSurveyId = mockk(relaxed = true),
+                            cast = mockCast,
                             availableDays = OpenCampusDates(
                                 setOf(
                                     OpenCampusDate(
@@ -95,18 +106,27 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                     }
                 }
                 "アンケート内のオープンキャンパス開催日以外の日にちが出勤可能日にある場合、IllegalArgumentExceptionを投げる" {
-                    coEvery { surveyRepository.findById(any()) } returns fakeOpenCampus
+                    coEvery { mockSurveyRepository.findById(any()) } returns fakeOpenCampus
+                    val openCampusDate = OpenCampusDate(
+                        LocalDate(
+                            year = 2022,
+                            monthNumber = 4,
+                            dayOfMonth = 2,
+                        ),
+                    )
 
+                    (openCampusDate !in fakeOpenCampus.openCampusSchedule).shouldBeTrue()
                     shouldThrow<IllegalArgumentException> {
                         factory(
-                            mockk(relaxed = true),
+                            attendanceSurveyId = mockk(relaxed = true),
                             cast = mockk(relaxed = true),
-                            mockk(relaxed = true),
+                            availableDays = OpenCampusDates(
+                                setOf(openCampusDate),
+                            ),
                         )
                     }
                 }
             }
         }
-        unmockkObject(Clock.System)
     }
 })
