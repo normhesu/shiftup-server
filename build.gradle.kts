@@ -39,7 +39,7 @@ repositories {
 }
 
 object Version {
-    const val ktor = "2.1.3"
+    const val ktor = "2.2.1"
     const val logback = "1.4.5"
     const val ktorCsrf = "1.0.0"
     const val detekt = "1.22.0"
