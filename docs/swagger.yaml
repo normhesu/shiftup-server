@@ -1,0 +1,235 @@
+openapi: 3.0.0
+info:
+  title: shiftup-server
+  version: DEV
+servers:
+  - url: https://shiftup.works/api
+paths:
+  /session-available:
+    get:
+      tags:
+        - 認証
+      summary: セッションが有効かどうか
+      responses:
+        "200":
+          description: 有効
+        "401":
+          description: 無効
+  /users/me/roles:
+    get:
+      tags:
+        - 認証
+      summary: ユーザーのロールを取得
+      responses:
+        "200":
+          description: ロール
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                enum: [["Cast"], ["Cast", "Manager"]]
+                example: ["Cast", "Manager"]
+  /invites:
+    get:
+      tags:
+        - ユーザー管理 (運営チーム限定)
+      summary: 登録許可を全て取得
+      responses:
+        "200":
+          description: 認可済みユーザー一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      tags:
+        - ユーザー管理 (運営チーム限定)
+      summary: 登録許可を追加
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewUser"
+      responses:
+        "201":
+          description: Created
+        "405":
+          description: 既に追加済みの場合
+  /invites/{user-id}:
+    delete:
+      tags:
+        - ユーザー管理 (運営チーム限定)
+      summary: 登録許可を削除
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      responses:
+        "204":
+          description: Deleted
+  /attendance/surveys:
+    get:
+      tags:
+        - アンケート管理 (運営チーム限定)
+      summary: 全てのアンケートを取得
+      responses:
+        "200":
+          description: アンケート一覧 / openCampusScheduleに含まれる最も未来の日付を過ぎると該当アンケート情報は返って来なくなる
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Survey"
+    post:
+      tags:
+        - アンケート管理 (運営チーム限定)
+      summary: アンケートを追加
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewSurvey"
+      responses:
+        "201":
+          description: Created
+        "500":
+          description: Error
+  /attendance/surveys/{survey-id}:
+    delete:
+      tags:
+        - アンケート管理 (運営チーム限定)
+      summary: アンケートを削除
+      parameters:
+        - $ref: "#/components/parameters/surveyId"
+      responses:
+        "204":
+          description: Deleted
+  /attendance/surveys/{survey-id}/available:
+    put:
+      tags:
+        - アンケート管理 (運営チーム限定)
+      summary: アンケートの回答受付終了と再開
+      parameters:
+        - $ref: "#/components/parameters/surveyId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              enum: ["true", "false"]
+              example: true
+              description: trueで再開 / falseで終了
+      responses:
+        "204":
+          description: Changed
+  /attendance/surveys/{survey-id}/answers:
+    put:
+      tags:
+        - アンケート管理
+      summary: アンケートの回答の追加と修正
+      parameters:
+        - $ref: "#/components/parameters/surveyId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+              example: ["2022-12-04", "2022-12-11", "2022-12-18", "2022-12-25"]
+      responses:
+        "204":
+          description: Updated
+        "405":
+          description: アンケートが締切済の場合
+components:
+  schemas:
+    NewUser:
+      description: 新しく追加するユーザーの情報
+      type: object
+      properties:
+        studentNumber:
+          type: string
+          example: G021C0000
+          description: 学籍番号
+        department:
+          type: string
+          example: C2
+          description: 所属学部・学科
+        position:
+          type: string
+          enum: ["Cast", "Manager"]
+          example: Manager
+          description: "役職"
+    User:
+      description: ユーザー情報
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: G021C0000
+              description: ユーザーID
+        - $ref: "#/components/schemas/NewUser"
+    Schedules:
+      description: 日程一覧
+      type: object
+      properties:
+        openCampusSchedule:
+          type: array
+          items:
+            type: string
+          example: ["2022-12-04", "2022-12-11", "2022-12-18", "2022-12-25"]
+          description: 日程一覧 / 空配列・過去の日付・年度跨ぎ禁止
+    NewSurvey:
+      description: 新しく追加するアンケートの情報
+      allOf:
+        - type: object
+          properties:
+            name:
+              type: string
+              example: 12月シフト募集
+              description: アンケートタイトル / 空文字禁止
+        - $ref: "#/components/schemas/Schedules"
+    Survey:
+      description: アンケート情報
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: "37eaaef0-1494-4c34-994c-52d0f0d62d47"
+              description: アンケートID
+            creationDate:
+              type: string
+              example: 2022-11-20
+              description: アンケート作成日
+            available:
+              type: boolean
+              example: true
+              description: アンケートの回答受付状態 -> trueなら受付 / falseなら締切済
+            answerCount:
+              type: integer
+              example: 50
+              description: アンケートに対する回答数
+        - $ref: "#/components/schemas/NewSurvey"
+  parameters:
+    userId:
+      in: path
+      name: user-id
+      required: true
+      schema:
+        type: string
+        example: G021C0000
+      description: ユーザーID
+    surveyId:
+      in: path
+      name: survey-id
+      required: true
+      schema:
+        type: string
+        example: 37eaaef0-1494-4c34-994c-52d0f0d62d47
+      description: アンケートID
