@@ -12,7 +12,7 @@ class GetCanSendAttendanceRequestAttendanceSurveyUseCase(
     suspend operator fun invoke(): List<AttendanceSurvey> {
         val now = OpenCampusDate.now()
         return attendanceSurveyRepository.findAll().filter {
-            it.openCampusSchedule.laterDateOrThrow() >= now
+            it.canSendAttendanceRequest(now)
         }
     }
 }
