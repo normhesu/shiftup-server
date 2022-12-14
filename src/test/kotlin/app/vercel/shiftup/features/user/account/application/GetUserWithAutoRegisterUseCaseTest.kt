@@ -1,10 +1,12 @@
 package app.vercel.shiftup.features.user.account.application
 
-import app.vercel.shiftup.features.user.account.domain.model.User
+import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.domain.model.value.Email
+import app.vercel.shiftup.features.user.domain.model.value.NeecDepartment
 import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
+import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
@@ -22,48 +24,57 @@ import io.mockk.coVerify
 import io.mockk.mockk
 
 class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
-    val userRepository = mockk<UserRepository>(relaxUnitFun = true)
-    val inviteRepository: InviteRepository = mockk()
-    val useCase = GetUserWithAutoRegisterUseCase(
-        userRepository = userRepository,
-        getInviteDomainService = GetInviteDomainService(
-            inviteRepository = inviteRepository,
-        )
-    )
+    val mockUserRepository = mockk<UserRepository>(relaxUnitFun = true)
+    val mockInviteRepository: InviteRepository = mockk()
+
+    val mockUserId: UserId = mockk(relaxed = true)
 
     "GetUserWithAutoRegisterUseCase" - {
-        val userId: UserId = mockk(relaxed = true)
-
         "アカウント登録済みの場合、ユーザーを返す" {
-            val resultUser = User(
-                id = userId,
+            val useCase = GetAvailableUserWithAutoRegisterUseCase(
+                userRepository = mockUserRepository,
+                getInviteDomainService = GetInviteDomainService(
+                    inviteRepository = mockInviteRepository,
+                    firstManager = mockk(relaxed = true),
+                )
+            )
+
+            coEvery {
+                mockInviteRepository.findByEmail(Email("g020c0000@g.neec.ac.jp"))
+            } returns Invite(
+                department = NeecDepartment.C2,
+                position = Position.Cast,
+                studentNumber = StudentNumber("G020C0000"),
+            )
+
+            val resultUser = AvailableUser(
+                id = mockUserId,
                 name = mockk(relaxed = true),
                 schoolProfile = SchoolProfile(
                     email = Email("g020c0000@g.neec.ac.jp"),
-                    department = mockk(relaxed = true),
+                    department = NeecDepartment.C2,
                 ),
-                position = mockk(relaxed = true),
+                position = Position.Cast,
             )
             coEvery {
-                userRepository.findById(userId)
+                mockUserRepository.findAvailableUserById(mockUserId)
             } returns resultUser
 
             useCase(
-                userId = userId,
-                mockk(relaxed = true),
-                mockk(relaxed = true),
-                mockk(relaxed = true),
+                userId = mockk(relaxed = true),
+                emailFactory = { Email("g020c0000@g.neec.ac.jp") },
+                name = mockk(relaxed = true),
             ) shouldBe Ok(resultUser)
         }
 
         "アカウント未登録の場合" - {
             coEvery {
-                userRepository.findById(userId)
+                mockUserRepository.findAvailableUserById(mockUserId)
             } returns null
 
             val position = Position.Manager
-            val resultUser = User(
-                id = userId,
+            val resultUser = AvailableUser(
+                id = mockUserId,
                 name = mockk(relaxed = true),
                 schoolProfile = SchoolProfile(
                     email = Email("g000c0000@g.neec.ac.jp"),
@@ -81,9 +92,17 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 )
             )
 
-            "招待されている場合、ユーザーを登録して返す" - {
+            "招待されている場合、ユーザーを登録して返す" {
+                val useCase = GetAvailableUserWithAutoRegisterUseCase(
+                    userRepository = mockUserRepository,
+                    getInviteDomainService = GetInviteDomainService(
+                        inviteRepository = mockInviteRepository,
+                        firstManager = notAllowedFirstManager,
+                    )
+                )
+
                 coEvery {
-                    inviteRepository.findByEmail(resultUser.email)
+                    mockInviteRepository.findByEmail(resultUser.email)
                 } returns Invite(
                     studentNumber = resultUser.studentNumber,
                     department = resultUser.department,
@@ -91,58 +110,76 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 )
 
                 useCase(
-                    userId = userId,
+                    userId = mockk(relaxed = true),
                     name = resultUser.name,
                     emailFactory = { resultUser.email },
-                    firstManager = notAllowedFirstManager,
                 ) shouldBe Ok(resultUser)
 
                 coVerify {
-                    userRepository.add(resultUser)
+                    mockUserRepository.add(resultUser)
                 }
             }
 
             "招待されていない場合" - {
                 coEvery {
-                    inviteRepository.findByEmail(resultUser.email)
+                    mockInviteRepository.findByEmail(resultUser.email)
                 } returns null
 
                 "最初のアカウントとして登録可能な場合、ユーザーを登録して返す" {
+                    val useCase = GetAvailableUserWithAutoRegisterUseCase(
+                        userRepository = mockUserRepository,
+                        getInviteDomainService = GetInviteDomainService(
+                            inviteRepository = mockInviteRepository,
+                            firstManager = FirstManager(
+                                SchoolProfile(
+                                    email = resultUser.email,
+                                    department = resultUser.department,
+                                ),
+                            ),
+                        ),
+                    )
                     useCase(
-                        userId = userId,
+                        userId = mockk(relaxed = true),
                         name = resultUser.name,
                         emailFactory = { resultUser.email },
-                        firstManager = FirstManager(
-                            SchoolProfile(
-                                email = resultUser.email,
-                                department = resultUser.department,
-                            )
-                        )
                     ) shouldBe Ok(resultUser)
 
                     coVerify {
-                        userRepository.add(resultUser)
+                        mockUserRepository.add(resultUser)
                     }
                 }
 
                 "最初のアカウントとして登録不可な場合、Err(LoginOrRegisterException.InvalidUser())を返す" {
+                    val useCase = GetAvailableUserWithAutoRegisterUseCase(
+                        userRepository = mockUserRepository,
+                        getInviteDomainService = GetInviteDomainService(
+                            inviteRepository = mockInviteRepository,
+                            firstManager = notAllowedFirstManager,
+                        ),
+                    )
                     useCase(
-                        userId = userId,
+                        userId = mockk(relaxed = true),
                         name = resultUser.name,
                         emailFactory = { resultUser.email },
-                        firstManager = notAllowedFirstManager,
                     ).shouldBeInstanceOf<Err<LoginOrRegisterException.InvalidUser>>()
                 }
             }
         }
 
         "その他の理由で失敗した場合、Err(LoginOrRegisterException.Other())を返す" {
+            val useCase = GetAvailableUserWithAutoRegisterUseCase(
+                userRepository = mockUserRepository,
+                getInviteDomainService = GetInviteDomainService(
+                    inviteRepository = mockInviteRepository,
+                    firstManager = mockk(relaxed = true),
+                )
+            )
+
             coEvery {
-                userRepository.findById(UserId(any()))
+                mockUserRepository.findAvailableUserById(UserId(any()))
             } throws IOException()
 
             useCase(
-                mockk(relaxed = true),
                 mockk(relaxed = true),
                 mockk(relaxed = true),
                 mockk(relaxed = true),

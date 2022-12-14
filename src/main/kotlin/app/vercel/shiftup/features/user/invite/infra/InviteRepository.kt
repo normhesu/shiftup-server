@@ -9,11 +9,10 @@ import app.vercel.shiftup.features.user.invite.domain.service.InviteRepositoryIn
 import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
-import org.litote.kmongo.coroutine.updateOne
 
 @Single
 class InviteRepository(
-    private val database: CoroutineDatabase
+    private val database: CoroutineDatabase,
 ) : InviteRepositoryInterface {
     private val collection get() = database.getCollection<Invite>()
 
@@ -35,10 +34,6 @@ class InviteRepository(
 
     suspend fun add(invite: Invite) {
         collection.insertOne(invite).orThrow()
-    }
-
-    suspend fun replace(invite: Invite) {
-        collection.updateOne(invite).orThrow()
     }
 
     suspend fun remove(inviteId: InviteId): DeleteResult {

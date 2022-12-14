@@ -1,6 +1,6 @@
 package app.vercel.shiftup.presentation.routes.auth.plugins
 
-import app.vercel.shiftup.features.user.account.application.GetUserUseCase
+import app.vercel.shiftup.features.user.account.application.GetUserRolesUseCase
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -24,13 +24,10 @@ private val AuthorizationPlugin = createRouteScopedPlugin(
     name = "AuthorizationPlugin",
     createConfiguration = ::PluginConfiguration
 ) {
-    val getUserUseCase: GetUserUseCase by application.inject()
+    val getUserRolesUseCase: GetUserRolesUseCase by application.inject()
     on(AuthenticationChecked) { call ->
-        val userRoles = call.sessions.userId?.let {
-            getUserUseCase(it)?.roles
-        }.orEmpty()
-
-        if (pluginConfig.allowRole !in userRoles) {
+        val userRoles = getUserRolesUseCase(call.sessions.userId)
+        if (userRoles == null || pluginConfig.allowRole !in userRoles) {
             call.respond(HttpStatusCode.Forbidden)
         }
     }

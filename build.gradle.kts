@@ -39,15 +39,15 @@ repositories {
 }
 
 object Version {
-    const val ktor = "2.1.3"
+    const val ktor = "2.2.1"
     const val logback = "1.4.5"
     const val ktorCsrf = "1.0.0"
     const val detekt = "1.22.0"
     const val kotest = "5.5.4"
     const val kotestAssertionsKtor = "1.0.3"
-    const val archUnit = "1.0.0"
-    const val mockK = "1.13.2"
-    const val kmongo = "4.7.2"
+    const val archUnit = "1.0.1"
+    const val mockK = "1.13.3"
+    const val kmongo = "4.8.0"
     const val koin = "3.2.2"
     const val koinAnnotations = "1.0.3"
     const val kotlinResult = "1.1.16"

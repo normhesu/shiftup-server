@@ -8,15 +8,12 @@ import org.koin.core.annotation.Single
 @Single
 class GetInviteDomainService(
     private val inviteRepository: InviteRepositoryInterface,
+    private val firstManager: FirstManager,
 ) {
     suspend operator fun invoke(
         email: Email,
-        firstManager: FirstManager,
     ): Invite? {
         return inviteRepository.findByEmail(email)
-            ?: Invite(
-                email = email,
-                firstManager = firstManager,
-            )
+            ?: Invite(firstManager).takeIf { email == firstManager.email }
     }
 }

@@ -15,26 +15,18 @@ import kotlinx.serialization.json.Json
 
 fun Application.configureRouting() {
     install(StatusPages) {
-        exception<Throwable> { call, cause ->
-            when (cause) {
-                is NotFoundException -> call.respond(HttpStatusCode.NotFound)
-                is IllegalArgumentException -> call.respondStatusOrMessage(
-                    status = HttpStatusCode.UnprocessableEntity,
-                    cause = cause,
-                )
-
-                else -> call.respondStatusOrMessage(
-                    status = HttpStatusCode.InternalServerError,
-                    cause = cause,
-                )
-            }
+        exception<IllegalArgumentException> { call, cause ->
+            call.respondStatus(
+                status = HttpStatusCode.UnprocessableEntity,
+                cause = cause,
+            )
             if (call.application.developmentMode) throw cause
         }
         if (this@configureRouting.developmentMode) {
             val respondTextStatusCodes = HttpStatusCode.allStatusCodes.toTypedArray()
             @Suppress("SpreadOperator")
             status(*respondTextStatusCodes) { call, status ->
-                call.respondStatusOrMessage(status)
+                call.respondStatus(status)
             }
         }
     }
@@ -51,7 +43,7 @@ fun Application.configureRouting() {
     routes()
 }
 
-private suspend fun ApplicationCall.respondStatusOrMessage(
+private suspend fun ApplicationCall.respondStatus(
     status: HttpStatusCode,
     cause: Throwable? = null,
     contentType: ContentType? = null,

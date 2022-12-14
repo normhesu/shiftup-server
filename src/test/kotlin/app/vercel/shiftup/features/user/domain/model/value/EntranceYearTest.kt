@@ -1,5 +1,6 @@
 package app.vercel.shiftup.features.user.domain.model.value
 
+import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.inspectors.forAll
 import io.kotest.matchers.shouldBe
@@ -10,100 +11,121 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 
 class EntranceYearTest : FreeSpec({
+    isolationMode = IsolationMode.SingleInstance
+
+    beforeSpec {
+        mockkObject(Clock.System)
+    }
+
+    afterSpec {
+        unmockkObject(Clock.System)
+    }
+
     "EntranceYear" - {
-        "getSchoolYear" - {
-            mockkObject(Clock.System)
-
-            data class Params(
-                val currentYear: Int,
-                val currentMonth: Int,
-                val entranceYearValue: Int,
-                val tenureValue: Int,
-                val expectedSchoolYearValue: Int?,
-            )
-
-            fun invokeTest(vararg params: Params) {
-                params.forAll {
-                    val currentMonthText = it.currentMonth.toString().padStart(2, '0')
-                    every {
-                        Clock.System.now()
-                    } returns Instant.parse(
-                        "${it.currentYear}-$currentMonthText-01T00:00:00+09:00",
-                    )
-
-                    EntranceYear(it.entranceYearValue).getSchoolYear(
-                        tenure = Tenure(it.tenureValue),
-                    ) shouldBe it
-                        .expectedSchoolYearValue
-                        ?.let(::SchoolYear)
-                }
+        "学年を取得" - {
+            fun mockNowTime(yearAndMonth: Pair<Int, Int>) {
+                val (year, month) = yearAndMonth
+                val currentMonthText = month.toString().padStart(2, '0')
+                every {
+                    Clock.System.now()
+                } returns Instant.parse(
+                    "$year-$currentMonthText-01T00:00:00+09:00",
+                )
             }
 
             "在学中の場合は学年を返す" {
-                invokeTest(
-                    Params(
-                        currentYear = 2022, currentMonth = 3,
-                        entranceYearValue = 2021, tenureValue = 2,
-                        expectedSchoolYearValue = 1,
-                    ),
-                    Params(
-                        currentYear = 2022, currentMonth = 4,
-                        entranceYearValue = 2021, tenureValue = 2,
-                        expectedSchoolYearValue = 2,
-                    ),
-                    Params(
-                        currentYear = 2023, currentMonth = 4,
-                        entranceYearValue = 2021, tenureValue = 4,
-                        expectedSchoolYearValue = 3,
-                    ),
-                    Params(
-                        currentYear = 2024, currentMonth = 4,
-                        entranceYearValue = 2021, tenureValue = 4,
-                        expectedSchoolYearValue = 4,
-                    ),
+                data class Params(
+                    val mockYearAndMonth: Pair<Int, Int>,
+                    val entranceYearAndTenure: Pair<Int, Int>,
+                    val expectedSchoolYear: Int?,
                 )
+
+                listOf(
+                    Params(
+                        mockYearAndMonth = 2022 to 3,
+                        entranceYearAndTenure = 2021 to 2,
+                        expectedSchoolYear = 1,
+                    ),
+                    Params(
+                        mockYearAndMonth = 2022 to 4,
+                        entranceYearAndTenure = 2021 to 2,
+                        expectedSchoolYear = 2,
+                    ),
+                    Params(
+                        mockYearAndMonth = 2023 to 4,
+                        entranceYearAndTenure = 2021 to 4,
+                        expectedSchoolYear = 3,
+                    ),
+                    Params(
+                        mockYearAndMonth = 2024 to 4,
+                        entranceYearAndTenure = 2021 to 4,
+                        expectedSchoolYear = 4,
+                    ),
+                ).forAll {
+                    mockNowTime(it.mockYearAndMonth)
+
+                    val (entranceYear, tenure) = it.entranceYearAndTenure
+                    val actual = EntranceYear(entranceYear).getSchoolYear(Tenure(tenure))
+                    val expected = it.expectedSchoolYear?.let(::SchoolYear)
+                    actual shouldBe expected
+                }
             }
 
             "入学前の場合はnullを返す" {
-                invokeTest(
-                    Params(
-                        currentYear = 2021, currentMonth = 3,
-                        entranceYearValue = 2021, tenureValue = 2,
-                        expectedSchoolYearValue = null,
-                    ),
-                    Params(
-                        currentYear = 2021, currentMonth = 3,
-                        entranceYearValue = 2021, tenureValue = 3,
-                        expectedSchoolYearValue = null,
-                    ),
-                    Params(
-                        currentYear = 2021, currentMonth = 4,
-                        entranceYearValue = 2022, tenureValue = 4,
-                        expectedSchoolYearValue = null,
-                    ),
+                data class Params(
+                    val mockYearAndMonth: Pair<Int, Int>,
+                    val entranceYearAndTenure: Pair<Int, Int>,
                 )
+
+                listOf(
+                    Params(
+                        mockYearAndMonth = 2021 to 3,
+                        entranceYearAndTenure = 2021 to 2,
+                    ),
+                    Params(
+                        mockYearAndMonth = 2021 to 3,
+                        entranceYearAndTenure = 2021 to 3,
+                    ),
+                    Params(
+                        mockYearAndMonth = 2021 to 4,
+                        entranceYearAndTenure = 2022 to 4,
+                    ),
+                ).forAll {
+                    mockNowTime(it.mockYearAndMonth)
+
+                    val (entranceYear, tenure) = it.entranceYearAndTenure
+                    val actual = EntranceYear(entranceYear).getSchoolYear(Tenure(tenure))
+                    actual shouldBe null
+                }
             }
 
             "卒業後の場合はnullを返す" {
-                invokeTest(
-                    Params(
-                        currentYear = 2023, currentMonth = 4,
-                        entranceYearValue = 2021, tenureValue = 2,
-                        expectedSchoolYearValue = null,
-                    ),
-                    Params(
-                        currentYear = 2024, currentMonth = 4,
-                        entranceYearValue = 2021, tenureValue = 3,
-                        expectedSchoolYearValue = null,
-                    ),
-                    Params(
-                        currentYear = 2025, currentMonth = 4,
-                        entranceYearValue = 2021, tenureValue = 4,
-                        expectedSchoolYearValue = null,
-                    ),
+                data class Params(
+                    val mockYearAndMonth: Pair<Int, Int>,
+                    val entranceYearAndTenure: Pair<Int, Int>,
                 )
+
+                listOf(
+                    Params(
+                        mockYearAndMonth = 2023 to 4,
+                        entranceYearAndTenure = 2021 to 2,
+                    ),
+                    Params(
+                        mockYearAndMonth = 2024 to 4,
+                        entranceYearAndTenure = 2021 to 3,
+                    ),
+                    Params(
+                        mockYearAndMonth = 2025 to 4,
+                        entranceYearAndTenure = 2021 to 4,
+                    ),
+                ).forAll {
+                    mockNowTime(it.mockYearAndMonth)
+
+                    val (entranceYear, tenure) = it.entranceYearAndTenure
+                    val actual = EntranceYear(entranceYear).getSchoolYear(Tenure(tenure))
+                    actual shouldBe null
+                }
             }
-            unmockkObject(Clock.System)
         }
     }
 })

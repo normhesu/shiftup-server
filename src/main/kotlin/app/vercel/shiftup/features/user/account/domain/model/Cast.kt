@@ -8,11 +8,11 @@ data class CastId constructor(val value: UserId)
 
 @Serializable
 @JvmInline
-value class Cast(val value: User) {
+value class Cast(val value: AvailableUser) {
     val id get() = CastId(value.id)
     fun inSchool(fiscalYear: Int?) = value.inSchool(fiscalYear)
 
     init {
-        require(Role.Cast in value.roles)
+        require(value.hasRole(Role.Cast))
     }
 }

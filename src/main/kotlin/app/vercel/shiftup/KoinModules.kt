@@ -1,5 +1,6 @@
 package app.vercel.shiftup
 
+import app.vercel.shiftup.presentation.firstManager
 import app.vercel.shiftup.presentation.mongoDbConnectionUri
 import io.ktor.server.application.*
 import org.koin.dsl.module
@@ -14,4 +15,9 @@ val Application.kmongoModule
             ?: KMongo.createClient()
         single { mongoClient.coroutine }
         single { get<CoroutineClient>().getDatabase("shiftup") }
+    }
+
+val Application.firstManagerModule
+    get() = module {
+        single { environment.config.firstManager }
     }

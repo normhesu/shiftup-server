@@ -1,5 +1,7 @@
 package app.vercel.shiftup.presentation.routes.invites
 
+import app.vercel.shiftup.features.user.account.application.GetAvailableUsersByStudentNumberUseCase
+import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Department
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
@@ -9,6 +11,7 @@ import app.vercel.shiftup.features.user.invite.application.RemoveInviteUseCase
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
+import app.vercel.shiftup.presentation.routes.inject
 import app.vercel.shiftup.presentation.routes.respondDeleteResult
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
@@ -22,7 +25,6 @@ import io.ktor.server.resources.post
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
-import org.koin.ktor.ext.inject
 import org.mpierce.ktor.csrf.noCsrfProtection
 
 fun Application.invitesRouting() = routingWithRole(Role.Manager) {
@@ -32,40 +34,49 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
             data class ResponseItem(
                 val id: InviteId,
                 val studentNumber: StudentNumber,
+                val name: Name?,
                 val department: Department,
                 val position: Position,
             )
 
-            val useCase: GetAllInvitesUseCase
-                by application.inject()
+            val getAllInvitesUseCase: GetAllInvitesUseCase by inject()
+            val getAvailableUsersByStudentNumberUseCase: GetAvailableUsersByStudentNumberUseCase by inject()
 
-            val response = useCase().map {
+            val invites = getAllInvitesUseCase()
+            val names: Map<StudentNumber, Name> = getAvailableUsersByStudentNumberUseCase(
+                invites.map { it.studentNumber },
+            ).associate {
+                it.studentNumber to it.name
+            }
+
+            val response = getAllInvitesUseCase().map {
                 ResponseItem(
                     id = it.id,
                     studentNumber = it.studentNumber,
+                    name = names[it.studentNumber],
                     department = it.department,
                     position = it.position
                 )
             }
-
             call.respond(response)
         }
     }
     post<Invites> {
-        val useCase: AddInviteUseCase
-            by application.inject()
-
+        val useCase: AddInviteUseCase by inject()
         useCase(invite = call.receive())
             .onSuccess {
                 call.respond(HttpStatusCode.Created)
             }.onFailure {
+                call.response.headers.append(
+                    name = HttpHeaders.Allow,
+                    value = listOf(HttpMethod.Get, HttpMethod.Delete)
+                        .joinToString { it.value },
+                )
                 call.respond(HttpStatusCode.MethodNotAllowed)
             }
     }
     delete<Invites.Id> {
-        val useCase: RemoveInviteUseCase
-            by application.inject()
-
+        val useCase: RemoveInviteUseCase by inject()
         call.respondDeleteResult(
             useCase(inviteId = InviteId(StudentNumber(it.id)))
         )
