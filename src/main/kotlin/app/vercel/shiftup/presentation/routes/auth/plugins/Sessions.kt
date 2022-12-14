@@ -50,7 +50,7 @@ data class UserSession(
     }
 }
 
-val CurrentSession.userId get() = get<UserSession>()?.userId
+val CurrentSession.userId get() = get<UserSession>().let(::checkNotNull).userId
 
 /**
  * Cookieにsecureを設定する際のHTTPSチェックを無視するために使用します

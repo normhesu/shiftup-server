@@ -43,7 +43,7 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
         val useCase: AddOrReplaceAttendanceSurveyAnswerUseCase by inject()
         useCase(
             attendanceSurveyId = it.parent.attendanceSurveyId,
-            userId = checkNotNull(call.sessions.userId),
+            userId = call.sessions.userId,
             availableDays = call.receive(),
         ).onSuccess {
             call.respond(HttpStatusCode.NoContent)

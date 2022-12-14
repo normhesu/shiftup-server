@@ -20,9 +20,7 @@ fun Application.usersRouting() = routing {
         noCsrfProtection {
             get<Users.Me.Roles> {
                 val getUserRolesUseCase: GetUserRolesUseCase by inject()
-                val roles = call.sessions.userId?.let {
-                    getUserRolesUseCase(it)
-                }.let(::checkNotNull)
+                val roles = getUserRolesUseCase(call.sessions.userId).let(::checkNotNull)
                 call.respond(roles)
             }
         }
