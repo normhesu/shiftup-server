@@ -9,6 +9,7 @@ import org.koin.core.annotation.Single
 class GetUserRolesUseCase(
     private val userRepository: UserRepository,
 ) {
+    // ユーザーが存在しない場合はnull、無効な場合は空のSetを返します
     suspend operator fun invoke(userId: UserId): Set<Role>? {
         if (userRepository.contains(userId).not()) return null
         return userRepository.findAvailableUserById(userId)?.roles.orEmpty()
