@@ -71,6 +71,10 @@ data class AttendanceSurvey private constructor(
         return openCampusSchedule.laterDateOrThrow() >= (openCampusDate ?: OpenCampusDate.now())
     }
 
+    fun isAfterOpenCampusPeriod(openCampusDate: OpenCampusDate? = null): Boolean {
+        return openCampusSchedule.laterDateOrThrow() < (openCampusDate ?: OpenCampusDate.now())
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

@@ -8,6 +8,7 @@ import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.coroutine.updateOne
+import org.litote.kmongo.`in`
 
 @Single
 class AttendanceSurveyRepository(
@@ -33,5 +34,9 @@ class AttendanceSurveyRepository(
 
     suspend fun remove(surveyId: AttendanceSurveyId): DeleteResult {
         return collection.deleteOneById(surveyId).orThrow()
+    }
+
+    suspend fun removeAllById(surveyIds: Collection<AttendanceSurveyId>): DeleteResult {
+        return collection.deleteMany(AttendanceSurvey::id `in` surveyIds)
     }
 }
