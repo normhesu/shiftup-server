@@ -1,5 +1,6 @@
 package app.vercel.shiftup.features.core.infra
 
+import com.mongodb.bulk.BulkWriteResult
 import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.InsertManyResult
 import com.mongodb.client.result.InsertOneResult
@@ -22,6 +23,11 @@ fun UpdateResult.orThrow(): UpdateResult {
 }
 
 fun DeleteResult.orThrow(): DeleteResult {
+    if (!wasAcknowledged()) throw IOException()
+    return this
+}
+
+fun BulkWriteResult.orThrow(): BulkWriteResult {
     if (!wasAcknowledged()) throw IOException()
     return this
 }
