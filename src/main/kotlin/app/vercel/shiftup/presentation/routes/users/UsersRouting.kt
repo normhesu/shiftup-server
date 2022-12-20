@@ -37,5 +37,9 @@ class Users {
         @Serializable
         @Resource("roles")
         class Roles(val parent: Me)
+
+        @Serializable
+        @Resource("attendance")
+        class Attendance(val parent: Me)
     }
 }
