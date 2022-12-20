@@ -114,12 +114,12 @@ class AttendanceSurveyTest : FreeSpec({
                         val answers = setOf(
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
-                                availableCastId = CastId(UserId("A")),
+                                availableCastId = CastId.reconstruct(UserId("A")),
                                 availableDays = OpenCampusDates(emptySet())
                             ),
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
-                                availableCastId = CastId(UserId("B")),
+                                availableCastId = CastId.reconstruct(UserId("B")),
                                 availableDays = OpenCampusDates(
                                     setOf(
                                         openCampusDatesValue.elementAt(0),
@@ -130,7 +130,7 @@ class AttendanceSurveyTest : FreeSpec({
                             ),
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
-                                availableCastId = CastId(UserId("C")),
+                                availableCastId = CastId.reconstruct(UserId("C")),
                                 availableDays = OpenCampusDates(
                                     setOf(
                                         openCampusDatesValue.elementAt(1),
@@ -139,7 +139,7 @@ class AttendanceSurveyTest : FreeSpec({
                             ),
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
-                                availableCastId = CastId(UserId("D")),
+                                availableCastId = CastId.reconstruct(UserId("D")),
                                 availableDays = OpenCampusDates(
                                     setOf(
                                         openCampusDatesValue.elementAt(0),
@@ -162,11 +162,11 @@ class AttendanceSurveyTest : FreeSpec({
                         setOf(
                             openCampusConstructor.call(
                                 openCampusDatesValue.elementAt(0),
-                                setOf(CastId(UserId("B")), CastId(UserId("D")))
+                                setOf("B", "D").map { CastId.reconstruct(UserId(it)) }.toSet()
                             ),
                             openCampusConstructor.call(
                                 openCampusDatesValue.elementAt(1),
-                                setOf(CastId(UserId("B")), CastId(UserId("C")))
+                                setOf("B", "C").map { CastId.reconstruct(UserId(it)) }.toSet()
                             ),
                             openCampusConstructor.call(
                                 openCampusDatesValue.elementAt(2),
@@ -174,7 +174,7 @@ class AttendanceSurveyTest : FreeSpec({
                             ),
                             openCampusConstructor.call(
                                 openCampusDatesValue.elementAt(3),
-                                setOf(CastId(UserId("B")), CastId(UserId("D"))),
+                                setOf("B", "D").map { CastId.reconstruct(UserId(it)) }.toSet()
                             )
                         )
                     }

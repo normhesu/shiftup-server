@@ -3,13 +3,18 @@ package app.vercel.shiftup.features.user.account.domain.model
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import kotlinx.serialization.Serializable
 
+@JvmInline
 @Serializable
-data class CastId constructor(val value: UserId)
+value class CastId private constructor(val value: UserId) {
+    companion object {
+        fun reconstruct(value: UserId) = CastId(value)
+    }
+}
 
 @Serializable
 @JvmInline
 value class Cast(val value: AvailableUser) {
-    val id get() = CastId(value.id)
+    val id get() = CastId.reconstruct(value.id)
     fun inSchool(fiscalYear: Int?) = value.inSchool(fiscalYear)
 
     init {
