@@ -95,7 +95,7 @@ enum class TeuDepartment(
 
 object DepartmentSerializer : KSerializer<Department> {
     override val descriptor = PrimitiveSerialDescriptor(
-        serialName = "app.vercel.shiftup.features.user.domain.model.value.DepartmentSerializer",
+        serialName = "DepartmentSerializer",
         kind = PrimitiveKind.STRING,
     )
 
