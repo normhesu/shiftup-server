@@ -1,5 +1,6 @@
 package app.vercel.shiftup.presentation.plugins
 
+import app.vercel.shiftup.features.attendance.request.application.RemoveAfterOpenCampusDateAttendanceRequestUseCase
 import app.vercel.shiftup.features.attendance.survey.application.RemoveAfterOpenCampusPeriodAttendanceSurveyUseCase
 import com.github.michaelbull.result.coroutines.runSuspendCatching
 import com.github.michaelbull.result.onFailure
@@ -21,6 +22,16 @@ fun Application.configureScheduling() {
         val useCase: RemoveAfterOpenCampusPeriodAttendanceSurveyUseCase by inject()
         useCase().also {
             log.info("deletedAttendanceSurveyCount ${it.deletedCount}")
+        }
+    }
+    schedule(
+        name = "RemoveAfterOpenCampusDateAttendanceRequest",
+        fixedDelay = 1.days,
+        runStartup = true,
+    ) {
+        val useCase: RemoveAfterOpenCampusDateAttendanceRequestUseCase by inject()
+        useCase().also {
+            log.info("deletedAttendanceRequestCount ${it.deletedCount}")
         }
     }
 }
