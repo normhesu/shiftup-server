@@ -55,9 +55,10 @@ data class AttendanceSurvey private constructor(
 
     fun changeAvailable(available: Boolean) = copy(available = available)
 
-    fun addOrReplaceAnswer(answer: AttendanceSurveyAnswer) = copy(
-        answers = answers.addOrReplace(answer)
-    )
+    fun addOrReplaceAnswer(answer: AttendanceSurveyAnswer): AttendanceSurvey {
+        check(available)
+        return copy(answers = answers.addOrReplace(answer))
+    }
 
     fun tally(): Set<OpenCampus> = answers.fold(
         openCampusSchedule.map(::OpenCampus)
