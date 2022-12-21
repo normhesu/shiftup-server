@@ -4,6 +4,7 @@ import app.vercel.shiftup.features.attendance.survey.answer.domain.model.Attenda
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.AttendanceSurveyAnswers
 import app.vercel.shiftup.features.core.infra.orThrow
+import com.mongodb.client.result.DeleteResult
 import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single
 import org.litote.kmongo.*
@@ -62,4 +63,10 @@ class AttendanceSurveyAnswerRepository(
 
         return counts.associate { it.surveyId to it.count }
     }
+
+    suspend fun removeNotContainsSurveyId(
+        attendanceSurveyIds: Collection<AttendanceSurveyId>,
+    ): DeleteResult = collection.deleteMany(
+        AttendanceSurveyAnswer::surveyId nin attendanceSurveyIds,
+    ).orThrow()
 }

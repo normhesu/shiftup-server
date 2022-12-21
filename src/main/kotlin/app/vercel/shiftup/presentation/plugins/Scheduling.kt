@@ -1,6 +1,7 @@
 package app.vercel.shiftup.presentation.plugins
 
 import app.vercel.shiftup.features.attendance.request.application.RemoveAfterOpenCampusDateAttendanceRequestUseCase
+import app.vercel.shiftup.features.attendance.survey.answer.application.RemoveNoAttendanceSurveyExistsAttendanceSurveyAnswerUseCase
 import app.vercel.shiftup.features.attendance.survey.application.RemoveAfterOpenCampusPeriodAttendanceSurveyUseCase
 import com.github.michaelbull.result.coroutines.runSuspendCatching
 import com.github.michaelbull.result.onFailure
@@ -12,6 +13,7 @@ import kotlinx.coroutines.launch
 import org.koin.ktor.ext.inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 
 fun Application.configureScheduling() {
     schedule(
@@ -22,6 +24,16 @@ fun Application.configureScheduling() {
         val useCase: RemoveAfterOpenCampusPeriodAttendanceSurveyUseCase by inject()
         useCase().also {
             log.info("deletedAttendanceSurveyCount ${it.deletedCount}")
+        }
+    }
+    schedule(
+        name = "RemoveNoAttendanceSurveyExistsAttendanceSurveyAnswer",
+        fixedDelay = 12.hours,
+        runStartup = true,
+    ) {
+        val useCase: RemoveNoAttendanceSurveyExistsAttendanceSurveyAnswerUseCase by inject()
+        useCase().also {
+            log.info("deletedAttendanceSurveyAnswerCount ${it.deletedCount}")
         }
     }
     schedule(
