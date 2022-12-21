@@ -1,5 +1,6 @@
 package app.vercel.shiftup.features.attendance.survey.domain.model.value
 
+import app.vercel.shiftup.features.attendance.survey.answer.domain.model.AttendanceSurveyAnswer
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import kotlinx.serialization.Serializable
 
@@ -17,18 +18,6 @@ data class AttendanceSurveyAnswers(
 
     init {
         require(answers.all { it.surveyId == surveyId })
-    }
-
-    val size = answers.size
-
-    fun addOrReplace(answer: AttendanceSurveyAnswer): AttendanceSurveyAnswers {
-        require(answer.surveyId == this.surveyId)
-        return copy(
-            answers = answers.toMutableSet().apply {
-                removeIf { it.availableCastId == answer.availableCastId }
-                add(answer)
-            }
-        )
     }
 
     fun <T> fold(

@@ -1,6 +1,7 @@
 package app.vercel.shiftup.presentation.routes.attendance.surveys
 
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
+import app.vercel.shiftup.features.attendance.survey.answer.application.AddOrReplaceAttendanceSurveyAnswerUseCase
 import app.vercel.shiftup.features.attendance.survey.application.*
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
@@ -68,14 +69,14 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
             )
 
             val useCase: GetCanSendAttendanceRequestAttendanceSurveyUseCase by inject()
-            val response = useCase().map {
+            val response = useCase().map { (survey, answerCount) ->
                 ResponseItem(
-                    id = it.id,
-                    name = it.name,
-                    openCampusSchedule = it.openCampusSchedule,
-                    creationDate = it.creationDate,
-                    available = it.available,
-                    answerCount = it.answers.size,
+                    id = survey.id,
+                    name = survey.name,
+                    openCampusSchedule = survey.openCampusSchedule,
+                    creationDate = survey.creationDate,
+                    available = survey.available,
+                    answerCount = answerCount,
                 )
             }
 

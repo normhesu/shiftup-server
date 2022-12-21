@@ -1,10 +1,10 @@
-package app.vercel.shiftup.features.attendance.survey.application
+package app.vercel.shiftup.features.attendance.survey.answer.application
 
+import app.vercel.shiftup.features.attendance.survey.answer.domain.service.AttendanceSurveyAnswerFactory
+import app.vercel.shiftup.features.attendance.survey.answer.domain.service.AttendanceSurveyAnswerFactoryException
+import app.vercel.shiftup.features.attendance.survey.answer.infra.AttendanceSurveyAnswerRepository
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
-import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyAnswerFactory
-import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyAnswerFactoryException
-import app.vercel.shiftup.features.attendance.survey.infra.AttendanceSurveyRepository
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.infra.UserRepository
@@ -13,26 +13,23 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrElse
 import io.ktor.server.plugins.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Single
 
 @Single
 class AddOrReplaceAttendanceSurveyAnswerUseCase(
-    private val attendanceSurveyRepository: AttendanceSurveyRepository,
     private val attendanceSurveyAnswerFactory: AttendanceSurveyAnswerFactory,
     private val userRepository: UserRepository,
+    private val attendanceSurveyAnswerRepository: AttendanceSurveyAnswerRepository,
 ) {
     suspend operator fun invoke(
         attendanceSurveyId: AttendanceSurveyId,
         userId: UserId,
         availableDays: OpenCampusDates,
-    ): Result<Unit, AttendanceSurveyAnswerFactoryException.NotAvailableSurvey> = mutex.withLock {
-        val survey = attendanceSurveyRepository.findById(attendanceSurveyId)
-            .let(::requireNotNull)
+    ): Result<Unit, AttendanceSurveyAnswerFactoryException.NotAvailableSurvey> {
         val cast = userRepository.findAvailableUserById(userId)
             .let(::requireNotNull)
             .let(::Cast)
+
         val answer = attendanceSurveyAnswerFactory(
             attendanceSurveyId = attendanceSurveyId,
             cast = cast,
@@ -43,11 +40,7 @@ class AddOrReplaceAttendanceSurveyAnswerUseCase(
                 is AttendanceSurveyAnswerFactoryException.NotAvailableSurvey -> return Err(it)
             }
         }
-        attendanceSurveyRepository.replace(
-            survey.addOrReplaceAnswer(answer)
-        )
+        attendanceSurveyAnswerRepository.addOrReplace(answer)
         return Ok(Unit)
     }
 }
-
-private val mutex = Mutex()

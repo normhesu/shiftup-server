@@ -21,7 +21,6 @@ value class AttendanceSurveyId(
 data class AttendanceSurvey private constructor(
     val name: String,
     val openCampusSchedule: OpenCampusDates,
-    val answers: AttendanceSurveyAnswers,
     val creationDate: LocalDate,
     val available: Boolean,
     @SerialName("_id") val id: AttendanceSurveyId,
@@ -35,7 +34,6 @@ data class AttendanceSurvey private constructor(
             return AttendanceSurvey(
                 name = name,
                 openCampusSchedule = openCampusSchedule,
-                answers = AttendanceSurveyAnswers.empty(id),
                 creationDate = Clock.System.now().toTokyoLocalDateTime().date,
                 available = true,
                 id = id,
@@ -55,12 +53,7 @@ data class AttendanceSurvey private constructor(
 
     fun changeAvailable(available: Boolean) = copy(available = available)
 
-    fun addOrReplaceAnswer(answer: AttendanceSurveyAnswer): AttendanceSurvey {
-        check(available)
-        return copy(answers = answers.addOrReplace(answer))
-    }
-
-    fun tally(): Set<OpenCampus> = answers.fold(
+    fun tally(answers: AttendanceSurveyAnswers): Set<OpenCampus> = answers.fold(
         openCampusSchedule.map(::OpenCampus)
     ) { openCampuses, answer ->
         openCampuses.map {
