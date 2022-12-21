@@ -47,7 +47,7 @@ data class AttendanceSurvey private constructor(
         require(name.isNotBlank())
         require(openCampusSchedule.isNotEmpty())
         require(OpenCampusDate(creationDate) <= openCampusSchedule.earliestDateOrThrow()) {
-            "全てのオープンキャンパスの日程は、現在の日にち以降にする必要があります"
+            "全てのオープンキャンパスの日程は、アンケート作成日以降にする必要があります"
         }
     }
 
