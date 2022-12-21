@@ -10,6 +10,6 @@ class RemoveAfterOpenCampusDateAttendanceRequestUseCase(
     private val attendanceRequestRepository: AttendanceRequestRepository,
 ) {
     suspend operator fun invoke(): DeleteResult {
-        return attendanceRequestRepository.removeBeforeOpenCampusDate(OpenCampusDate.now())
+        return attendanceRequestRepository.removeAfterOpenCampusDate(OpenCampusDate.now())
     }
 }
