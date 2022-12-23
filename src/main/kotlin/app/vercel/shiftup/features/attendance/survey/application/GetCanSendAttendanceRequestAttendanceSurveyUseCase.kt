@@ -15,7 +15,7 @@ class GetCanSendAttendanceRequestAttendanceSurveyUseCase(
         val allSurveys = attendanceSurveyRepository.findAll()
         val canSendAttendanceRequestSurveys = run {
             val now = OpenCampusDate.now()
-            // アンケートが大量に作成されることはないため、取得後にfilterをする
+            // アンケートが大量に保存されることはないため、取得後にfilterをする
             allSurveys.filter {
                 it.canSendAttendanceRequest(now)
             }

@@ -11,7 +11,7 @@ class RemoveAfterOpenCampusPeriodAttendanceSurveyUseCase(
     suspend operator fun invoke(): DeleteResult {
         val surveyIds = attendanceSurveyRepository.findAll()
             .filter {
-                // アンケートが大量に作成されることはないため、取得後にfilterをする
+                // アンケートが大量に保存されることはないため、取得後にfilterをする
                 it.isAfterOpenCampusPeriod()
             }
             .map { it.id }
