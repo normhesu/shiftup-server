@@ -5,8 +5,6 @@ import app.vercel.shiftup.features.attendance.survey.answer.application.AddOrRep
 import app.vercel.shiftup.features.attendance.survey.application.*
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
-import app.vercel.shiftup.features.user.account.application.GetAvailableUsersByIdUseCase
-import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Role
@@ -135,33 +133,20 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
         )
 
         val tallyUseCase: TallyAttendanceSurveyUseCase by inject()
-        val getAvailableUsersByIdUseCase: GetAvailableUsersByIdUseCase by inject()
-
         val tallyResult = tallyUseCase(resource.parent.attendanceSurveyId)
-        val availableCastUserIds = tallyResult
-            .map { it.availableCastIds }
-            .flatten()
-            .distinct()
-            .map { it.value }
-        val casts = getAvailableUsersByIdUseCase(availableCastUserIds)
-            .map(::Cast)
-            .associateBy { it.id }
-            .mapValues { (_, cast) ->
-                val user = cast.value
-                ResponseCast(
-                    id = user.id,
-                    name = user.name,
-                    schoolProfile = user.schoolProfile,
-                    position = user.position,
-                )
-            }
 
-        val response = tallyResult.map { openCampus ->
+        val response = tallyResult.map { (date, casts) ->
             ResponseItem(
-                date = openCampus.date,
-                availableCasts = openCampus.availableCastIds
-                    .mapNotNull { casts[it] }
-                    .toSet()
+                date = date,
+                availableCasts = casts.map {
+                    val user = it.value
+                    ResponseCast(
+                        id = user.id,
+                        name = user.name,
+                        position = user.position,
+                        schoolProfile = user.schoolProfile,
+                    )
+                }.toSet()
             )
         }
 
