@@ -15,10 +15,10 @@ class TallyAttendanceSurveyUseCase(
     private val attendanceSurveyAnswerRepository: AttendanceSurveyAnswerRepository,
 ) {
     suspend operator fun invoke(surveyId: AttendanceSurveyId): Set<OpenCampus> = coroutineScope {
-        val survey = async { attendanceSurveyRepository.findById(surveyId) ?: throw NotFoundException() }
-        val answers = async { attendanceSurveyAnswerRepository.findBySurveyId(surveyId) }
-        survey.await().tally(
-            answers.await()
+        val surveyDeferred = async { attendanceSurveyRepository.findById(surveyId) ?: throw NotFoundException() }
+        val answersDeferred = async { attendanceSurveyAnswerRepository.findBySurveyId(surveyId) }
+        surveyDeferred.await().tally(
+            answersDeferred.await()
         )
     }
 }

@@ -10,6 +10,8 @@ import app.vercel.shiftup.features.user.invite.domain.service.GetInviteDomainSer
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.coroutines.runSuspendCatching
 import com.github.michaelbull.result.mapError
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Single
 
 @Single
@@ -22,12 +24,30 @@ class GetAvailableUserWithAutoRegisterUseCase(
         name: Name,
         emailFactory: () -> Email,
     ): Result<AvailableUser, LoginOrRegisterException> = runSuspendCatching {
+        getUserWithAutoRegister(userId, name, emailFactory)
+    }.mapError {
+        when (it) {
+            is LoginOrRegisterException -> it
+            else -> LoginOrRegisterException.Other(it)
+        }
+    }
+
+    private suspend fun getUserWithAutoRegister(
+        userId: UserId,
+        name: Name,
+        emailFactory: () -> Email,
+    ): AvailableUser = coroutineScope {
         val email = runCatching(emailFactory).getOrElse {
             throw LoginOrRegisterException.InvalidUser()
         }
-        val invite = getInviteDomainService(email) ?: throw LoginOrRegisterException.InvalidUser()
+        val inviteDeferred = async { getInviteDomainService(email) }
+        val userDeferred = async { userRepository.findAvailableUserById(userId) }
 
-        userRepository.findAvailableUserById(userId) ?: AvailableUser(
+        // ユーザー登録済みでも招待が取り消された場合はログイン出来ないようにするため、
+        // ここでinviteDeferredをawaitして招待済みかチェックする
+        val invite = inviteDeferred.await() ?: throw LoginOrRegisterException.InvalidUser()
+
+        userDeferred.await() ?: AvailableUser(
             id = userId,
             name = name,
             schoolProfile = SchoolProfile(
@@ -37,11 +57,6 @@ class GetAvailableUserWithAutoRegisterUseCase(
             position = invite.position,
         ).also {
             userRepository.add(it)
-        }
-    }.mapError {
-        when (it) {
-            is LoginOrRegisterException -> it
-            else -> LoginOrRegisterException.Other(it)
         }
     }
 }

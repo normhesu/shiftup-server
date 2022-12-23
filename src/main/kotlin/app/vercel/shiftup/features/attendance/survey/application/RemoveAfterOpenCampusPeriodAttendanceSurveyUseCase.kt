@@ -8,10 +8,14 @@ import org.koin.core.annotation.Single
 class RemoveAfterOpenCampusPeriodAttendanceSurveyUseCase(
     private val attendanceSurveyRepository: AttendanceSurveyRepository,
 ) {
-    suspend operator fun invoke(): DeleteResult = attendanceSurveyRepository.findAll()
-        .filter { it.isAfterOpenCampusPeriod() }
-        .map { it.id }
-        .let {
-            attendanceSurveyRepository.removeAllById(it)
-        }
+    suspend operator fun invoke(): DeleteResult {
+        val surveyIds = attendanceSurveyRepository.findAll()
+            .filter {
+                // アンケートが大量に作成されることはないため、取得後にfilterをする
+                it.isAfterOpenCampusPeriod()
+            }
+            .map { it.id }
+
+        return attendanceSurveyRepository.removeAllById(surveyIds)
+    }
 }
