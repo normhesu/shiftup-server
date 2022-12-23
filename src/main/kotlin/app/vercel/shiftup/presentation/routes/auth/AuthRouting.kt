@@ -33,7 +33,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.mpierce.ktor.csrf.noCsrfProtection
-import kotlin.time.Duration
 
 fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presentation.routes.auth.httpClient) {
     val config = environment.config
@@ -50,18 +49,12 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                 get<Login.Verify> {
                     runCatching {
                         val user = getUserFromPrincipal()
-                        call.apply {
-                            // セッションIDはhttpOnlyで読み取れないので、ログイン判定用のCookieも保存する
-                            response.cookies.append(
-                                loggedInCookie(value = true, maxAge = UserSession.MAX_AGE)
+                        call.sessions.set(
+                            UserSession(
+                                userId = user.id,
+                                creationInstantISOString = Clock.System.now().toString()
                             )
-                            sessions.set(
-                                UserSession(
-                                    userId = user.id,
-                                    creationInstantISOString = Clock.System.now().toString()
-                                )
-                            )
-                        }
+                        )
                         call.respondRedirect(config.topPageUrl)
                     }.onFailure {
                         application.log.error(it.message)
@@ -79,12 +72,7 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
             }
 
             get<Logout> {
-                call.apply {
-                    response.cookies.append(
-                        loggedInCookie(value = false, maxAge = Duration.ZERO)
-                    )
-                    sessions.clear<UserSession>()
-                }
+                call.sessions.clear<UserSession>()
                 call.respondRedirect(config.topPageUrl)
             }
 
@@ -152,12 +140,3 @@ private data class UserInfo(
     @SerialName("family_name") val familyName: String,
     @SerialName("given_name") val givenName: String,
 )
-
-private fun loggedInCookie(value: Boolean, maxAge: Duration) =
-    Cookie(
-        name = "logged_in",
-        value = value.toString(),
-        path = "/",
-        maxAge = maxAge.inWholeSeconds.toInt(),
-        extensions = mapOf("SameSite" to "lax")
-    )

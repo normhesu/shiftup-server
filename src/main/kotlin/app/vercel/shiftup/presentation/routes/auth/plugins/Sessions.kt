@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 import java.io.File
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 
 fun Application.configureSessions() {
@@ -115,12 +116,23 @@ private class SessionTransportCookie(
             configuration.httpOnly,
             configuration.extensions
         )
-
-        call.response.appendCookieDirectly(cookie)
+        call.response.apply {
+            // セッションIDはhttpOnlyで読み取れないので、ログイン判定用のCookieも保存する
+            cookies.append(
+                loggedInCookie(value = true, maxAge = UserSession.MAX_AGE)
+            )
+            // cookies.appendを使用するとsecureを設定する際に失敗するため、直接ヘッダーに追加する
+            appendCookieDirectly(cookie)
+        }
     }
 
     override fun clear(call: ApplicationCall) {
-        call.response.appendCookieDirectly(clearCookie())
+        call.response.apply {
+            cookies.append(
+                loggedInCookie(value = false, maxAge = Duration.ZERO)
+            )
+            appendCookieDirectly(clearCookie())
+        }
     }
 
     private fun ApplicationResponse.appendCookieDirectly(cookie: Cookie) = headers.append(
@@ -145,3 +157,12 @@ private class SessionTransportCookie(
         return "SessionTransportCookie: $name"
     }
 }
+
+private fun loggedInCookie(value: Boolean, maxAge: Duration) =
+    Cookie(
+        name = "logged_in",
+        value = value.toString(),
+        path = "/",
+        maxAge = maxAge.inWholeSeconds.toInt(),
+        extensions = mapOf("SameSite" to "lax"),
+    )
