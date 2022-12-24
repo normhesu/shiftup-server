@@ -5,9 +5,8 @@ import app.vercel.shiftup.features.attendance.survey.answer.domain.service.Atten
 import app.vercel.shiftup.features.attendance.survey.answer.infra.AttendanceSurveyAnswerRepository
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
-import app.vercel.shiftup.features.user.account.domain.model.Cast
+import app.vercel.shiftup.features.user.account.application.service.GetCastApplicationService
 import app.vercel.shiftup.features.user.account.domain.model.UserId
-import app.vercel.shiftup.features.user.account.infra.UserRepository
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -18,21 +17,17 @@ import org.koin.core.annotation.Single
 @Single
 class AddOrReplaceAttendanceSurveyAnswerUseCase(
     private val attendanceSurveyAnswerFactory: AttendanceSurveyAnswerFactory,
-    private val userRepository: UserRepository,
     private val attendanceSurveyAnswerRepository: AttendanceSurveyAnswerRepository,
+    private val getCastApplicationService: GetCastApplicationService,
 ) {
     suspend operator fun invoke(
         attendanceSurveyId: AttendanceSurveyId,
         userId: UserId,
         availableDays: OpenCampusDates,
     ): Result<Unit, AttendanceSurveyAnswerFactoryException.NotAvailableSurvey> {
-        val cast = userRepository.findAvailableUserById(userId)
-            .let(::requireNotNull)
-            .let(::Cast)
-
         val answer = attendanceSurveyAnswerFactory(
             attendanceSurveyId = attendanceSurveyId,
-            cast = cast,
+            cast = getCastApplicationService(userId),
             availableDays = availableDays,
         ).getOrElse {
             when (it) {
