@@ -67,7 +67,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                     )
                     actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.NotFoundSurvey>>()
                 }
-                "アンケートが回答受付を終了している場合、Err(AttendanceSurveyAnswerFactoryException.NotAvailableSurvey)を返す" {
+                "アンケートが回答受付を終了している場合、Err(AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey)を返す" {
                     coEvery {
                         mockSurveyRepository.findById(any())
                     } returns fakeOpenCampus.changeAvailable(false)
@@ -77,32 +77,33 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                         cast = mockk(relaxed = true),
                         availableDays = mockk(relaxed = true),
                     )
-                    actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.NotAvailableSurvey>>()
+                    actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey>>()
                 }
-                "アンケート内のオープンキャンパス開催日に学生が在籍していない場合、IllegalArgumentExceptionを投げる" {
+                "アンケート内のオープンキャンパス開催日に学生が在籍していない場合、Err(AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey)を返す" {
                     val mockCast: Cast = mockk(relaxed = true)
                     every { mockCast.inSchool(any()) } returns false
                     coEvery { mockSurveyRepository.findById(any()) } returns fakeOpenCampus
 
-                    shouldThrow<IllegalArgumentException> {
-                        factory(
-                            attendanceSurveyId = mockk(relaxed = true),
-                            cast = mockCast,
-                            availableDays = OpenCampusDates(
-                                setOf(
-                                    OpenCampusDate(
-                                        LocalDate(
-                                            year = 2022,
-                                            monthNumber = 4,
-                                            dayOfMonth = 2,
-                                        ),
-                                    )
-                                ),
+                    val result = factory(
+                        attendanceSurveyId = mockk(relaxed = true),
+                        cast = mockCast,
+                        availableDays = OpenCampusDates(
+                            setOf(
+                                OpenCampusDate(
+                                    LocalDate(
+                                        year = 2022,
+                                        monthNumber = 4,
+                                        dayOfMonth = 2,
+                                    ),
+                                )
                             ),
-                        )
-                    }
+                        ),
+                    )
+                    result.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey>>()
                 }
                 "アンケート内のオープンキャンパス開催日以外の日にちが出勤可能日にある場合、IllegalArgumentExceptionを投げる" {
+                    val mockCast: Cast = mockk(relaxed = true)
+                    every { mockCast.inSchool(any()) } returns true
                     coEvery { mockSurveyRepository.findById(any()) } returns fakeOpenCampus
                     val openCampusDate = OpenCampusDate(
                         LocalDate(
@@ -116,7 +117,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                     shouldThrow<IllegalArgumentException> {
                         factory(
                             attendanceSurveyId = mockk(relaxed = true),
-                            cast = mockk(relaxed = true),
+                            cast = mockCast,
                             availableDays = OpenCampusDates(
                                 setOf(openCampusDate),
                             ),

@@ -3,6 +3,7 @@ package app.vercel.shiftup.features.attendance.survey.domain.model
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.*
 import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
+import app.vercel.shiftup.features.user.account.domain.model.Cast
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
@@ -60,6 +61,10 @@ data class AttendanceSurvey private constructor(
             it.addAvailableCastOrNothing(answer)
         }
     }.toSet()
+
+    fun canAnswer(cast: Cast): Boolean {
+        return available && !isAfterOpenCampusPeriod() && cast.inSchool(fiscalYear)
+    }
 
     fun canSendAttendanceRequest(openCampusDate: OpenCampusDate? = null): Boolean {
         return openCampusSchedule.laterDateOrThrow() >= (openCampusDate ?: OpenCampusDate.now())
