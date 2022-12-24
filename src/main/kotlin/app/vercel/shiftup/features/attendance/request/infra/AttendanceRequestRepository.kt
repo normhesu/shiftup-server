@@ -66,7 +66,7 @@ class AttendanceRequestRepository(
         collection.updateOne(attendanceRequest).orThrow()
     }
 
-    suspend fun removeBeforeOpenCampusDate(openCampusDate: OpenCampusDate): DeleteResult {
+    suspend fun removeAfterOpenCampusDate(openCampusDate: OpenCampusDate): DeleteResult {
         return collection.deleteMany(
             AttendanceRequest::openCampusDate lt openCampusDate,
         ).orThrow()

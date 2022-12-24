@@ -1,12 +1,11 @@
 package app.vercel.shiftup.presentation.routes.invites
 
-import app.vercel.shiftup.features.user.account.application.GetAvailableUsersByStudentNumberUseCase
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Department
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.application.AddInviteUseCase
-import app.vercel.shiftup.features.user.invite.application.GetAllInvitesUseCase
+import app.vercel.shiftup.features.user.invite.application.GetAllInvitesWithNameOrNullUseCase
 import app.vercel.shiftup.features.user.invite.application.RemoveInviteUseCase
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
@@ -39,25 +38,17 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
                 val position: Position,
             )
 
-            val getAllInvitesUseCase: GetAllInvitesUseCase by inject()
-            val getAvailableUsersByStudentNumberUseCase: GetAvailableUsersByStudentNumberUseCase by inject()
-
-            val invites = getAllInvitesUseCase()
-            val names: Map<StudentNumber, Name> = getAvailableUsersByStudentNumberUseCase(
-                invites.map { it.studentNumber },
-            ).associate {
-                it.studentNumber to it.name
-            }
-
-            val response = getAllInvitesUseCase().map {
+            val useCase: GetAllInvitesWithNameOrNullUseCase by inject()
+            val response = useCase().map { (invite, nameOrNull) ->
                 ResponseItem(
-                    id = it.id,
-                    studentNumber = it.studentNumber,
-                    name = names[it.studentNumber],
-                    department = it.department,
-                    position = it.position
+                    id = invite.id,
+                    studentNumber = invite.studentNumber,
+                    name = nameOrNull,
+                    department = invite.department,
+                    position = invite.position
                 )
             }
+
             call.respond(response)
         }
     }

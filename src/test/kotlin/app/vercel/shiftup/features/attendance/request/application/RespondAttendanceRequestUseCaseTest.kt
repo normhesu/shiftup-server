@@ -3,8 +3,9 @@ package app.vercel.shiftup.features.attendance.request.application
 import app.vercel.shiftup.features.attendance.request.domain.model.AttendanceRequest
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.attendance.request.infra.AttendanceRequestRepository
+import app.vercel.shiftup.features.user.account.application.service.GetCastApplicationService
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
-import app.vercel.shiftup.features.user.account.infra.UserRepository
+import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -18,21 +19,21 @@ import io.mockk.mockk
 
 class RespondAttendanceRequestUseCaseTest : FreeSpec({
     "RespondAttendanceRequestUseCase" - {
-        val mockUserRepository: UserRepository = mockk()
+        val mockGetCastApplicationService: GetCastApplicationService = mockk()
         val mockAttendanceRequestRepository: AttendanceRequestRepository = mockk(relaxUnitFun = true)
         val useCase = RespondAttendanceRequestUseCase(
-            userRepository = mockUserRepository,
             attendanceRequestRepository = mockAttendanceRequestRepository,
+            getCastApplicationService = mockGetCastApplicationService,
         )
 
         coEvery {
-            mockUserRepository.findAvailableUserById(any())
+            mockGetCastApplicationService(any())
         } returns AvailableUser(
             mockk(relaxed = true),
             mockk(relaxed = true),
             mockk(relaxed = true),
             position = Position.Cast,
-        )
+        ).let(::Cast)
 
         "正常系" - {
             "stateがBlankの場合、Ok(Unit)を返す" {

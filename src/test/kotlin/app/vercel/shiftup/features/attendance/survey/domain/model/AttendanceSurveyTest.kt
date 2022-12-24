@@ -1,7 +1,7 @@
 package app.vercel.shiftup.features.attendance.survey.domain.model
 
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.AttendanceSurveyAnswer
+import app.vercel.shiftup.features.attendance.survey.answer.domain.model.AttendanceSurveyAnswer
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.AttendanceSurveyAnswers
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampus
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
@@ -105,13 +105,14 @@ class AttendanceSurveyTest : FreeSpec({
                 )
 
                 "回答が無い場合、キャスト一覧は空になる" {
-                    survey.answers shouldBe AttendanceSurveyAnswers.empty(survey.id)
-                    survey.tally() shouldBe OpenCampusDates(openCampusDatesValue).map(::OpenCampus)
+                    val actual = survey.tally(AttendanceSurveyAnswers.empty(survey.id))
+                    val expected = OpenCampusDates(openCampusDatesValue).map(::OpenCampus)
+                    actual shouldBe expected
                 }
 
                 "回答がある場合、キャスト一覧にCastIdが保存される" {
                     val actual = run {
-                        val answers = setOf(
+                        val answersSet = setOf(
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
                                 availableCastId = CastId.reconstruct(UserId("A")),
@@ -149,9 +150,12 @@ class AttendanceSurveyTest : FreeSpec({
                             ),
                         )
 
-                        answers.fold(survey) { survey, answer ->
-                            survey.addOrReplaceAnswer(answer)
-                        }.tally()
+                        survey.tally(
+                            AttendanceSurveyAnswers(
+                                answers = answersSet,
+                                surveyId = survey.id,
+                            ),
+                        )
                     }
 
                     val expected = run {

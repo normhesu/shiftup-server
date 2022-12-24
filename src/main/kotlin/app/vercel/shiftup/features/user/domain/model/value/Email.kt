@@ -64,7 +64,7 @@ value class TeuEmail(private val value: String) : Email {
 
 object EmailSerializer : KSerializer<Email> {
     override val descriptor = PrimitiveSerialDescriptor(
-        serialName = "app.vercel.shiftup.features.user.domain.model.value.EmailSerializer",
+        serialName = "EmailSerializer",
         kind = PrimitiveKind.STRING,
     )
 

@@ -1,4 +1,4 @@
-package app.vercel.shiftup.features.attendance.survey.domain.service
+package app.vercel.shiftup.features.attendance.survey.answer.domain.service
 
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId

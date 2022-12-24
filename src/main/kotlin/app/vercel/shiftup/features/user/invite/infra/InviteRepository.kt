@@ -5,7 +5,6 @@ import app.vercel.shiftup.features.user.domain.model.value.Email
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
-import app.vercel.shiftup.features.user.invite.domain.service.InviteRepositoryInterface
 import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
@@ -13,10 +12,10 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 @Single
 class InviteRepository(
     private val database: CoroutineDatabase,
-) : InviteRepositoryInterface {
+) {
     private val collection get() = database.getCollection<Invite>()
 
-    override suspend fun findByEmail(
+    suspend fun findByEmail(
         email: Email,
     ): Invite? {
         return findByStudentNumber(email.studentNumber)

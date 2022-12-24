@@ -1,7 +1,7 @@
-package app.vercel.shiftup.features.attendance.survey.domain.service
+package app.vercel.shiftup.features.attendance.survey.answer.domain.service
 
+import app.vercel.shiftup.features.attendance.survey.answer.domain.model.AttendanceSurveyAnswer
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.AttendanceSurveyAnswer
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import com.github.michaelbull.result.Result
@@ -18,16 +18,14 @@ class AttendanceSurveyAnswerFactory(
         cast: Cast,
         availableDays: OpenCampusDates,
     ): Result<AttendanceSurveyAnswer, AttendanceSurveyAnswerFactoryException> = runSuspendCatching {
-        attendanceSurveyRepository.findById(
+        val survey = attendanceSurveyRepository.findById(
             attendanceSurveyId,
-        ).also { survey ->
-            when {
-                survey == null -> throw AttendanceSurveyAnswerFactoryException.NotFoundSurvey
-                survey.available.not() -> throw AttendanceSurveyAnswerFactoryException.NotAvailableSurvey
-                else -> {
-                    require(cast.inSchool(survey.fiscalYear))
-                    require(availableDays.all { it in survey.openCampusSchedule })
-                }
+        )
+        when {
+            survey == null -> throw AttendanceSurveyAnswerFactoryException.NotFoundSurvey
+            survey.canAnswer(cast).not() -> throw AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey
+            else -> {
+                require(availableDays.all { it in survey.openCampusSchedule })
             }
         }
         AttendanceSurveyAnswer.fromFactory(
@@ -45,5 +43,5 @@ class AttendanceSurveyAnswerFactory(
 
 sealed interface AttendanceSurveyAnswerFactoryException {
     object NotFoundSurvey : Exception(), AttendanceSurveyAnswerFactoryException
-    object NotAvailableSurvey : Exception(), AttendanceSurveyAnswerFactoryException
+    object CanNotAnswerSurvey : Exception(), AttendanceSurveyAnswerFactoryException
 }

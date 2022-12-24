@@ -1,16 +1,16 @@
-package app.vercel.shiftup.features.attendance.survey.domain.model.value
+package app.vercel.shiftup.features.attendance.survey.answer.domain.model
 
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
 
 @Serializable
-@JvmInline
-value class AttendanceSurveyAnswerId(
-    @Suppress("unused")
-    private val value: Pair<AttendanceSurveyId, CastId>,
+data class AttendanceSurveyAnswerId(
+    val attendanceSurveyId: AttendanceSurveyId,
+    val availableCastId: CastId,
 )
 
 @Serializable
@@ -31,7 +31,8 @@ data class AttendanceSurveyAnswer private constructor(
             availableCastId = availableCastId,
             availableDays = availableDays,
             id = AttendanceSurveyAnswerId(
-                surveyId to availableCastId,
+                attendanceSurveyId = surveyId,
+                availableCastId = availableCastId,
             ),
         )
     }

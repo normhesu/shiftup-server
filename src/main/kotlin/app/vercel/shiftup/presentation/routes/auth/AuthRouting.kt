@@ -6,6 +6,7 @@ import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Email
+import app.vercel.shiftup.features.user.domain.model.value.NeecStudentNumber
 import app.vercel.shiftup.presentation.routes.auth.plugins.AUTH_OAUTH_GOOGLE_NAME
 import app.vercel.shiftup.presentation.routes.auth.plugins.UserSession
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureAuthentication
@@ -33,7 +34,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.mpierce.ktor.csrf.noCsrfProtection
-import kotlin.time.Duration
 
 fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presentation.routes.auth.httpClient) {
     val config = environment.config
@@ -50,18 +50,12 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
                 get<Login.Verify> {
                     runCatching {
                         val user = getUserFromPrincipal()
-                        call.apply {
-                            // セッションIDはhttpOnlyで読み取れないので、ログイン判定用のCookieも保存する
-                            response.cookies.append(
-                                loggedInCookie(value = true, maxAge = UserSession.MAX_AGE)
+                        call.sessions.set(
+                            UserSession(
+                                userId = user.id,
+                                creationInstantISOString = Clock.System.now().toString()
                             )
-                            sessions.set(
-                                UserSession(
-                                    userId = user.id,
-                                    creationInstantISOString = Clock.System.now().toString()
-                                )
-                            )
-                        }
+                        )
                         call.respondRedirect(config.topPageUrl)
                     }.onFailure {
                         application.log.error(it.message)
@@ -79,12 +73,7 @@ fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presenta
             }
 
             get<Logout> {
-                call.apply {
-                    response.cookies.append(
-                        loggedInCookie(value = false, maxAge = Duration.ZERO)
-                    )
-                    sessions.clear<UserSession>()
-                }
+                call.sessions.clear<UserSession>()
                 call.respondRedirect(config.topPageUrl)
             }
 
@@ -109,10 +98,7 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(
     return userInfo.run {
         useCase(
             userId = UserId(id),
-            name = Name(
-                familyName = familyName,
-                givenName = givenName,
-            ),
+            name = Name(formattedName),
             emailFactory = { Email(email) },
         ).getOrThrow()
     }
@@ -149,15 +135,11 @@ private val httpClient = HttpClient(CIO) {
 private data class UserInfo(
     val id: String,
     val email: String,
-    @SerialName("family_name") val familyName: String,
-    @SerialName("given_name") val givenName: String,
-)
-
-private fun loggedInCookie(value: Boolean, maxAge: Duration) =
-    Cookie(
-        name = "logged_in",
-        value = value.toString(),
-        path = "/",
-        maxAge = maxAge.inWholeSeconds.toInt(),
-        extensions = mapOf("SameSite" to "lax")
+    @SerialName("family_name") private val familyName: String,
+    @SerialName("given_name") private val givenName: String,
+) {
+    val formattedName = runCatching { NeecStudentNumber(familyName) }.fold(
+        onSuccess = { givenName.replace(" ", "") },
+        onFailure = { familyName },
     )
+}

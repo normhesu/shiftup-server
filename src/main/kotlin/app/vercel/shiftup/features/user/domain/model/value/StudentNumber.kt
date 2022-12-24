@@ -86,7 +86,7 @@ value class TeuStudentNumber(private val value: String) : StudentNumber {
 
 object StudentNumberSerializer : KSerializer<StudentNumber> {
     override val descriptor = PrimitiveSerialDescriptor(
-        serialName = "app.vercel.shiftup.features.user.domain.model.value.StudentNumberSerializer",
+        serialName = "StudentNumberSerializer",
         kind = PrimitiveKind.STRING,
     )
 

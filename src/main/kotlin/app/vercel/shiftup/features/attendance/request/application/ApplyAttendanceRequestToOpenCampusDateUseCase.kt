@@ -6,6 +6,8 @@ import app.vercel.shiftup.features.attendance.request.infra.AttendanceRequestRep
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.infra.UserRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Single
 
 @Single
@@ -13,14 +15,16 @@ class ApplyAttendanceRequestToOpenCampusDateUseCase(
     private val userRepository: UserRepository,
     private val attendanceRequestRepository: AttendanceRequestRepository,
 ) {
-    suspend operator fun invoke(openCampusDate: OpenCampusDate, userIds: Set<UserId>) {
+    suspend operator fun invoke(openCampusDate: OpenCampusDate, userIds: Set<UserId>) = coroutineScope {
         require(openCampusDate >= OpenCampusDate.now())
 
-        val castIds = userRepository.findAvailableUserByIds(userIds).map { Cast(it).id }
-        val currentRequests = attendanceRequestRepository.findByOpenCampusDate(openCampusDate).toSet()
-        val applyRequests = castIds.map {
+        val castIdsDeferred = async { userRepository.findAvailableUserByIds(userIds).map { Cast(it).id } }
+        val currentRequestsDeferred = async { attendanceRequestRepository.findByOpenCampusDate(openCampusDate).toSet() }
+
+        val applyRequests = castIdsDeferred.await().map {
             AttendanceRequest(castId = it, openCampusDate = openCampusDate)
         }.toSet()
+        val currentRequests = currentRequestsDeferred.await()
 
         attendanceRequestRepository.addAndRemoveAll(
             addAttendanceRequests = applyRequests - currentRequests,

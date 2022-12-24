@@ -3,6 +3,7 @@ package app.vercel.shiftup.features.attendance.survey.domain.model
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.*
 import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
+import app.vercel.shiftup.features.user.account.domain.model.Cast
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
@@ -21,7 +22,6 @@ value class AttendanceSurveyId(
 data class AttendanceSurvey private constructor(
     val name: String,
     val openCampusSchedule: OpenCampusDates,
-    val answers: AttendanceSurveyAnswers,
     val creationDate: LocalDate,
     val available: Boolean,
     @SerialName("_id") val id: AttendanceSurveyId,
@@ -35,7 +35,6 @@ data class AttendanceSurvey private constructor(
             return AttendanceSurvey(
                 name = name,
                 openCampusSchedule = openCampusSchedule,
-                answers = AttendanceSurveyAnswers.empty(id),
                 creationDate = Clock.System.now().toTokyoLocalDateTime().date,
                 available = true,
                 id = id,
@@ -47,7 +46,7 @@ data class AttendanceSurvey private constructor(
         require(name.isNotBlank())
         require(openCampusSchedule.isNotEmpty())
         require(OpenCampusDate(creationDate) <= openCampusSchedule.earliestDateOrThrow()) {
-            "全てのオープンキャンパスの日程は、現在の日にち以降にする必要があります"
+            "全てのオープンキャンパスの日程は、アンケート作成日以降にする必要があります"
         }
     }
 
@@ -55,17 +54,17 @@ data class AttendanceSurvey private constructor(
 
     fun changeAvailable(available: Boolean) = copy(available = available)
 
-    fun addOrReplaceAnswer(answer: AttendanceSurveyAnswer) = copy(
-        answers = answers.addOrReplace(answer)
-    )
-
-    fun tally(): Set<OpenCampus> = answers.fold(
+    fun tally(answers: AttendanceSurveyAnswers): Set<OpenCampus> = answers.fold(
         openCampusSchedule.map(::OpenCampus)
     ) { openCampuses, answer ->
         openCampuses.map {
             it.addAvailableCastOrNothing(answer)
         }
     }.toSet()
+
+    fun canAnswer(cast: Cast): Boolean {
+        return available && !isAfterOpenCampusPeriod() && cast.inSchool(fiscalYear)
+    }
 
     fun canSendAttendanceRequest(openCampusDate: OpenCampusDate? = null): Boolean {
         return openCampusSchedule.laterDateOrThrow() >= (openCampusDate ?: OpenCampusDate.now())
