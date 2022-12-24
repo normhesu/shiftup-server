@@ -11,6 +11,7 @@ import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.attendance.Attendance
+import app.vercel.shiftup.presentation.routes.attendance.surveys.me.attendanceSurveysMeRouting
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
@@ -35,6 +36,7 @@ import org.mpierce.ktor.csrf.noCsrfProtection
 fun Application.attendanceSurveysRouting() {
     castRouting()
     managerRouting()
+    attendanceSurveysMeRouting()
 }
 
 private fun Application.castRouting() = routingWithRole(Role.Cast) {

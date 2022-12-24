@@ -4,6 +4,7 @@ import app.vercel.shiftup.features.attendance.survey.answer.domain.model.Attenda
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.AttendanceSurveyAnswers
 import app.vercel.shiftup.features.core.infra.orThrow
+import app.vercel.shiftup.features.user.account.domain.model.CastId
 import com.mongodb.client.result.DeleteResult
 import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single
@@ -30,6 +31,12 @@ class AttendanceSurveyAnswerRepository(
         .let {
             AttendanceSurveyAnswers(answers = it, surveyId = surveyId)
         }
+
+    suspend fun findByCastId(
+        castId: CastId,
+    ) = collection
+        .find(AttendanceSurveyAnswer::availableCastId eq castId)
+        .toList()
 
     suspend fun countBySurveyIds(
         surveyIds: Collection<AttendanceSurveyId>,

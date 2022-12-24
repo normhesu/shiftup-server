@@ -6,6 +6,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 @JvmInline
 value class OpenCampusDates(private val value: Set<OpenCampusDate>) {
+    companion object {
+        fun empty() = OpenCampusDates(emptySet())
+    }
+
     init {
         require(value.all { it.fiscalYear == fiscalYear }) {
             "全てのオープンキャンパスの日付は、同じ年度である必要があります"
