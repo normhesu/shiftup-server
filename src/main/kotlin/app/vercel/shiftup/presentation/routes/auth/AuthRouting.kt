@@ -6,6 +6,7 @@ import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Email
+import app.vercel.shiftup.features.user.domain.model.value.NeecStudentNumber
 import app.vercel.shiftup.presentation.routes.auth.plugins.AUTH_OAUTH_GOOGLE_NAME
 import app.vercel.shiftup.presentation.routes.auth.plugins.UserSession
 import app.vercel.shiftup.presentation.routes.auth.plugins.configureAuthentication
@@ -97,10 +98,7 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(
     return userInfo.run {
         useCase(
             userId = UserId(id),
-            name = Name(
-                familyName = familyName,
-                givenName = givenName,
-            ),
+            name = Name(formattedName),
             emailFactory = { Email(email) },
         ).getOrThrow()
     }
@@ -137,6 +135,11 @@ private val httpClient = HttpClient(CIO) {
 private data class UserInfo(
     val id: String,
     val email: String,
-    @SerialName("family_name") val familyName: String,
-    @SerialName("given_name") val givenName: String,
-)
+    @SerialName("family_name") private val familyName: String,
+    @SerialName("given_name") private val givenName: String,
+) {
+    val formattedName = runCatching { NeecStudentNumber(familyName) }.fold(
+        onSuccess = { givenName.replace(" ", "") },
+        onFailure = { familyName },
+    )
+}
