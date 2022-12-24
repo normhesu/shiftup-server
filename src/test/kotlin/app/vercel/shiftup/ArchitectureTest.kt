@@ -16,16 +16,22 @@ class ArchitectureTest : FreeSpec({
                     .layer(LayerName.Domain.SERVICE).definedBy(PackageId.Domain.SERVICE)
                     .layer(LayerName.INFRASTRUCTURE).definedBy(PackageId.INFRASTRUCTURE)
                     .layer(LayerName.APPLICATION).definedBy(PackageId.APPLICATION)
+                    .layer(LayerName.Application.SERVICE).definedBy(PackageId.Application.SERVICE)
                     .layer(LayerName.PRESENTATION).definedBy(PackageId.PRESENTATION)
                     // 制約の定義
                     .whereLayer(LayerName.Domain.MODEL).mayOnlyBeAccessedByLayers(
-                        LayerName.Domain.SERVICE, LayerName.APPLICATION,
+                        LayerName.Domain.SERVICE,
+                        LayerName.APPLICATION, LayerName.Application.SERVICE,
                         LayerName.INFRASTRUCTURE, LayerName.PRESENTATION,
                     )
                     .whereLayer(LayerName.Domain.SERVICE).mayOnlyBeAccessedByLayers(
-                        LayerName.APPLICATION, LayerName.INFRASTRUCTURE,
+                        LayerName.APPLICATION, LayerName.Application.SERVICE,
+                        LayerName.INFRASTRUCTURE,
                     )
                     .whereLayer(LayerName.INFRASTRUCTURE).mayOnlyBeAccessedByLayers(
+                        LayerName.APPLICATION, LayerName.Application.SERVICE,
+                    )
+                    .whereLayer(LayerName.Application.SERVICE).mayOnlyBeAccessedByLayers(
                         LayerName.APPLICATION,
                     )
                     .whereLayer(LayerName.APPLICATION).mayOnlyBeAccessedByLayers(
@@ -41,6 +47,14 @@ class ArchitectureTest : FreeSpec({
                     .that().resideInAPackage(PackageId.APPLICATION)
                     .and().haveSimpleNameEndingWith(Suffix.USE_CASE)
                     .should().onlyHaveDependentClassesThat().haveSimpleNameEndingWith(Suffix.USE_CASE)
+                    .allowEmptyShould(true)
+                    .check(CLASSES)
+            }
+            "アプリケーションサービス間は依存しない" {
+                ArchRuleDefinition.noClasses()
+                    .that().resideInAPackage(PackageId.Application.SERVICE)
+                    .and().haveSimpleNameEndingWith(Suffix.APPLICATION_SERVICE)
+                    .should().onlyHaveDependentClassesThat().haveSimpleNameEndingWith(Suffix.APPLICATION_SERVICE)
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
@@ -88,6 +102,14 @@ class ArchitectureTest : FreeSpec({
                 .allowEmptyShould(true)
                 .check(CLASSES)
         }
+        "アプリケーションサービスは、アプリケーションサービス層にのみ存在する" {
+            ArchRuleDefinition.classes()
+                .that().haveSimpleNameEndingWith(Suffix.APPLICATION_SERVICE)
+                .and().areNotInterfaces()
+                .should().resideInAPackage(PackageId.Application.SERVICE)
+                .allowEmptyShould(true)
+                .check(CLASSES)
+        }
         "リポジトリは、インフラ層にのみ存在する" {
             ArchRuleDefinition.classes()
                 .that().haveSimpleNameEndingWith(Suffix.REPOSITORY)
@@ -119,6 +141,10 @@ private object LayerName {
         const val SERVICE = "ドメインサービス層"
     }
 
+    object Application {
+        const val SERVICE = "アプリケーションサービス層"
+    }
+
     const val APPLICATION = "アプリケーション層"
     const val INFRASTRUCTURE = "インフラ層"
     const val PRESENTATION = "プレゼンテーション層"
@@ -134,7 +160,12 @@ private object PackageId {
         const val SERVICE = "$DOMAIN_PACKAGE.service.."
     }
 
-    const val APPLICATION = "$FEATURES_PACKAGE.application.."
+    object Application {
+        const val Application_PACKAGE = "$FEATURES_PACKAGE.application"
+        const val SERVICE = "$Application_PACKAGE.service.."
+    }
+
+    const val APPLICATION = "${Application.Application_PACKAGE}.."
     const val INFRASTRUCTURE = "$FEATURES_PACKAGE.infra.."
     const val PRESENTATION = "$SHIFTUP_PACKAGE.presentation.."
 
@@ -152,6 +183,7 @@ private object PackageId {
 
 private object Suffix {
     const val USE_CASE = "UseCase"
+    const val APPLICATION_SERVICE = "ApplicationService"
     const val REPOSITORY = "Repository"
     const val REPOSITORY_INTERFACE = "RepositoryInterface"
 }
