@@ -10,7 +10,6 @@ import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
-import app.vercel.shiftup.features.user.invite.domain.service.GetInviteDomainService
 import app.vercel.shiftup.features.user.invite.infra.InviteRepository
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -33,10 +32,8 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
         "アカウント登録済みの場合、ユーザーを返す" {
             val useCase = GetAvailableUserWithAutoRegisterUseCase(
                 userRepository = mockUserRepository,
-                getInviteDomainService = GetInviteDomainService(
-                    inviteRepository = mockInviteRepository,
-                    firstManager = mockk(relaxed = true),
-                )
+                inviteRepository = mockInviteRepository,
+                firstManager = mockk(relaxed = true),
             )
 
             coEvery {
@@ -95,10 +92,8 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
             "招待されている場合、ユーザーを登録して返す" {
                 val useCase = GetAvailableUserWithAutoRegisterUseCase(
                     userRepository = mockUserRepository,
-                    getInviteDomainService = GetInviteDomainService(
-                        inviteRepository = mockInviteRepository,
-                        firstManager = notAllowedFirstManager,
-                    )
+                    inviteRepository = mockInviteRepository,
+                    firstManager = notAllowedFirstManager,
                 )
 
                 coEvery {
@@ -128,13 +123,11 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 "最初のアカウントとして登録可能な場合、ユーザーを登録して返す" {
                     val useCase = GetAvailableUserWithAutoRegisterUseCase(
                         userRepository = mockUserRepository,
-                        getInviteDomainService = GetInviteDomainService(
-                            inviteRepository = mockInviteRepository,
-                            firstManager = FirstManager(
-                                SchoolProfile(
-                                    email = resultUser.email,
-                                    department = resultUser.department,
-                                ),
+                        inviteRepository = mockInviteRepository,
+                        firstManager = FirstManager(
+                            SchoolProfile(
+                                email = resultUser.email,
+                                department = resultUser.department,
                             ),
                         ),
                     )
@@ -152,10 +145,8 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 "最初のアカウントとして登録不可な場合、Err(LoginOrRegisterException.InvalidUser())を返す" {
                     val useCase = GetAvailableUserWithAutoRegisterUseCase(
                         userRepository = mockUserRepository,
-                        getInviteDomainService = GetInviteDomainService(
-                            inviteRepository = mockInviteRepository,
-                            firstManager = notAllowedFirstManager,
-                        ),
+                        inviteRepository = mockInviteRepository,
+                        firstManager = notAllowedFirstManager,
                     )
                     useCase(
                         userId = mockk(relaxed = true),
@@ -169,10 +160,8 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
         "その他の理由で失敗した場合、Err(LoginOrRegisterException.Other())を返す" {
             val useCase = GetAvailableUserWithAutoRegisterUseCase(
                 userRepository = mockUserRepository,
-                getInviteDomainService = GetInviteDomainService(
-                    inviteRepository = mockInviteRepository,
-                    firstManager = mockk(relaxed = true),
-                )
+                inviteRepository = mockInviteRepository,
+                firstManager = mockk(relaxed = true),
             )
 
             coEvery {
