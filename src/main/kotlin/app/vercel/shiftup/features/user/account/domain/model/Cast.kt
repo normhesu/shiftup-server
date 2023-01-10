@@ -7,14 +7,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 value class CastId private constructor(val value: UserId) {
     companion object {
-        fun reconstruct(value: UserId) = CastId(value)
+        fun unsafe(value: UserId) = CastId(value)
     }
 }
 
 @Serializable
 @JvmInline
 value class Cast(val value: AvailableUser) {
-    val id get() = CastId.reconstruct(value.id)
+    val id get() = CastId.unsafe(value.id)
     fun inSchool(fiscalYear: Int?) = value.inSchool(fiscalYear)
 
     init {

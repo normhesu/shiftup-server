@@ -189,7 +189,7 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
 
                 val savedRequests = List(10) {
                     AttendanceRequest(
-                        castId = CastId.reconstruct(UserId(it.toString())),
+                        castId = CastId.unsafe(UserId(it.toString())),
                         openCampusDate = openCampusDate,
                     )
                 }
@@ -218,7 +218,7 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
 
                 val savedRequests = List(10) {
                     AttendanceRequest(
-                        castId = CastId.reconstruct(UserId(it.toString())),
+                        castId = CastId.unsafe(UserId(it.toString())),
                         openCampusDate = openCampusDate,
                     )
                 }
@@ -279,7 +279,7 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                         mockAttendanceRequestRepository.findByOpenCampusDate(openCampusDate)
                     } returns (3..5).map {
                         AttendanceRequest(
-                            castId = CastId.reconstruct(UserId(it.toString())),
+                            castId = CastId.unsafe(UserId(it.toString())),
                             openCampusDate = openCampusDate,
                         )
                     }
@@ -293,13 +293,13 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                         mockAttendanceRequestRepository.addAndRemoveAll(
                             addAttendanceRequests = setOf(1, 2, 6, 7).map {
                                 AttendanceRequest(
-                                    castId = CastId.reconstruct(UserId(it.toString())),
+                                    castId = CastId.unsafe(UserId(it.toString())),
                                     openCampusDate = openCampusDate,
                                 )
                             }.toSet(),
                             removeAttendanceRequests = setOf(3, 5).map {
                                 AttendanceRequest(
-                                    castId = CastId.reconstruct(UserId(it.toString())),
+                                    castId = CastId.unsafe(UserId(it.toString())),
                                     openCampusDate = openCampusDate,
                                 )
                             }.toSet(),
