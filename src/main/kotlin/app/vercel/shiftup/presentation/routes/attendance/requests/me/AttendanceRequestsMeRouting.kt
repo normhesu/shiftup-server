@@ -1,10 +1,9 @@
 package app.vercel.shiftup.presentation.routes.attendance.requests.me
 
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
-import app.vercel.shiftup.features.attendance.request.application.GetRespondableAttendanceRequestUseCase
+import app.vercel.shiftup.features.attendance.request.application.GetAfterNowAttendanceRequestUseCase
 import app.vercel.shiftup.features.attendance.request.application.RespondAttendanceRequestUseCase
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
-import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
@@ -30,14 +29,14 @@ fun Application.attendanceRequestsMeRouting() = routingWithRole(Role.Cast) {
             @Serializable
             data class ResponseItem(
                 val openCampusDate: OpenCampusDate,
-                val castId: CastId,
+                val state: AttendanceRequestState,
             )
 
-            val useCase: GetRespondableAttendanceRequestUseCase by inject()
+            val useCase: GetAfterNowAttendanceRequestUseCase by inject()
             val response = useCase(call.sessions.userId).map {
                 ResponseItem(
                     openCampusDate = it.openCampusDate,
-                    castId = it.castId,
+                    state = it.state,
                 )
             }
             call.respond(response)

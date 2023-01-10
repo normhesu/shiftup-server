@@ -3,7 +3,6 @@ package app.vercel.shiftup.features.attendance.request.infra
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.request.domain.model.AttendanceRequest
 import app.vercel.shiftup.features.attendance.request.domain.model.AttendanceRequestId
-import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestStateSerializer
 import app.vercel.shiftup.features.core.infra.orThrow
 import app.vercel.shiftup.features.user.account.domain.model.CastId
@@ -41,13 +40,11 @@ class AttendanceRequestRepository(
         AttendanceRequest::openCampusDate eq openCampusDate,
     ).toList()
 
-    suspend fun findByCastIdAndStateAndEarliestDate(
+    suspend fun findByCastIdAndEarliestDate(
         castId: CastId,
-        state: AttendanceRequestState,
         earliestDate: OpenCampusDate,
     ): List<AttendanceRequest> = collection.find(
         AttendanceRequest::castId eq castId,
-        AttendanceRequest::state eq state,
         AttendanceRequest::openCampusDate gte earliestDate
     ).toList()
 
