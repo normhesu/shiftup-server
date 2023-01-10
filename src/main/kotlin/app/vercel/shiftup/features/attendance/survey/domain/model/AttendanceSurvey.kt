@@ -54,8 +54,10 @@ data class AttendanceSurvey private constructor(
 
     fun changeAvailable(available: Boolean) = copy(available = available)
 
-    fun tally(answers: AttendanceSurveyAnswers): Set<OpenCampus> = answers.fold(
-        openCampusSchedule.map(::OpenCampus)
+    fun tally(
+        answers: AttendanceSurveyAnswers,
+    ): Set<OpenCampus> = answers.fold(
+        openCampusSchedule.sinceNow().map(::OpenCampus)
     ) { openCampuses, answer ->
         openCampuses.map {
             it.addAvailableCastOrNothing(answer)

@@ -1,51 +1,116 @@
 package app.vercel.shiftup.features.attendance.survey.application
 
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
+import app.vercel.shiftup.features.attendance.request.infra.AttendanceRequestRepository
 import app.vercel.shiftup.features.attendance.survey.answer.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.attendance.survey.answer.infra.AttendanceSurveyAnswerRepository
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.infra.UserRepository
+import app.vercel.shiftup.features.user.domain.model.value.Department
 import io.ktor.server.plugins.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single
 
 @Single
 class TallyAttendanceSurveyUseCase(
     private val attendanceSurveyRepository: AttendanceSurveyRepositoryInterface,
     private val attendanceSurveyAnswerRepository: AttendanceSurveyAnswerRepository,
+    private val attendanceRequestRepository: AttendanceRequestRepository,
     private val userRepository: UserRepository,
 ) {
     suspend operator fun invoke(
         surveyId: AttendanceSurveyId,
-    ): Map<OpenCampusDate, Set<Cast>> = coroutineScope {
-        val surveyDeferred = async {
-            attendanceSurveyRepository.findById(surveyId) ?: throw NotFoundException()
-        }
-        val answersDeferred = async {
-            attendanceSurveyAnswerRepository.findBySurveyId(surveyId)
+    ): TallyAttendanceSurveyUseCaseResult = coroutineScope {
+        val openCampuses = getAnsweredOpenCampuses(surveyId)
+        val (attendanceRequests, casts) = run {
+            val availableCastIds = openCampuses.map { it.availableCastIds }
+                .flatten()
+                .distinct()
+                .toSet()
+
+            val attendanceRequestsDeferred = async { getAttendanceRequests(availableCastIds) }
+            val castsDeferred = async { getCasts(availableCastIds) }
+
+            attendanceRequestsDeferred.await() to castsDeferred.await()
         }
 
-        val openCampuses = surveyDeferred.await().tally(
+        val resultItems = openCampuses.map { openCampus ->
+            fun Cast.attendanceRequested() = attendanceRequests
+                .filterKeys { it == openCampus.date }
+                .any { (_, attendanceRequests) ->
+                    attendanceRequests.find { it.castId == this.id } != null
+                }
+
+            val availableCastsWithAttendanceRequested = casts
+                .filter { it.id in openCampus.availableCastIds }
+                .map {
+                    CastWithAttendanceRequested(
+                        cast = it,
+                        attendanceRequested = it.attendanceRequested()
+                    )
+                }
+                .toSet()
+
+            TallyAttendanceSurveyUseCaseResultItem(
+                openCampusDate = openCampus.date,
+                castsWithAttendanceRequested = availableCastsWithAttendanceRequested,
+                tallied = availableCastsWithAttendanceRequested.any { it.attendanceRequested },
+            )
+        }.toSet()
+
+        TallyAttendanceSurveyUseCaseResult(
+            results = resultItems,
+            tallied = resultItems.all { it.tallied },
+        )
+    }
+
+    private suspend fun getAnsweredOpenCampuses(surveyId: AttendanceSurveyId) = coroutineScope {
+        val surveyDeferred = async { attendanceSurveyRepository.findById(surveyId) ?: throw NotFoundException() }
+        val answersDeferred = async { attendanceSurveyAnswerRepository.findBySurveyId(surveyId) }
+
+        surveyDeferred.await().tally(
             answersDeferred.await()
         )
-        val availableCastUserIds = openCampuses
-            .map { it.availableCastIds }
-            .flatten()
-            .distinct()
-            .map { it.value }
-        val casts: Map<CastId, Cast> = userRepository
-            .findAvailableUserByIds(availableCastUserIds)
-            .map(::Cast)
-            .associateBy { it.id }
-
-        openCampuses.associate { openCampus ->
-            val availableCasts = openCampus.availableCastIds
-                .mapNotNull { casts[it] }
-                .toSet()
-            openCampus.date to availableCasts
-        }
     }
+
+    private suspend fun getAttendanceRequests(
+        availableCastIds: Set<CastId>,
+    ) = attendanceRequestRepository.findByCastIds(availableCastIds).groupBy {
+        it.openCampusDate
+    }
+
+    private suspend fun getCasts(
+        availableCastIds: Set<CastId>,
+    ) = userRepository.findAvailableUserByIds(availableCastIds.map { it.value })
+        .map(::Cast)
+        .sortedWith(
+            compareBy<Cast> {
+                Department.values.indexOf(it.value.department)
+            }.thenBy {
+                it.value.studentNumber
+            }
+        ).toSet()
 }
+
+@Serializable
+data class TallyAttendanceSurveyUseCaseResult(
+    val tallied: Boolean,
+    val results: Set<TallyAttendanceSurveyUseCaseResultItem>,
+)
+
+@Serializable
+data class TallyAttendanceSurveyUseCaseResultItem(
+    val openCampusDate: OpenCampusDate,
+    val tallied: Boolean,
+    val castsWithAttendanceRequested: Set<CastWithAttendanceRequested>,
+)
+
+@Serializable
+data class CastWithAttendanceRequested(
+    val cast: Cast,
+    val attendanceRequested: Boolean,
+)

@@ -20,6 +20,8 @@ value class OpenCampusDates(private val value: Set<OpenCampusDate>) {
 
     fun isNotEmpty() = value.isNotEmpty()
 
+    fun sinceNow() = value.filter { it >= OpenCampusDate.now() }
+
     fun earliestDateOrThrow() = value.min()
     fun laterDateOrThrow() = value.max()
 

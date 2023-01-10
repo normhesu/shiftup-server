@@ -34,6 +34,10 @@ class AttendanceRequestRepository(
         return collection.findOneById(attendanceRequestId)
     }
 
+    suspend fun findByCastIds(castIds: Collection<CastId>): List<AttendanceRequest> {
+        return collection.find(AttendanceRequest::castId `in` castIds).toList()
+    }
+
     suspend fun findByOpenCampusDate(
         openCampusDate: OpenCampusDate,
     ): List<AttendanceRequest> = collection.find(

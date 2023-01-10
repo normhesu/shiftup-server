@@ -8,7 +8,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 @Serializable(StudentNumberSerializer::class)
-sealed interface StudentNumber {
+sealed interface StudentNumber : Comparable<StudentNumber> {
     fun lowercaseValue(): String
     fun getSchoolYear(tenure: Tenure, fiscalYear: Int? = null): SchoolYear?
 
@@ -51,6 +51,10 @@ value class NeecStudentNumber(private val value: String) : StudentNumber {
         fiscalYear = fiscalYear,
     )
 
+    override fun compareTo(other: StudentNumber): Int {
+        return lowercaseValue().compareTo(other.lowercaseValue())
+    }
+
     override fun toString() = value
 }
 
@@ -80,6 +84,10 @@ value class TeuStudentNumber(private val value: String) : StudentNumber {
         tenure = tenure,
         fiscalYear = fiscalYear,
     )
+
+    override fun compareTo(other: StudentNumber): Int {
+        return lowercaseValue().compareTo(other.lowercaseValue())
+    }
 
     override fun toString() = value
 }
