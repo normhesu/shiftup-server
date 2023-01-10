@@ -2,9 +2,7 @@ package app.vercel.shiftup.features.attendance.survey.domain.model
 
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.*
-import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import app.vercel.shiftup.features.user.account.domain.model.Cast
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -27,16 +25,19 @@ data class AttendanceSurvey private constructor(
     @SerialName("_id") val id: AttendanceSurveyId,
 ) {
     companion object {
-        operator fun invoke(
+        fun fromFactory(
             name: String,
             openCampusSchedule: OpenCampusDates,
+            creationDate: LocalDate,
+            available: Boolean,
+            id: AttendanceSurveyId,
         ): AttendanceSurvey {
             val id = AttendanceSurveyId()
             return AttendanceSurvey(
                 name = name,
                 openCampusSchedule = openCampusSchedule,
-                creationDate = Clock.System.now().toTokyoLocalDateTime().date,
-                available = true,
+                creationDate = creationDate,
+                available = available,
                 id = id,
             )
         }

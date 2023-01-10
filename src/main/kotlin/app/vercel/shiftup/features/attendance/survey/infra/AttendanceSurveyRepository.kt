@@ -1,8 +1,8 @@
 package app.vercel.shiftup.features.attendance.survey.infra
 
-import app.vercel.shiftup.features.attendance.survey.answer.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
+import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.core.infra.orThrow
 import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single
@@ -20,7 +20,7 @@ class AttendanceSurveyRepository(
         return collection.findOneById(attendanceSurveyId)
     }
 
-    suspend fun findAll(): List<AttendanceSurvey> {
+    override suspend fun findAll(): List<AttendanceSurvey> {
         return collection.find().toList()
     }
 

@@ -29,5 +29,19 @@ value class OpenCampusDates(private val value: Set<OpenCampusDate>) {
 
     fun all(predicate: (OpenCampusDate) -> Boolean): Boolean = value.all(predicate)
 
+    fun any(predicate: (OpenCampusDate) -> Boolean): Boolean = value.any(predicate)
+
+    fun sorted() = OpenCampusDates(value.sorted().toSet())
+
     operator fun contains(openCampusDate: OpenCampusDate) = value.contains(openCampusDate)
+
+    operator fun plus(other: OpenCampusDates) = OpenCampusDates(
+        (value + other.value).toSet()
+    )
 }
+
+fun Collection<OpenCampusDates>.flatten() = this.fold(
+    OpenCampusDates.empty(),
+) { acc, openCampusDates ->
+    acc + openCampusDates
+}.sorted()

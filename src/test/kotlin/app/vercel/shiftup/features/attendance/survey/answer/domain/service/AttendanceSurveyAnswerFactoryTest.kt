@@ -2,7 +2,10 @@ package app.vercel.shiftup.features.attendance.survey.answer.domain.service
 
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
+import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
+import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import com.github.michaelbull.result.Err
 import io.kotest.assertions.throwables.shouldNotThrowAny
@@ -34,13 +37,16 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
     "AttendanceSurveyAnswerFactory" - {
         val mockSurveyRepository: AttendanceSurveyRepositoryInterface = mockk()
         val factory = AttendanceSurveyAnswerFactory(mockSurveyRepository)
-        val fakeOpenCampus = AttendanceSurvey(
+        val fakeOpenCampus = AttendanceSurvey.fromFactory(
             name = "テスト",
             openCampusSchedule = OpenCampusDates(
                 setOf(
                     OpenCampusDate(LocalDate(2022, 4, 1))
                 ),
             ),
+            creationDate = Clock.System.now().toTokyoLocalDateTime().date,
+            available = true,
+            id = AttendanceSurveyId(),
         )
 
         "生成" - {
