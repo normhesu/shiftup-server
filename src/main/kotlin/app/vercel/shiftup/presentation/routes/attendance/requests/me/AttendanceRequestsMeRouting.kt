@@ -1,7 +1,7 @@
 package app.vercel.shiftup.presentation.routes.attendance.requests.me
 
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
-import app.vercel.shiftup.features.attendance.request.application.GetAfterNowAttendanceRequestUseCase
+import app.vercel.shiftup.features.attendance.request.application.GetAfterNowDividedByRespondAttendanceRequestUseCase
 import app.vercel.shiftup.features.attendance.request.application.RespondAttendanceRequestUseCase
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.user.domain.model.value.Role
@@ -27,18 +27,30 @@ fun Application.attendanceRequestsMeRouting() = routingWithRole(Role.Cast) {
     noCsrfProtection {
         get<Requests> {
             @Serializable
-            data class ResponseItem(
+            data class ResponseAttendanceRequest(
                 val openCampusDate: OpenCampusDate,
                 val state: AttendanceRequestState,
             )
 
-            val useCase: GetAfterNowAttendanceRequestUseCase by inject()
-            val response = useCase(call.sessions.userId).map {
-                ResponseItem(
-                    openCampusDate = it.openCampusDate,
-                    state = it.state,
-                )
-            }
+            @Serializable
+            data class Response(
+                val canRespondRequestOpenCampusDates: List<OpenCampusDate>,
+                val respondedRequests: List<ResponseAttendanceRequest>,
+            )
+
+            val useCase: GetAfterNowDividedByRespondAttendanceRequestUseCase by inject()
+            val requests = useCase(call.sessions.userId)
+            val response = Response(
+                canRespondRequestOpenCampusDates = requests.canRespondRequests.map {
+                    it.openCampusDate
+                },
+                respondedRequests = requests.respondedRequests.map {
+                    ResponseAttendanceRequest(
+                        openCampusDate = it.openCampusDate,
+                        state = it.state,
+                    )
+                }
+            )
             call.respond(response)
         }
     }

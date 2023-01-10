@@ -38,8 +38,10 @@ data class AttendanceRequest private constructor(
         )
     }
 
+    val canRespond get() = state == AttendanceRequestState.Blank
+
     fun respond(newState: AttendanceRequestState.NonBlank) = runCatching {
-        check(state == AttendanceRequestState.Blank)
+        check(canRespond)
         copy(state = newState)
     }
 
