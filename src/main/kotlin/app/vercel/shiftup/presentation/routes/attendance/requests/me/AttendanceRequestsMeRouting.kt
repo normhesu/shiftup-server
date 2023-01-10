@@ -60,7 +60,7 @@ fun Application.attendanceRequestsMeRouting() = routingWithRole(Role.Cast) {
             userId = call.sessions.userId,
             openCampusDate = it.parent.openCampusDate,
             state = AttendanceRequestState.NonBlank(
-                enumValueOf(call.receiveText())
+                name = enumValueOf(call.receiveText()),
             ),
         ).onSuccess {
             call.respond(HttpStatusCode.OK)
