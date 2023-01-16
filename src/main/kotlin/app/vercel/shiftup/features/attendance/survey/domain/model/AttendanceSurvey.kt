@@ -52,15 +52,16 @@ data class AttendanceSurvey private constructor(
 
     fun changeAvailable(available: Boolean) = copy(available = available)
 
-    fun tally(
-        answers: AttendanceSurveyAnswers,
-    ): Set<OpenCampus> = answers.fold(
-        openCampusSchedule.sinceNow().map(::OpenCampus)
-    ) { openCampuses, answer ->
-        openCampuses.map {
-            it.addAvailableCastOrNothing(answer)
-        }
-    }.toSet()
+    fun tally(answers: AttendanceSurveyAnswers): Set<OpenCampus> {
+        require(answers.surveyId == id)
+        return answers.fold(
+            openCampusSchedule.sinceNow().map(::OpenCampus),
+        ) { openCampuses, answer ->
+            openCampuses.map {
+                it.addAvailableCastOrNothing(answer)
+            }
+        }.toSet()
+    }
 
     fun canAnswer(cast: Cast): Boolean {
         return available && !isAfterOpenCampusPeriod() && cast.inSchool(fiscalYear)

@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AttendanceSurveyAnswers(
+    val surveyId: AttendanceSurveyId,
     private val answers: Set<AttendanceSurveyAnswer>,
-    private val surveyId: AttendanceSurveyId
 ) {
     companion object {
         fun empty(surveyId: AttendanceSurveyId) = AttendanceSurveyAnswers(

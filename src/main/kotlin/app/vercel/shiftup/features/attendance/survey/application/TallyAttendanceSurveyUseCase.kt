@@ -84,8 +84,7 @@ class TallyAttendanceSurveyUseCase(
 
     private suspend fun getCasts(
         availableCastIds: Set<CastId>,
-    ) = userRepository.findAvailableUserByIds(availableCastIds.map { it.value })
-        .map(::Cast)
+    ) = userRepository.findCastByCastIds(availableCastIds)
         .sortedWith(
             compareBy<Cast> {
                 Department.values.indexOf(it.value.department)
