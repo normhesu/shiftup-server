@@ -31,16 +31,13 @@ data class AttendanceSurvey private constructor(
             creationDate: LocalDate,
             available: Boolean,
             id: AttendanceSurveyId,
-        ): AttendanceSurvey {
-            val id = AttendanceSurveyId()
-            return AttendanceSurvey(
-                name = name,
-                openCampusSchedule = openCampusSchedule,
-                creationDate = creationDate,
-                available = available,
-                id = id,
-            )
-        }
+        ) = AttendanceSurvey(
+            name = name,
+            openCampusSchedule = openCampusSchedule,
+            creationDate = creationDate,
+            available = available,
+            id = id,
+        )
     }
 
     init {

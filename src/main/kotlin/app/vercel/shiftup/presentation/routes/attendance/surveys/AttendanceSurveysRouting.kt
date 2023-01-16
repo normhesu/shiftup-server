@@ -158,8 +158,8 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
             val openCampuses: List<ResponseItem>,
         )
 
-        val tallyUseCase: TallyAttendanceSurveyUseCase by inject()
-        val tallyResult = tallyUseCase(resource.parent.attendanceSurveyId)
+        val useCase: TallyAttendanceSurveyUseCase by inject()
+        val tallyResult = useCase(resource.parent.attendanceSurveyId)
 
         val openCampuses = tallyResult.results.map {
             ResponseItem(

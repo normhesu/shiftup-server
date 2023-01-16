@@ -29,7 +29,6 @@ class TallyAttendanceSurveyUseCase(
         val (attendanceRequests, casts) = run {
             val availableCastIds = openCampuses.map { it.availableCastIds }
                 .flatten()
-                .distinct()
                 .toSet()
 
             val attendanceRequestsDeferred = async { getAttendanceRequests(availableCastIds) }

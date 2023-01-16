@@ -24,13 +24,12 @@ class AttendanceSurveyFactory(
 
         require(!duplicateOpenCampusDate)
 
-        val id = AttendanceSurveyId()
         return AttendanceSurvey.fromFactory(
             name = name,
             openCampusSchedule = openCampusSchedule,
             creationDate = Clock.System.now().toTokyoLocalDateTime().date,
             available = true,
-            id = id,
+            id = AttendanceSurveyId(),
         )
     }
 }
