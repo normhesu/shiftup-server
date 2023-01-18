@@ -5,9 +5,9 @@ import app.vercel.shiftup.features.attendance.request.infra.AttendanceRequestRep
 import app.vercel.shiftup.features.attendance.survey.answer.infra.AttendanceSurveyAnswerRepository
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
+import app.vercel.shiftup.features.user.account.application.service.GetCastsByCastIdsApplicationService
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.account.domain.model.CastId
-import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.domain.model.value.Department
 import io.ktor.server.plugins.*
 import kotlinx.coroutines.async
@@ -20,7 +20,7 @@ class TallyAttendanceSurveyUseCase(
     private val attendanceSurveyRepository: AttendanceSurveyRepositoryInterface,
     private val attendanceSurveyAnswerRepository: AttendanceSurveyAnswerRepository,
     private val attendanceRequestRepository: AttendanceRequestRepository,
-    private val userRepository: UserRepository,
+    private val getCastsByCastIdsApplicationService: GetCastsByCastIdsApplicationService,
 ) {
     suspend operator fun invoke(
         surveyId: AttendanceSurveyId,
@@ -84,7 +84,7 @@ class TallyAttendanceSurveyUseCase(
 
     private suspend fun getCasts(
         availableCastIds: Set<CastId>,
-    ) = userRepository.findCastByCastIds(availableCastIds)
+    ) = getCastsByCastIdsApplicationService(availableCastIds)
         .sortedWith(
             compareBy<Cast> {
                 Department.values.indexOf(it.value.department)

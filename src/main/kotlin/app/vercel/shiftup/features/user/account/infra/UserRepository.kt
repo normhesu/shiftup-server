@@ -2,8 +2,6 @@ package app.vercel.shiftup.features.user.account.infra
 
 import app.vercel.shiftup.features.core.infra.orThrow
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
-import app.vercel.shiftup.features.user.account.domain.model.Cast
-import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Email
@@ -43,14 +41,6 @@ class UserRepository(
         val userDTOs = userDTOCollection.find(UserDTO::id `in` ids).toList()
         val invites = findInvites(userDTOs)
         return userDTOs.toAvailableUsers(invites)
-    }
-
-    suspend fun findCastByCastIds(ids: Iterable<CastId>): List<Cast> {
-        val users = findAvailableUserByIds(ids.map { it.value })
-        // ユーザーのロールが変更されてCastの生成に失敗した場合は返さない
-        return users.mapNotNull {
-            runCatching { Cast(it) }.getOrNull()
-        }
     }
 
     suspend fun findAvailableUserByStudentNumbers(studentNumbers: Iterable<StudentNumber>): List<AvailableUser> {
