@@ -15,6 +15,9 @@ sealed interface Department {
     val symbol: String
 
     companion object {
+
+        val values = NeecDepartment.values().toList() + TeuDepartment.values().toList()
+
         fun valueOf(value: String): Department = sequenceOf(TeuDepartment::valueOf, NeecDepartment::valueOf)
             .map { runCatching { it(value) } }
             .find { it.isSuccess }

@@ -3,9 +3,13 @@ package app.vercel.shiftup.presentation.routes.attendance.requests.date
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.request.application.ApplyAttendanceRequestToOpenCampusDateUseCase
 import app.vercel.shiftup.features.attendance.request.application.ForcedChangeAttendanceRequestStateUseCase
+import app.vercel.shiftup.features.attendance.request.application.GetCastsByAttendanceRequestUseCase
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.user.account.domain.model.UserId
+import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Role
+import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
+import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.attendance.Attendance
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
@@ -18,8 +22,36 @@ import io.ktor.server.resources.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
+import org.mpierce.ktor.csrf.noCsrfProtection
 
 fun Application.attendanceRequestsDateRouting() = routingWithRole(Role.Manager) {
+    noCsrfProtection {
+        get<Requests.Date.Casts> {
+            @Serializable
+            data class ResponseItem(
+                val id: UserId,
+                val name: Name,
+                val schoolProfile: SchoolProfile,
+                val position: Position,
+            )
+
+            val useCase: GetCastsByAttendanceRequestUseCase by inject()
+            val response = useCase(
+                openCampusDate = it.parent.openCampusDate,
+                state = it.state,
+            ).map { cast ->
+                val user = cast.value
+                ResponseItem(
+                    id = user.id,
+                    name = user.name,
+                    schoolProfile = user.schoolProfile,
+                    position = user.position,
+                )
+            }
+
+            call.respond(response)
+        }
+    }
     put<Requests.Date> {
         val useCase: ApplyAttendanceRequestToOpenCampusDateUseCase by inject()
         useCase(
@@ -56,5 +88,9 @@ class Requests(val parent: Attendance) {
             @Resource("state")
             class State(val parent: Id)
         }
+
+        @Serializable
+        @Resource("casts")
+        class Casts(val parent: Date, val state: AttendanceRequestState)
     }
 }

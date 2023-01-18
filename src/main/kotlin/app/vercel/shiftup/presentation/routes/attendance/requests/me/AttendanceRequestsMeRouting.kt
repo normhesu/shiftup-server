@@ -1,10 +1,9 @@
 package app.vercel.shiftup.presentation.routes.attendance.requests.me
 
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
-import app.vercel.shiftup.features.attendance.request.application.GetRespondableAttendanceRequestUseCase
+import app.vercel.shiftup.features.attendance.request.application.GetAfterNowAttendanceRequestAndSurveyUseCase
 import app.vercel.shiftup.features.attendance.request.application.RespondAttendanceRequestUseCase
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
-import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
@@ -26,20 +25,46 @@ import org.mpierce.ktor.csrf.noCsrfProtection
 
 fun Application.attendanceRequestsMeRouting() = routingWithRole(Role.Cast) {
     noCsrfProtection {
-        get<Requests> {
+        get<Requests.Divided> {
             @Serializable
-            data class ResponseItem(
+            data class ResponseOpenCampusDateAndSurveyName(
                 val openCampusDate: OpenCampusDate,
-                val castId: CastId,
+                val surveyName: String?,
             )
 
-            val useCase: GetRespondableAttendanceRequestUseCase by inject()
-            val response = useCase(call.sessions.userId).map {
-                ResponseItem(
-                    openCampusDate = it.openCampusDate,
-                    castId = it.castId,
-                )
-            }
+            @Serializable
+            data class ResponseAttendanceRequest(
+                val openCampusDate: OpenCampusDate,
+                val state: AttendanceRequestState,
+                val surveyName: String?,
+            )
+
+            @Serializable
+            data class Response(
+                val canRespondRequests: List<ResponseOpenCampusDateAndSurveyName>,
+                val respondedRequests: List<ResponseAttendanceRequest>,
+            )
+
+            val useCase: GetAfterNowAttendanceRequestAndSurveyUseCase by inject()
+            val requests = useCase(call.sessions.userId)
+            val response = Response(
+                canRespondRequests = requests.canRespondRequestAndSurveyList
+                    .map { (request, survey) ->
+                        ResponseOpenCampusDateAndSurveyName(
+                            openCampusDate = request.openCampusDate,
+                            surveyName = survey?.name,
+                        )
+                    },
+                respondedRequests = requests.respondedRequestAndSurveyList
+                    .map { (request, survey) ->
+                        ResponseAttendanceRequest(
+                            openCampusDate = request.openCampusDate,
+                            state = request.state,
+                            surveyName = survey?.name,
+                        )
+                    }
+            )
+
             call.respond(response)
         }
     }
@@ -49,7 +74,7 @@ fun Application.attendanceRequestsMeRouting() = routingWithRole(Role.Cast) {
             userId = call.sessions.userId,
             openCampusDate = it.parent.openCampusDate,
             state = AttendanceRequestState.NonBlank(
-                enumValueOf(call.receiveText())
+                name = enumValueOf(call.receiveText()),
             ),
         ).onSuccess {
             call.respond(HttpStatusCode.OK)
@@ -64,6 +89,10 @@ fun Application.attendanceRequestsMeRouting() = routingWithRole(Role.Cast) {
 @Serializable
 @Resource("requests")
 class Requests(val parent: Users.Me.Attendance) {
+    @Serializable
+    @Resource("divided")
+    class Divided(val parent: Requests)
+
     @Serializable
     @Resource("{openCampusDate}")
     class Date(val parent: Requests, val openCampusDate: OpenCampusDate) {

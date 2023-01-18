@@ -5,12 +5,15 @@ import app.vercel.shiftup.features.attendance.survey.answer.application.AddOrRep
 import app.vercel.shiftup.features.attendance.survey.application.*
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.service.CastWithAttendanceRequested
+import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.attendance.Attendance
+import app.vercel.shiftup.presentation.routes.attendance.surveys.me.attendanceSurveysMeRouting
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
@@ -35,6 +38,7 @@ import org.mpierce.ktor.csrf.noCsrfProtection
 fun Application.attendanceSurveysRouting() {
     castRouting()
     managerRouting()
+    attendanceSurveysMeRouting()
 }
 
 private fun Application.castRouting() = routingWithRole(Role.Cast) {
@@ -124,31 +128,52 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
             val name: Name,
             val schoolProfile: SchoolProfile,
             val position: Position,
-        )
+            val attendanceRequested: Boolean,
+        ) {
+            constructor(castWithAttendanceRequested: CastWithAttendanceRequested) : this(
+                user = castWithAttendanceRequested.cast.value,
+                attendanceRequested = castWithAttendanceRequested.attendanceRequested
+            )
+
+            // 上記のコンストラクタで使用されていても「コンストラクターは使用されません」という警告が出るので無視する
+            @Suppress("unused")
+            private constructor(user: AvailableUser, attendanceRequested: Boolean) : this(
+                id = user.id,
+                name = user.name,
+                position = user.position,
+                schoolProfile = user.schoolProfile,
+                attendanceRequested = attendanceRequested,
+            )
+        }
 
         @Serializable
         data class ResponseItem(
             val date: OpenCampusDate,
+            val tallied: Boolean,
             val availableCasts: Set<ResponseCast>,
         )
 
-        val tallyUseCase: TallyAttendanceSurveyUseCase by inject()
-        val tallyResult = tallyUseCase(resource.parent.attendanceSurveyId)
+        @Serializable
+        data class Response(
+            val tallied: Boolean,
+            val openCampuses: List<ResponseItem>,
+        )
 
-        val response = tallyResult.map { (date, casts) ->
+        val useCase: TallyAttendanceSurveyUseCase by inject()
+        val tallyResult = useCase(resource.parent.attendanceSurveyId)
+
+        val openCampuses = tallyResult.results.map {
             ResponseItem(
-                date = date,
-                availableCasts = casts.map {
-                    val user = it.value
-                    ResponseCast(
-                        id = user.id,
-                        name = user.name,
-                        position = user.position,
-                        schoolProfile = user.schoolProfile,
-                    )
-                }.toSet()
+                date = it.openCampusDate,
+                tallied = it.tallied,
+                availableCasts = it.castsWithAttendanceRequested.map(::ResponseCast).toSet(),
             )
         }
+
+        val response = Response(
+            tallied = tallyResult.tallied,
+            openCampuses = openCampuses,
+        )
 
         call.respond(response)
     }

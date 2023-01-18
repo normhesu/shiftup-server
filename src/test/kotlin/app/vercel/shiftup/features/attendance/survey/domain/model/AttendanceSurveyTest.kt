@@ -5,15 +5,13 @@ import app.vercel.shiftup.features.attendance.survey.answer.domain.model.Attenda
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.AttendanceSurveyAnswers
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampus
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
-import io.kotest.assertions.throwables.shouldNotThrowAny
-import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.annotation.DoNotParallelize
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
-import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
 import kotlinx.datetime.Clock
@@ -38,59 +36,6 @@ class AttendanceSurveyTest : FreeSpec({
     }
 
     "AttendanceSurvey" - {
-        "生成" - {
-            "正常系" - {
-                "名前が空白文字や空ではなく、日程が全て同じ年度で呼び出し日以降の場合、生成できる" {
-                    shouldNotThrowAny {
-                        AttendanceSurvey(
-                            name = "テスト",
-                            openCampusSchedule = OpenCampusDates(
-                                setOf(
-                                    OpenCampusDate(LocalDate(2022, 1, 1)),
-                                    OpenCampusDate(LocalDate(2022, 1, 2)),
-                                )
-                            ),
-                        )
-                    }
-                }
-            }
-            "異常系" - {
-                "オープンキャンパスの日程が空の場合、IllegalArgumentExceptionを投げる" {
-                    shouldThrowExactly<IllegalArgumentException> {
-                        AttendanceSurvey(
-                            name = "テスト",
-                            openCampusSchedule = OpenCampusDates(emptySet()),
-                        )
-                    }
-                }
-                "オープンキャンパスの日程が現在より古い場合、IllegalArgumentExceptionを投げる" {
-                    shouldThrowExactly<IllegalArgumentException> {
-                        AttendanceSurvey(
-                            name = "テスト",
-                            openCampusSchedule = OpenCampusDates(
-                                setOf(OpenCampusDate(LocalDate(2021, 12, 31)))
-                            ),
-                        )
-                    }
-                }
-                "名前が空の場合、IllegalArgumentExceptionを投げる" {
-                    shouldThrowExactly<IllegalArgumentException> {
-                        AttendanceSurvey(
-                            name = "",
-                            openCampusSchedule = mockk(relaxed = true),
-                        )
-                    }
-                }
-                "名前が空白文字のみの場合、IllegalArgumentExceptionを投げる" {
-                    shouldThrowExactly<IllegalArgumentException> {
-                        AttendanceSurvey(
-                            name = " ",
-                            openCampusSchedule = mockk(relaxed = true),
-                        )
-                    }
-                }
-            }
-        }
         "集計" - {
             "正常系" - {
                 val openCampusDatesValue = setOf(
@@ -99,9 +44,12 @@ class AttendanceSurveyTest : FreeSpec({
                     OpenCampusDate(LocalDate(2022, 1, 20)),
                     OpenCampusDate(LocalDate(2022, 1, 31)),
                 )
-                val survey = AttendanceSurvey(
+                val survey = AttendanceSurvey.fromFactory(
                     name = "テスト",
                     openCampusSchedule = OpenCampusDates(openCampusDatesValue),
+                    creationDate = Clock.System.now().toTokyoLocalDateTime().date,
+                    available = true,
+                    id = AttendanceSurveyId(),
                 )
 
                 "回答が無い場合、キャスト一覧は空になる" {
@@ -115,12 +63,12 @@ class AttendanceSurveyTest : FreeSpec({
                         val answersSet = setOf(
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
-                                availableCastId = CastId.reconstruct(UserId("A")),
-                                availableDays = OpenCampusDates(emptySet())
+                                availableCastId = CastId.unsafe(UserId("A")),
+                                availableDays = OpenCampusDates.empty()
                             ),
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
-                                availableCastId = CastId.reconstruct(UserId("B")),
+                                availableCastId = CastId.unsafe(UserId("B")),
                                 availableDays = OpenCampusDates(
                                     setOf(
                                         openCampusDatesValue.elementAt(0),
@@ -131,7 +79,7 @@ class AttendanceSurveyTest : FreeSpec({
                             ),
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
-                                availableCastId = CastId.reconstruct(UserId("C")),
+                                availableCastId = CastId.unsafe(UserId("C")),
                                 availableDays = OpenCampusDates(
                                     setOf(
                                         openCampusDatesValue.elementAt(1),
@@ -140,7 +88,7 @@ class AttendanceSurveyTest : FreeSpec({
                             ),
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
-                                availableCastId = CastId.reconstruct(UserId("D")),
+                                availableCastId = CastId.unsafe(UserId("D")),
                                 availableDays = OpenCampusDates(
                                     setOf(
                                         openCampusDatesValue.elementAt(0),
@@ -166,11 +114,11 @@ class AttendanceSurveyTest : FreeSpec({
                         setOf(
                             openCampusConstructor.call(
                                 openCampusDatesValue.elementAt(0),
-                                setOf("B", "D").map { CastId.reconstruct(UserId(it)) }.toSet()
+                                setOf("B", "D").map { CastId.unsafe(UserId(it)) }.toSet()
                             ),
                             openCampusConstructor.call(
                                 openCampusDatesValue.elementAt(1),
-                                setOf("B", "C").map { CastId.reconstruct(UserId(it)) }.toSet()
+                                setOf("B", "C").map { CastId.unsafe(UserId(it)) }.toSet()
                             ),
                             openCampusConstructor.call(
                                 openCampusDatesValue.elementAt(2),
@@ -178,7 +126,7 @@ class AttendanceSurveyTest : FreeSpec({
                             ),
                             openCampusConstructor.call(
                                 openCampusDatesValue.elementAt(3),
-                                setOf("B", "D").map { CastId.reconstruct(UserId(it)) }.toSet()
+                                setOf("B", "D").map { CastId.unsafe(UserId(it)) }.toSet()
                             )
                         )
                     }
