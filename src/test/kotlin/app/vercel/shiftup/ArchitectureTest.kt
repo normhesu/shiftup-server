@@ -26,7 +26,7 @@ class ArchitectureTest : FreeSpec({
                     )
                     .whereLayer(LayerName.Domain.SERVICE).mayOnlyBeAccessedByLayers(
                         LayerName.APPLICATION, LayerName.Application.SERVICE,
-                        LayerName.INFRASTRUCTURE,
+                        LayerName.INFRASTRUCTURE, LayerName.PRESENTATION,
                     )
                     .whereLayer(LayerName.INFRASTRUCTURE).mayOnlyBeAccessedByLayers(
                         LayerName.APPLICATION, LayerName.Application.SERVICE,
@@ -40,6 +40,14 @@ class ArchitectureTest : FreeSpec({
                     .whereLayer(LayerName.PRESENTATION).mayNotBeAccessedByAnyLayer()
                     .withOptionalLayers(true)
                     .ensureAllClassesAreContainedInArchitecture()
+                    .check(CLASSES)
+            }
+
+            "プレゼンテーション層はドメインサービスに依存しない" {
+                ArchRuleDefinition.noClasses()
+                    .that().resideInAPackage(PackageId.PRESENTATION)
+                    .should().dependOnClassesThat().haveSimpleNameEndingWith(Suffix.DOMAIN_SERVICE)
+                    .allowEmptyShould(true)
                     .check(CLASSES)
             }
             "ユースケース間は依存しない" {
@@ -182,6 +190,7 @@ private object PackageId {
 }
 
 private object Suffix {
+    const val DOMAIN_SERVICE = "DomainService"
     const val USE_CASE = "UseCase"
     const val APPLICATION_SERVICE = "ApplicationService"
     const val REPOSITORY = "Repository"

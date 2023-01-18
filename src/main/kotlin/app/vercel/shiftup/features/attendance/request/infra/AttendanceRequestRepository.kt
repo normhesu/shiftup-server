@@ -5,6 +5,7 @@ import app.vercel.shiftup.features.attendance.request.domain.model.AttendanceReq
 import app.vercel.shiftup.features.attendance.request.domain.model.AttendanceRequestId
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestStateSerializer
+import app.vercel.shiftup.features.attendance.request.domain.service.AttendanceRequestRepositoryInterface
 import app.vercel.shiftup.features.core.infra.orThrow
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import com.mongodb.client.model.DeleteManyModel
@@ -20,7 +21,7 @@ import org.litote.kmongo.serialization.registerSerializer
 @Single
 class AttendanceRequestRepository(
     private val database: CoroutineDatabase,
-) {
+) : AttendanceRequestRepositoryInterface {
     companion object {
         init {
             registerSerializer(AttendanceRequestStateSerializer)
@@ -33,7 +34,7 @@ class AttendanceRequestRepository(
         return collection.findOneById(attendanceRequestId)
     }
 
-    suspend fun findByCastIds(castIds: Collection<CastId>): List<AttendanceRequest> {
+    override suspend fun findByCastIds(castIds: Collection<CastId>): List<AttendanceRequest> {
         return collection.find(AttendanceRequest::castId `in` castIds).toList()
     }
 
