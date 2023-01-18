@@ -54,20 +54,18 @@ private fun Application.schedule(
     runStartup: Boolean = false,
     task: suspend () -> Unit,
 ) = launch {
-    // CancellationException以外が投げられても終了しない
-    suspend fun runTask() = runSuspendCatching {
-        log.info("Run $name")
-        task()
-    }.onSuccess {
-        log.info("Success $name")
-    }.onFailure {
-        log.error("Failed $name")
-        log.error(it)
-    }
-
-    if (runStartup) runTask()
+    if (!runStartup) delay(fixedDelay)
     while (true) {
+        // CancellationException以外が投げられても終了しない
+        runSuspendCatching {
+            log.info("Run $name")
+            task()
+        }.onSuccess {
+            log.info("Success $name")
+        }.onFailure {
+            log.error("Failed $name")
+            log.error(it)
+        }
         delay(fixedDelay)
-        runTask()
     }
 }
