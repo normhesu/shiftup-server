@@ -58,19 +58,19 @@ class ArchitectureTest : FreeSpec({
                     .check(CLASSES)
             }
 
-            "ユースケース間は依存しない" {
-                ArchRuleDefinition.noClasses()
-                    .that().resideInAPackage(PackageId.APPLICATION)
-                    .and().haveSimpleNameEndingWith(Suffix.USE_CASE)
-                    .should().onlyHaveDependentClassesThat().haveSimpleNameEndingWith(Suffix.USE_CASE)
-                    .allowEmptyShould(true)
-                    .check(CLASSES)
-            }
             "アプリケーションサービス間は依存しない" {
                 ArchRuleDefinition.noClasses()
                     .that().resideInAPackage(PackageId.Application.SERVICE)
                     .and().haveSimpleNameEndingWith(Suffix.APPLICATION_SERVICE)
                     .should().onlyHaveDependentClassesThat().haveSimpleNameEndingWith(Suffix.APPLICATION_SERVICE)
+                    .allowEmptyShould(true)
+                    .check(CLASSES)
+            }
+            "ユースケース間は依存しない" {
+                ArchRuleDefinition.noClasses()
+                    .that().resideInAPackage(PackageId.APPLICATION)
+                    .and().haveSimpleNameEndingWith(Suffix.USE_CASE)
+                    .should().onlyHaveDependentClassesThat().haveSimpleNameEndingWith(Suffix.USE_CASE)
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
