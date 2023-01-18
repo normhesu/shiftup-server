@@ -24,63 +24,72 @@ import kotlinx.serialization.Serializable
 import org.mpierce.ktor.csrf.noCsrfProtection
 
 fun Application.attendanceRequestsMeRouting() = routingWithRole(Role.Cast) {
-    noCsrfProtection {
-        get<Requests.Divided> {
-            @Serializable
-            data class ResponseOpenCampusDateAndSurveyName(
-                val openCampusDate: OpenCampusDate,
-                val surveyName: String?,
-            )
+    getDividedRequests()
+    postState()
+}
 
-            @Serializable
-            data class ResponseAttendanceRequest(
-                val openCampusDate: OpenCampusDate,
-                val state: AttendanceRequestState,
-                val surveyName: String?,
-            )
+private fun Route.getDividedRequests() = noCsrfProtection {
+    get<Requests.Divided> {
+        @Serializable
+        data class ResponseOpenCampusDateAndSurveyName(
+            val openCampusDate: OpenCampusDate,
+            val surveyName: String?,
+        )
 
-            @Serializable
-            data class Response(
-                val canRespondRequests: List<ResponseOpenCampusDateAndSurveyName>,
-                val respondedRequests: List<ResponseAttendanceRequest>,
-            )
+        @Serializable
+        data class ResponseAttendanceRequest(
+            val openCampusDate: OpenCampusDate,
+            val state: AttendanceRequestState,
+            val surveyName: String?,
+        )
 
-            val useCase: GetAfterNowAttendanceRequestAndSurveyUseCase by inject()
-            val requests = useCase(call.sessions.userId)
-            val response = Response(
-                canRespondRequests = requests.canRespondRequestAndSurveyList
-                    .map { (request, survey) ->
-                        ResponseOpenCampusDateAndSurveyName(
-                            openCampusDate = request.openCampusDate,
-                            surveyName = survey?.name,
-                        )
-                    },
-                respondedRequests = requests.respondedRequestAndSurveyList
-                    .map { (request, survey) ->
-                        ResponseAttendanceRequest(
-                            openCampusDate = request.openCampusDate,
-                            state = request.state,
-                            surveyName = survey?.name,
-                        )
-                    }
-            )
+        @Serializable
+        data class Response(
+            val canRespondRequests: List<ResponseOpenCampusDateAndSurveyName>,
+            val respondedRequests: List<ResponseAttendanceRequest>,
+        )
 
-            call.respond(response)
-        }
+        val useCase: GetAfterNowAttendanceRequestAndSurveyUseCase by inject()
+        val requests = useCase(call.sessions.userId)
+        val response = Response(
+            canRespondRequests = requests.canRespondRequestAndSurveyList
+                .map { (request, survey) ->
+                    ResponseOpenCampusDateAndSurveyName(
+                        openCampusDate = request.openCampusDate,
+                        surveyName = survey?.name,
+                    )
+                },
+            respondedRequests = requests.respondedRequestAndSurveyList
+                .map { (request, survey) ->
+                    ResponseAttendanceRequest(
+                        openCampusDate = request.openCampusDate,
+                        state = request.state,
+                        surveyName = survey?.name,
+                    )
+                }
+        )
+
+        call.respond(response)
     }
-    post<Requests.Date.State> {
-        val useCase: RespondAttendanceRequestUseCase by inject()
-        useCase(
-            userId = call.sessions.userId,
-            openCampusDate = it.parent.openCampusDate,
-            state = AttendanceRequestState.NonBlank(
-                name = enumValueOf(call.receiveText()),
-            ),
-        ).onSuccess {
-            call.respond(HttpStatusCode.OK)
-        }.onFailure {
-            call.response.headers.append(HttpHeaders.Allow, "")
-            call.respond(HttpStatusCode.MethodNotAllowed)
+}
+
+private fun Route.postState() = post<Requests.Date.State> {
+    val useCase: RespondAttendanceRequestUseCase by inject()
+    useCase(
+        userId = call.sessions.userId,
+        openCampusDate = it.parent.openCampusDate,
+        state = AttendanceRequestState.NonBlank(
+            name = enumValueOf(call.receiveText()),
+        ),
+    ).onSuccess {
+        call.respond(HttpStatusCode.OK)
+    }.onFailure { e ->
+        @Suppress("USELESS_IS_CHECK")
+        when (e) {
+            is IllegalStateException -> {
+                call.response.headers.append(HttpHeaders.Allow, "")
+                call.respond(HttpStatusCode.MethodNotAllowed)
+            }
         }
     }
 }

@@ -32,7 +32,7 @@ class ArchitectureTest : FreeSpec({
                         LayerName.APPLICATION, LayerName.Application.SERVICE,
                     )
                     .whereLayer(LayerName.Application.SERVICE).mayOnlyBeAccessedByLayers(
-                        LayerName.APPLICATION,
+                        LayerName.APPLICATION, LayerName.PRESENTATION,
                     )
                     .whereLayer(LayerName.APPLICATION).mayOnlyBeAccessedByLayers(
                         LayerName.PRESENTATION,
@@ -50,19 +50,27 @@ class ArchitectureTest : FreeSpec({
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
-            "ユースケース間は依存しない" {
+            "プレゼンテーション層はアプリケーションサービスに依存しない" {
                 ArchRuleDefinition.noClasses()
-                    .that().resideInAPackage(PackageId.APPLICATION)
-                    .and().haveSimpleNameEndingWith(Suffix.USE_CASE)
-                    .should().onlyHaveDependentClassesThat().haveSimpleNameEndingWith(Suffix.USE_CASE)
+                    .that().resideInAPackage(PackageId.PRESENTATION)
+                    .should().dependOnClassesThat().haveSimpleNameEndingWith(Suffix.APPLICATION_SERVICE)
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
+
             "アプリケーションサービス間は依存しない" {
                 ArchRuleDefinition.noClasses()
                     .that().resideInAPackage(PackageId.Application.SERVICE)
                     .and().haveSimpleNameEndingWith(Suffix.APPLICATION_SERVICE)
                     .should().onlyHaveDependentClassesThat().haveSimpleNameEndingWith(Suffix.APPLICATION_SERVICE)
+                    .allowEmptyShould(true)
+                    .check(CLASSES)
+            }
+            "ユースケース間は依存しない" {
+                ArchRuleDefinition.noClasses()
+                    .that().resideInAPackage(PackageId.APPLICATION)
+                    .and().haveSimpleNameEndingWith(Suffix.USE_CASE)
+                    .should().onlyHaveDependentClassesThat().haveSimpleNameEndingWith(Suffix.USE_CASE)
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
