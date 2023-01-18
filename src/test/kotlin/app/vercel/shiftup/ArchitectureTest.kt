@@ -32,7 +32,7 @@ class ArchitectureTest : FreeSpec({
                         LayerName.APPLICATION, LayerName.Application.SERVICE,
                     )
                     .whereLayer(LayerName.Application.SERVICE).mayOnlyBeAccessedByLayers(
-                        LayerName.APPLICATION,
+                        LayerName.APPLICATION, LayerName.PRESENTATION,
                     )
                     .whereLayer(LayerName.APPLICATION).mayOnlyBeAccessedByLayers(
                         LayerName.PRESENTATION,
@@ -50,6 +50,14 @@ class ArchitectureTest : FreeSpec({
                     .allowEmptyShould(true)
                     .check(CLASSES)
             }
+            "プレゼンテーション層はアプリケーションサービスに依存しない" {
+                ArchRuleDefinition.noClasses()
+                    .that().resideInAPackage(PackageId.PRESENTATION)
+                    .should().dependOnClassesThat().haveSimpleNameEndingWith(Suffix.APPLICATION_SERVICE)
+                    .allowEmptyShould(true)
+                    .check(CLASSES)
+            }
+
             "ユースケース間は依存しない" {
                 ArchRuleDefinition.noClasses()
                     .that().resideInAPackage(PackageId.APPLICATION)
