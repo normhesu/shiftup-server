@@ -20,8 +20,11 @@ fun Application.configureSessions() {
     val environment = environment
     install(Sessions) {
         cookie<UserSession>(
-            "user_session",
-            directorySessionStorage(
+            name = run {
+                val prefix = "__Host-".takeIf { environment.developmentMode.not() }.orEmpty()
+                prefix + "user-session"
+            },
+            storage = directorySessionStorage(
                 rootDir = File("build/.sessions"),
                 cached = true,
             )
