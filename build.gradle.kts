@@ -5,13 +5,13 @@ import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
 plugins {
     application
-    kotlin("jvm") version "1.7.21"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
+    kotlin("jvm") version "1.8.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.gitlab.arturbosch.detekt") version "1.22.0"
-    id("com.google.devtools.ksp") version "1.7.21-1.0.8"
+    id("com.google.devtools.ksp") version "1.8.0-1.0.8"
     id("org.jetbrains.dokka") version "1.7.20"
-    id("org.dddjava.jig-gradle-plugin") version "2022.11.1"
+    id("org.dddjava.jig-gradle-plugin") version "2022.12.1"
     id("com.bnorm.power.kotlin-power-assert") version "0.12.0"
     id("com.github.ben-manes.versions") version "0.44.0"
 }
@@ -39,7 +39,7 @@ repositories {
 }
 
 object Version {
-    const val ktor = "2.2.1"
+    const val ktor = "2.2.2"
     const val logback = "1.4.5"
     const val ktorCsrf = "1.0.0"
     const val detekt = "1.22.0"
@@ -48,8 +48,9 @@ object Version {
     const val archUnit = "1.0.1"
     const val mockK = "1.13.3"
     const val kmongo = "4.8.0"
-    const val koin = "3.2.2"
-    const val koinAnnotations = "1.0.3"
+    const val koin = "3.3.2"
+    const val koinAnnotations = "1.1.0"
+    const val koinKtorAndSlf4j = "3.3.0"
     const val kotlinResult = "1.1.16"
     const val kotlinxDatetime = "0.4.0"
 }
@@ -76,8 +77,8 @@ dependencies {
     implementation("org.mpierce.ktor.csrf:ktor-csrf:${Version.ktorCsrf}")
     implementation("org.litote.kmongo:kmongo-coroutine-serialization:${Version.kmongo}")
     implementation("io.insert-koin:koin-core:${Version.koin}")
-    implementation("io.insert-koin:koin-ktor:${Version.koin}")
-    implementation("io.insert-koin:koin-logger-slf4j:${Version.koin}")
+    implementation("io.insert-koin:koin-ktor:${Version.koinKtorAndSlf4j}")
+    implementation("io.insert-koin:koin-logger-slf4j:${Version.koinKtorAndSlf4j}")
     implementation("io.insert-koin:koin-annotations:${Version.koinAnnotations}")
     implementation("com.michael-bull.kotlin-result:kotlin-result:${Version.kotlinResult}")
     implementation("com.michael-bull.kotlin-result:kotlin-result-coroutines:${Version.kotlinResult}")
