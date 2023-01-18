@@ -2,6 +2,7 @@ package app.vercel.shiftup.presentation.routes.attendance.surveys
 
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.answer.application.AddOrReplaceAttendanceSurveyAnswerUseCase
+import app.vercel.shiftup.features.attendance.survey.answer.domain.service.AttendanceSurveyAnswerFactoryException
 import app.vercel.shiftup.features.attendance.survey.application.*
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
@@ -50,9 +51,14 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
             availableDays = call.receive(),
         ).onSuccess {
             call.respond(HttpStatusCode.NoContent)
-        }.onFailure {
-            call.response.headers.append(HttpHeaders.Allow, "")
-            call.respond(HttpStatusCode.MethodNotAllowed)
+        }.onFailure { e ->
+            @Suppress("USELESS_IS_CHECK")
+            when (e) {
+                is AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey -> {
+                    call.response.headers.append(HttpHeaders.Allow, "")
+                    call.respond(HttpStatusCode.MethodNotAllowed)
+                }
+            }
         }
     }
 }

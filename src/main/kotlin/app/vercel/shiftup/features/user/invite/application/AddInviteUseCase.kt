@@ -19,8 +19,10 @@ class AddInviteUseCase(
         inviteRepository.add(invite)
     }.mapError {
         val invited = it is MongoException && it.code == DUPLICATE_KEY_CODE
-        if (invited) InvitedException() else throw it
+        if (invited) AddInviteUseCaseException.Invited else throw it
     }
 }
 
-class InvitedException : Exception()
+sealed interface AddInviteUseCaseException {
+    object Invited : Exception(), AddInviteUseCaseException
+}

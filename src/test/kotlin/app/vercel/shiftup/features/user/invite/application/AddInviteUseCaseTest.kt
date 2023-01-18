@@ -35,7 +35,7 @@ class AddInviteUseCaseTest : FreeSpec({
             }
         }
 
-        "ユーザーが既に招待されている場合は、追加せずにErr(InvitedException())を返す" {
+        "ユーザーが既に招待されている場合は、追加せずにErr<AddInviteUseCaseException.Invited>を返す" {
             val duplicateKeyCode = 11000
             val mockMongoException: MongoException = mockk(relaxed = true)
 
@@ -49,7 +49,7 @@ class AddInviteUseCaseTest : FreeSpec({
                 repository.add(invite)
             } throws mockMongoException
 
-            useCase(invite).shouldBeInstanceOf<Err<InvitedException>>()
+            useCase(invite).shouldBeInstanceOf<Err<AddInviteUseCaseException.Invited>>()
         }
     }
 })

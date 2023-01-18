@@ -5,6 +5,7 @@ import app.vercel.shiftup.features.user.domain.model.value.Department
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.application.AddInviteUseCase
+import app.vercel.shiftup.features.user.invite.application.AddInviteUseCaseException
 import app.vercel.shiftup.features.user.invite.application.GetAllInvitesWithNameOrNullUseCase
 import app.vercel.shiftup.features.user.invite.application.RemoveInviteUseCase
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
@@ -57,13 +58,18 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
         useCase(invite = call.receive())
             .onSuccess {
                 call.respond(HttpStatusCode.Created)
-            }.onFailure {
-                call.response.headers.append(
-                    name = HttpHeaders.Allow,
-                    value = listOf(HttpMethod.Get, HttpMethod.Delete)
-                        .joinToString { it.value },
-                )
-                call.respond(HttpStatusCode.MethodNotAllowed)
+            }.onFailure { e ->
+                @Suppress("USELESS_IS_CHECK")
+                when (e) {
+                    is AddInviteUseCaseException.Invited -> {
+                        call.response.headers.append(
+                            name = HttpHeaders.Allow,
+                            value = listOf(HttpMethod.Get, HttpMethod.Delete)
+                                .joinToString { it.value },
+                        )
+                        call.respond(HttpStatusCode.MethodNotAllowed)
+                    }
+                }
             }
     }
     delete<Invites.Id> {
