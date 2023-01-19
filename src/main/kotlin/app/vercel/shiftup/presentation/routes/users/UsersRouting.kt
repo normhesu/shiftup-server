@@ -1,5 +1,6 @@
 package app.vercel.shiftup.presentation.routes.users
 
+import app.vercel.shiftup.features.user.account.application.GetUserNameUseCase
 import app.vercel.shiftup.features.user.account.application.GetUserRolesUseCase
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
@@ -23,6 +24,12 @@ fun Application.usersRouting() = routing {
                 val roles = getUserRolesUseCase(call.sessions.userId).let(::checkNotNull)
                 call.respond(roles)
             }
+
+            get<Users.Me.Name> {
+                val useCase: GetUserNameUseCase by inject()
+                val name = useCase(call.sessions.userId).let(::checkNotNull)
+                call.respond(name)
+            }
         }
     }
 }
@@ -37,6 +44,10 @@ class Users {
         @Serializable
         @Resource("roles")
         class Roles(val parent: Me)
+
+        @Serializable
+        @Resource("name")
+        class Name(val parent: Me)
 
         @Serializable
         @Resource("attendance")
