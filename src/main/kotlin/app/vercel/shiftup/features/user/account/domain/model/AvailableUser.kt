@@ -30,6 +30,8 @@ data class AvailableUser(
 
     fun hasRole(role: Role) = role in roles
 
+    fun changeName(name: Name) = copy(name = name)
+
     private fun getSchoolYear(fiscalYear: Int?) = studentNumber.getSchoolYear(
         tenure = department.tenure,
         fiscalYear = fiscalYear,

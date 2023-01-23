@@ -1,7 +1,8 @@
 package app.vercel.shiftup.presentation.routes.users
 
-import app.vercel.shiftup.features.user.account.application.GetUserNameUseCase
-import app.vercel.shiftup.features.user.account.application.GetUserRolesUseCase
+import app.vercel.shiftup.features.user.account.application.*
+import app.vercel.shiftup.features.user.account.domain.model.UserId
+import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
 import io.ktor.http.*
@@ -9,7 +10,9 @@ import io.ktor.resources.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
+import io.ktor.server.request.*
 import io.ktor.server.resources.*
+import io.ktor.server.resources.put
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
@@ -30,6 +33,14 @@ fun Application.usersRouting() = routing {
                 val name = useCase(call.sessions.userId).let(::checkNotNull)
                 call.respond(name)
             }
+        }
+        put<Users.Me.Name> {
+            val useCase: ChangeUserNameUseCase by inject()
+            useCase(
+                userId = call.sessions.userId,
+                name = Name(call.receiveText()),
+            )
+            call.respond(HttpStatusCode.NoContent)
         }
     }
 }
