@@ -3,8 +3,13 @@ package app.vercel.shiftup.presentation.routes.users
 import app.vercel.shiftup.features.user.account.application.*
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
+import app.vercel.shiftup.features.user.domain.model.value.Department
+import app.vercel.shiftup.features.user.domain.model.value.Role
+import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
+import com.github.michaelbull.result.onFailure
+import com.github.michaelbull.result.onSuccess
 import io.ktor.http.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
@@ -19,36 +24,62 @@ import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import org.mpierce.ktor.csrf.noCsrfProtection
 
-fun Application.usersRouting() = routing {
-    authenticate {
-        noCsrfProtection {
-            get<Users.Me.Roles> {
-                val getUserRolesUseCase: GetUserRolesUseCase by inject()
-                val roles = getUserRolesUseCase(call.sessions.userId).let(::checkNotNull)
-                call.respond(roles)
-            }
+fun Application.usersRouting() {
+    routing {
+        authenticate {
+            noCsrfProtection {
+                get<Users.Me.Roles> {
+                    val getUserRolesUseCase: GetUserRolesUseCase by inject()
+                    val roles = getUserRolesUseCase(call.sessions.userId).let(::checkNotNull)
+                    call.respond(roles)
+                }
 
-            get<Users.Me.Name> {
-                val useCase: GetUserNameUseCase by inject()
-                val name = useCase(call.sessions.userId).let(::checkNotNull)
-                call.respond(name)
+                get<Users.Me.Name> {
+                    val useCase: GetUserNameUseCase by inject()
+                    val name = useCase(call.sessions.userId).let(::checkNotNull)
+                    call.respond(name)
+                }
+            }
+            put<Users.Me.Name> {
+                val useCase: ChangeUserNameUseCase by inject()
+                useCase(
+                    userId = call.sessions.userId,
+                    name = Name(call.receiveText()),
+                )
+                call.respond(HttpStatusCode.NoContent)
+            }
+            put<Users.Me.Department> {
+                val useCase: ChangeUserDepartmentUseCase by inject()
+                useCase(
+                    userId = call.sessions.userId,
+                    department = Department.valueOf(call.receiveText())
+                )
+                call.respond(HttpStatusCode.NoContent)
             }
         }
-        put<Users.Me.Name> {
-            val useCase: ChangeUserNameUseCase by inject()
+    }
+
+    routingWithRole(Role.Manager) {
+        put<Users.Id.Position> {
+            val useCase: ChangeUserPositionUseCase by inject()
             useCase(
-                userId = call.sessions.userId,
-                name = Name(call.receiveText()),
-            )
-            call.respond(HttpStatusCode.NoContent)
-        }
-        put<Users.Me.Department> {
-            val useCase: ChangeUserDepartmentUseCase by inject()
-            useCase(
-                userId = call.sessions.userId,
-                department = Department.valueOf(call.receiveText())
-            )
-            call.respond(HttpStatusCode.NoContent)
+                userId = it.parent.id,
+                position = enumValueOf(call.receiveText()),
+                operatorId = call.sessions.userId,
+            ).onSuccess {
+                call.respond(HttpStatusCode.NoContent)
+            }.onFailure { e ->
+                when (e) {
+                    is ChangeUserPositionUseCaseException.UserNotFound -> {
+                        throw NotFoundException()
+                    }
+
+                    is ChangeUserPositionUseCaseException.UnsupportedOperation -> {
+                        call.response.headers.append(HttpHeaders.Allow, "")
+                        call.respond(HttpStatusCode.MethodNotAllowed)
+                    }
+                }
+            }
         }
     }
 }
@@ -69,7 +100,19 @@ class Users {
         class Name(val parent: Me)
 
         @Serializable
+        @Resource("department")
+        class Department(val parent: Id)
+
+        @Serializable
         @Resource("attendance")
         class Attendance(val parent: Me)
+    }
+
+    @Serializable
+    @Resource("{id}")
+    class Id(val parent: Users, val id: UserId) {
+        @Serializable
+        @Resource("position")
+        class Position(val parent: Id)
     }
 }

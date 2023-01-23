@@ -37,6 +37,10 @@ class InviteRepository(
         collection.insertOne(invite).orThrow()
     }
 
+    suspend fun replace(invite: Invite) {
+        collection.updateOne(invite).orThrow()
+    }
+
     suspend fun addOrReplace(invite: Invite) {
         collection.updateOne(invite, upsert()).orThrow()
     }

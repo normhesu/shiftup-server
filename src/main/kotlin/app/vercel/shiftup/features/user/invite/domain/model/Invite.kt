@@ -1,10 +1,14 @@
 package app.vercel.shiftup.features.user.invite.domain.model
 
+import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.domain.model.value.*
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
+import com.github.michaelbull.result.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.*
 
 @Serializable
@@ -29,7 +33,9 @@ data class Invite private constructor(
         require(isNeec || isTeu)
     }
 
-    companion object {
+    companion object : KoinComponent {
+        private val firstManager: FirstManager by inject()
+
         operator fun invoke(
             studentNumber: StudentNumber,
             department: Department,
@@ -50,6 +56,15 @@ data class Invite private constructor(
     }
 
     fun changeDepartment(department: Department) = copy(department = department)
+
+    fun changePosition(
+        position: Position,
+        operator: AvailableUser,
+    ): Result<Invite, UnsupportedOperationException> {
+        if (studentNumber == firstManager.studentNumber) return Err(UnsupportedOperationException())
+        require(operator.hasRole(Role.Manager))
+        return Ok(copy(position = position))
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
