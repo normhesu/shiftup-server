@@ -49,6 +49,8 @@ data class Invite private constructor(
         )
     }
 
+    fun changeDepartment(department: Department) = copy(department = department)
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

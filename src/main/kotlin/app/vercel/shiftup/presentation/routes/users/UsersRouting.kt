@@ -42,6 +42,14 @@ fun Application.usersRouting() = routing {
             )
             call.respond(HttpStatusCode.NoContent)
         }
+        put<Users.Me.Department> {
+            val useCase: ChangeUserDepartmentUseCase by inject()
+            useCase(
+                userId = call.sessions.userId,
+                department = Department.valueOf(call.receiveText())
+            )
+            call.respond(HttpStatusCode.NoContent)
+        }
     }
 }
 
