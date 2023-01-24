@@ -2,7 +2,7 @@ package app.vercel.shiftup.presentation.routes.attendance.surveys.me
 
 import app.vercel.shiftup.features.attendance.survey.application.GetCanAnswerAttendanceSurveyAndAnswerListUseCase
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
@@ -26,9 +26,9 @@ fun Application.attendanceSurveysMeRouting() = routingWithRole(Role.Cast) {
             data class ResponseItem(
                 val id: AttendanceSurveyId,
                 val name: String,
-                val openCampusSchedule: OpenCampusDates,
+                val openCampusSchedule: SameFiscalYearOpenCampusDates,
                 val creationDate: LocalDate,
-                val answer: OpenCampusDates,
+                val answer: SameFiscalYearOpenCampusDates,
             )
 
             val useCase: GetCanAnswerAttendanceSurveyAndAnswerListUseCase by inject()
@@ -38,7 +38,7 @@ fun Application.attendanceSurveysMeRouting() = routingWithRole(Role.Cast) {
                     name = survey.name,
                     openCampusSchedule = survey.openCampusSchedule,
                     creationDate = survey.creationDate,
-                    answer = answer?.availableDays ?: OpenCampusDates.empty(),
+                    answer = answer?.availableDays ?: SameFiscalYearOpenCampusDates.empty(),
                 )
             }
             call.respond(response)

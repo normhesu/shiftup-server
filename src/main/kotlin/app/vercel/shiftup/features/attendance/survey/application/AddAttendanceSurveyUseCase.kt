@@ -1,6 +1,6 @@
 package app.vercel.shiftup.features.attendance.survey.application
 
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyFactory
 import app.vercel.shiftup.features.attendance.survey.infra.AttendanceSurveyRepository
 import org.koin.core.annotation.Single
@@ -12,7 +12,7 @@ class AddAttendanceSurveyUseCase(
 ) {
     suspend operator fun invoke(
         name: String,
-        openCampusSchedule: OpenCampusDates,
+        openCampusSchedule: SameFiscalYearOpenCampusDates,
     ) = attendanceSurveyRepository.add(
         attendanceSurveyFactory(
             name = name,

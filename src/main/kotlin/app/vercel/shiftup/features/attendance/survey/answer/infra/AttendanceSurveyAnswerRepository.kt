@@ -2,7 +2,7 @@ package app.vercel.shiftup.features.attendance.survey.answer.infra
 
 import app.vercel.shiftup.features.attendance.survey.answer.domain.model.AttendanceSurveyAnswer
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.AttendanceSurveyAnswers
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameAttendanceSurveyAnswers
 import app.vercel.shiftup.features.core.infra.orThrow
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import com.mongodb.client.result.DeleteResult
@@ -29,7 +29,7 @@ class AttendanceSurveyAnswerRepository(
         .toList()
         .toSet()
         .let {
-            AttendanceSurveyAnswers(answers = it, surveyId = surveyId)
+            SameAttendanceSurveyAnswers(answers = it, surveyId = surveyId)
         }
 
     suspend fun findByCastId(

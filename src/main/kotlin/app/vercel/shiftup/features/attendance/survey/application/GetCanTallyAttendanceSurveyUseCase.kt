@@ -23,7 +23,7 @@ class GetCanTallyAttendanceSurveyUseCase(
             }
         }
 
-        val requestOpenCampusDates = attendanceRequestRepository.findByOpenCampusDateCollection(
+        val requestOpenCampusDates = attendanceRequestRepository.findByOpenCampusDates(
             canSendAttendanceRequestSurveys.flatMap { it.openCampusSchedule },
         ).map {
             it.openCampusDate

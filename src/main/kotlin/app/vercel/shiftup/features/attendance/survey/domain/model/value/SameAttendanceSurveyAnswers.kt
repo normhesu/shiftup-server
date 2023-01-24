@@ -5,12 +5,12 @@ import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurv
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AttendanceSurveyAnswers(
+data class SameAttendanceSurveyAnswers(
     val surveyId: AttendanceSurveyId,
     private val answers: Set<AttendanceSurveyAnswer>,
 ) {
     companion object {
-        fun empty(surveyId: AttendanceSurveyId) = AttendanceSurveyAnswers(
+        fun empty(surveyId: AttendanceSurveyId) = SameAttendanceSurveyAnswers(
             answers = emptySet(),
             surveyId = surveyId,
         )

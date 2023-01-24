@@ -5,7 +5,7 @@ import app.vercel.shiftup.features.attendance.survey.answer.application.AddOrRep
 import app.vercel.shiftup.features.attendance.survey.answer.domain.service.AttendanceSurveyAnswerFactoryException
 import app.vercel.shiftup.features.attendance.survey.application.*
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.attendance.survey.domain.service.CastWithAttendanceRequested
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.UserId
@@ -67,7 +67,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         @Serializable
         data class Params(
             val name: String,
-            val openCampusSchedule: OpenCampusDates,
+            val openCampusSchedule: SameFiscalYearOpenCampusDates,
         )
 
         val useCase: AddAttendanceSurveyUseCase by inject()
@@ -113,7 +113,7 @@ private fun Route.getSurveysRoute() = noCsrfProtection {
         data class ResponseItem(
             val id: AttendanceSurveyId,
             val name: String,
-            val openCampusSchedule: OpenCampusDates,
+            val openCampusSchedule: SameFiscalYearOpenCampusDates,
             val creationDate: LocalDate,
             val available: Boolean,
             val answerCount: Int,

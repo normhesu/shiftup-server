@@ -1,7 +1,7 @@
 package app.vercel.shiftup.features.attendance.survey.answer.domain.model
 
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -18,14 +18,14 @@ data class AttendanceSurveyAnswerId(
 data class AttendanceSurveyAnswer private constructor(
     val surveyId: AttendanceSurveyId,
     val availableCastId: CastId,
-    val availableDays: OpenCampusDates,
+    val availableDays: SameFiscalYearOpenCampusDates,
     @SerialName("_id") val id: AttendanceSurveyAnswerId,
 ) {
     companion object {
         fun fromFactory(
             surveyId: AttendanceSurveyId,
             availableCastId: CastId,
-            availableDays: OpenCampusDates,
+            availableDays: SameFiscalYearOpenCampusDates,
         ) = AttendanceSurveyAnswer(
             surveyId = surveyId,
             availableCastId = availableCastId,

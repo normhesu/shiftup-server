@@ -3,7 +3,7 @@ package app.vercel.shiftup.features.attendance.survey.answer.domain.service
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import app.vercel.shiftup.features.user.account.domain.model.Cast
@@ -39,7 +39,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
         val factory = AttendanceSurveyAnswerFactory(mockSurveyRepository)
         val fakeOpenCampus = AttendanceSurvey.fromFactory(
             name = "テスト",
-            openCampusSchedule = OpenCampusDates(
+            openCampusSchedule = SameFiscalYearOpenCampusDates(
                 setOf(
                     OpenCampusDate(LocalDate(2022, 4, 1))
                 ),
@@ -93,7 +93,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                     val result = factory(
                         attendanceSurveyId = mockk(relaxed = true),
                         cast = mockCast,
-                        availableDays = OpenCampusDates(
+                        availableDays = SameFiscalYearOpenCampusDates(
                             setOf(
                                 OpenCampusDate(
                                     LocalDate(
@@ -124,7 +124,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                         factory(
                             attendanceSurveyId = mockk(relaxed = true),
                             cast = mockCast,
-                            availableDays = OpenCampusDates(
+                            availableDays = SameFiscalYearOpenCampusDates(
                                 setOf(openCampusDate),
                             ),
                         )

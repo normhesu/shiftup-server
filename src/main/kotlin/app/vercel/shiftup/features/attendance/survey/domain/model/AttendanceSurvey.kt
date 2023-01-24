@@ -20,7 +20,7 @@ value class AttendanceSurveyId(
 @Suppress("DataClassPrivateConstructor")
 data class AttendanceSurvey private constructor(
     val name: String,
-    val openCampusSchedule: OpenCampusDates,
+    val openCampusSchedule: SameFiscalYearOpenCampusDates,
     val creationDate: LocalDate,
     val available: Boolean,
     @SerialName("_id") val id: AttendanceSurveyId,
@@ -28,7 +28,7 @@ data class AttendanceSurvey private constructor(
     companion object {
         fun fromFactory(
             name: String,
-            openCampusSchedule: OpenCampusDates,
+            openCampusSchedule: SameFiscalYearOpenCampusDates,
             creationDate: LocalDate,
             available: Boolean,
             id: AttendanceSurveyId,
@@ -54,7 +54,7 @@ data class AttendanceSurvey private constructor(
 
     fun changeAvailable(available: Boolean) = copy(available = available)
 
-    fun tally(answers: AttendanceSurveyAnswers): Set<OpenCampus> {
+    fun tally(answers: SameAttendanceSurveyAnswers): Set<OpenCampus> {
         require(answers.surveyId == id)
         return answers.fold(
             openCampusSchedule.sinceNow().map(::OpenCampus),

@@ -2,7 +2,7 @@ package app.vercel.shiftup.features.attendance.survey.answer.domain.service
 
 import app.vercel.shiftup.features.attendance.survey.answer.domain.model.AttendanceSurveyAnswer
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import com.github.michaelbull.result.Err
@@ -17,7 +17,7 @@ class AttendanceSurveyAnswerFactory(
     suspend operator fun invoke(
         attendanceSurveyId: AttendanceSurveyId,
         cast: Cast,
-        availableDays: OpenCampusDates,
+        availableDays: SameFiscalYearOpenCampusDates,
     ): Result<AttendanceSurveyAnswer, AttendanceSurveyAnswerFactoryException> {
         val survey = attendanceSurveyRepository.findById(
             attendanceSurveyId,

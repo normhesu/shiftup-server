@@ -5,9 +5,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @JvmInline
-value class OpenCampusDates(private val value: Set<OpenCampusDate>) : Iterable<OpenCampusDate> {
+value class SameFiscalYearOpenCampusDates(
+    private val value: Set<OpenCampusDate>,
+) : Iterable<OpenCampusDate> {
     companion object {
-        fun empty() = OpenCampusDates(emptySet())
+        fun empty() = SameFiscalYearOpenCampusDates(emptySet())
     }
 
     init {
@@ -25,19 +27,19 @@ value class OpenCampusDates(private val value: Set<OpenCampusDate>) : Iterable<O
     fun earliestDateOrThrow() = value.min()
     fun laterDateOrThrow() = value.max()
 
-    fun sorted() = OpenCampusDates(value.sorted().toSet())
+    fun sorted() = SameFiscalYearOpenCampusDates(value.sorted().toSet())
 
     operator fun contains(openCampusDate: OpenCampusDate) = value.contains(openCampusDate)
 
-    operator fun plus(other: OpenCampusDates) = OpenCampusDates(
+    operator fun plus(other: SameFiscalYearOpenCampusDates) = SameFiscalYearOpenCampusDates(
         (value + other.value).toSet()
     )
 
     override fun iterator() = value.iterator()
 }
 
-fun Collection<OpenCampusDates>.flatten() = this.fold(
-    OpenCampusDates.empty(),
+fun Collection<SameFiscalYearOpenCampusDates>.flatten() = this.fold(
+    SameFiscalYearOpenCampusDates.empty(),
 ) { acc, openCampusDates ->
     acc + openCampusDates
 }.sorted()
