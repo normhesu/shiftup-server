@@ -9,7 +9,9 @@ import app.vercel.shiftup.features.user.domain.model.value.Department
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.Serializable
+import org.koin.core.annotation.Single
 
+@Single
 class TallyAttendanceSurveyDomainService(
     private val attendanceRequestRepository: AttendanceRequestRepositoryInterface,
     private val getCastsByCastIds: GetCastsByCastIdsApplicationServiceInterface,
