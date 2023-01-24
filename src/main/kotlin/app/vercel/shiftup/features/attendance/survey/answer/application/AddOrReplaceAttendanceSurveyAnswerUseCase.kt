@@ -24,7 +24,7 @@ class AddOrReplaceAttendanceSurveyAnswerUseCase(
         attendanceSurveyId: AttendanceSurveyId,
         userId: UserId,
         availableDays: OpenCampusDates,
-    ): Result<Unit, AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey> {
+    ): Result<Unit, AttendanceSurveyAnswerFactoryException.CanNotAnswer> {
         val answer = attendanceSurveyAnswerFactory(
             attendanceSurveyId = attendanceSurveyId,
             cast = getCastApplicationService(userId),
@@ -32,7 +32,7 @@ class AddOrReplaceAttendanceSurveyAnswerUseCase(
         ).getOrElse {
             when (it) {
                 is AttendanceSurveyAnswerFactoryException.NotFoundSurvey -> throw NotFoundException()
-                is AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey -> return Err(it)
+                is AttendanceSurveyAnswerFactoryException.CanNotAnswer -> return Err(it)
             }
         }
         attendanceSurveyAnswerRepository.addOrReplace(answer)

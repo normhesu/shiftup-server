@@ -54,7 +54,7 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
         }.onFailure { e ->
             @Suppress("USELESS_IS_CHECK")
             when (e) {
-                is AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey -> {
+                is AttendanceSurveyAnswerFactoryException.CanNotAnswer -> {
                     call.response.headers.append(HttpHeaders.Allow, "")
                     call.respond(HttpStatusCode.MethodNotAllowed)
                 }
