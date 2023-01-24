@@ -11,7 +11,6 @@ import app.vercel.shiftup.features.user.account.domain.model.CastId
 import com.mongodb.client.model.DeleteManyModel
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.InsertOneModel
-import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single
 import org.litote.kmongo.*
 import org.litote.kmongo.coroutine.CoroutineDatabase
@@ -112,11 +111,5 @@ class AttendanceRequestRepository(
 
     suspend fun replace(attendanceRequest: AttendanceRequest) {
         collection.updateOne(attendanceRequest).orThrow()
-    }
-
-    suspend fun removeAfterOpenCampusDate(openCampusDate: OpenCampusDate): DeleteResult {
-        return collection.deleteMany(
-            AttendanceRequest::openCampusDate lt openCampusDate,
-        ).orThrow()
     }
 }
