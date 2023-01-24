@@ -5,9 +5,9 @@ import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurv
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
 import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.user.account.domain.model.Cast
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.coroutines.runSuspendCatching
-import com.github.michaelbull.result.mapError
 import org.koin.core.annotation.Single
 
 @Single
@@ -18,27 +18,22 @@ class AttendanceSurveyAnswerFactory(
         attendanceSurveyId: AttendanceSurveyId,
         cast: Cast,
         availableDays: OpenCampusDates,
-    ): Result<AttendanceSurveyAnswer, AttendanceSurveyAnswerFactoryException> = runSuspendCatching {
+    ): Result<AttendanceSurveyAnswer, AttendanceSurveyAnswerFactoryException> {
         val survey = attendanceSurveyRepository.findById(
             attendanceSurveyId,
         )
         when {
-            survey == null -> throw AttendanceSurveyAnswerFactoryException.NotFoundSurvey
-            survey.canAnswer(cast).not() -> throw AttendanceSurveyAnswerFactoryException.CanNotAnswer
+            survey == null -> return Err(AttendanceSurveyAnswerFactoryException.NotFoundSurvey)
+            survey.canAnswer(cast).not() -> return Err(AttendanceSurveyAnswerFactoryException.CanNotAnswer)
             else -> {
                 require(availableDays.all { it in survey.openCampusSchedule })
             }
         }
-        AttendanceSurveyAnswer.fromFactory(
+        return AttendanceSurveyAnswer.fromFactory(
             surveyId = attendanceSurveyId,
             availableCastId = cast.id,
             availableDays = availableDays,
-        )
-    }.mapError {
-        when (it) {
-            is AttendanceSurveyAnswerFactoryException -> it
-            else -> throw it
-        }
+        ).let(::Ok)
     }
 }
 
