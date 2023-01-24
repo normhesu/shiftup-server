@@ -8,12 +8,12 @@ import app.vercel.shiftup.features.attendance.survey.infra.AttendanceSurveyRepos
 import org.koin.core.annotation.Single
 
 @Single
-class GetCanSendAttendanceRequestAttendanceSurveyUseCase(
+class GetCanTallyAttendanceSurveyUseCase(
     private val attendanceSurveyRepository: AttendanceSurveyRepository,
     private val attendanceSurveyAnswerRepository: AttendanceSurveyAnswerRepository,
     private val attendanceRequestRepository: AttendanceRequestRepository,
 ) {
-    suspend operator fun invoke(): List<GetCanSendAttendanceRequestAttendanceSurveyUseCaseResultItem> {
+    suspend operator fun invoke(): List<GetCanTallyAttendanceSurveyUseCaseResultItem> {
         val allSurveys = attendanceSurveyRepository.findAll()
         val canSendAttendanceRequestSurveys = run {
             val now = OpenCampusDate.now()
@@ -34,7 +34,7 @@ class GetCanSendAttendanceRequestAttendanceSurveyUseCase(
         )
 
         return canSendAttendanceRequestSurveys.map { survey ->
-            GetCanSendAttendanceRequestAttendanceSurveyUseCaseResultItem(
+            GetCanTallyAttendanceSurveyUseCaseResultItem(
                 attendanceSurvey = survey,
                 answerCount = answerCounts[survey.id] ?: 0,
                 canDelete = survey.openCampusSchedule.all { it !in requestOpenCampusDates },
@@ -43,7 +43,7 @@ class GetCanSendAttendanceRequestAttendanceSurveyUseCase(
     }
 }
 
-data class GetCanSendAttendanceRequestAttendanceSurveyUseCaseResultItem(
+data class GetCanTallyAttendanceSurveyUseCaseResultItem(
     val attendanceSurvey: AttendanceSurvey,
     val answerCount: Int,
     val canDelete: Boolean,

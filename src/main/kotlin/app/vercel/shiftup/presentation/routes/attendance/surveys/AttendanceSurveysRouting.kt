@@ -121,7 +121,7 @@ private fun Route.getSurveysRoute() = noCsrfProtection {
             val canDelete: Boolean,
         )
 
-        val useCase: GetCanSendAttendanceRequestAttendanceSurveyUseCase by inject()
+        val useCase: GetCanTallyAttendanceSurveyUseCase by inject()
         val response = useCase().map { (survey, answerCount, canDelete) ->
             ResponseItem(
                 id = survey.id,
