@@ -1,6 +1,7 @@
 package app.vercel.shiftup.features.user.account.application
 
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
+import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.domain.model.value.Email
@@ -70,7 +71,7 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
             } returns null
 
             val position = Position.Manager
-            val resultUser = AvailableUser(
+            val resultAvailableUser = AvailableUser(
                 id = mockUserId,
                 name = mockk(relaxed = true),
                 schoolProfile = SchoolProfile(
@@ -83,7 +84,7 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
             val notAllowedFirstManager = FirstManager(
                 SchoolProfile(
                     email = Email("g999c9999@g.neec.ac.jp").also {
-                        it shouldNotBe resultUser.email
+                        it shouldNotBe resultAvailableUser.email
                     },
                     department = mockk(relaxed = true),
                 )
@@ -97,27 +98,27 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 )
 
                 coEvery {
-                    mockInviteRepository.findByEmail(resultUser.email)
+                    mockInviteRepository.findByEmail(resultAvailableUser.email)
                 } returns Invite(
-                    studentNumber = resultUser.studentNumber,
-                    department = resultUser.department,
+                    studentNumber = resultAvailableUser.studentNumber,
+                    department = resultAvailableUser.department,
                     position = position,
                 )
 
                 useCase(
                     userId = mockk(relaxed = true),
-                    name = resultUser.name,
-                    emailFactory = { resultUser.email },
-                ) shouldBe Ok(resultUser)
+                    name = resultAvailableUser.name,
+                    emailFactory = { resultAvailableUser.email },
+                ) shouldBe Ok(resultAvailableUser)
 
                 coVerify {
-                    mockUserRepository.add(resultUser)
+                    mockUserRepository.add(User(resultAvailableUser))
                 }
             }
 
             "招待されていない場合" - {
                 coEvery {
-                    mockInviteRepository.findByEmail(resultUser.email)
+                    mockInviteRepository.findByEmail(resultAvailableUser.email)
                 } returns null
 
                 "最初のアカウントとして登録可能な場合、ユーザーを登録して返す" {
@@ -126,19 +127,19 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                         inviteRepository = mockInviteRepository,
                         firstManager = FirstManager(
                             SchoolProfile(
-                                email = resultUser.email,
-                                department = resultUser.department,
+                                email = resultAvailableUser.email,
+                                department = resultAvailableUser.department,
                             ),
                         ),
                     )
                     useCase(
                         userId = mockk(relaxed = true),
-                        name = resultUser.name,
-                        emailFactory = { resultUser.email },
-                    ) shouldBe Ok(resultUser)
+                        name = resultAvailableUser.name,
+                        emailFactory = { resultAvailableUser.email },
+                    ) shouldBe Ok(resultAvailableUser)
 
                     coVerify {
-                        mockUserRepository.add(resultUser)
+                        mockUserRepository.add(User(resultAvailableUser))
                     }
                 }
 
@@ -150,8 +151,8 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                     )
                     useCase(
                         userId = mockk(relaxed = true),
-                        name = resultUser.name,
-                        emailFactory = { resultUser.email },
+                        name = resultAvailableUser.name,
+                        emailFactory = { resultAvailableUser.email },
                     ).shouldBeInstanceOf<Err<LoginOrRegisterException.InvalidUser>>()
                 }
             }

@@ -1,6 +1,7 @@
 package app.vercel.shiftup.features.user.account.application
 
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
+import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.account.infra.UserRepository
@@ -27,7 +28,7 @@ class GetAvailableUserWithAutoRegisterUseCase(
         name: Name,
         emailFactory: () -> Email,
     ): Result<AvailableUser, LoginOrRegisterException> = runSuspendCatching {
-        getUserWithAutoRegister(userId, name, emailFactory)
+        getAvailableUserWithAutoRegister(userId, name, emailFactory)
     }.mapError {
         when (it) {
             is LoginOrRegisterException -> it
@@ -35,7 +36,7 @@ class GetAvailableUserWithAutoRegisterUseCase(
         }
     }
 
-    private suspend fun getUserWithAutoRegister(
+    private suspend fun getAvailableUserWithAutoRegister(
         userId: UserId,
         name: Name,
         emailFactory: () -> Email,
@@ -64,7 +65,7 @@ class GetAvailableUserWithAutoRegisterUseCase(
             ),
             position = invite.position,
         ).also {
-            userRepository.add(it)
+            userRepository.add(User(it))
         }
     }
 
@@ -81,7 +82,5 @@ class GetAvailableUserWithAutoRegisterUseCase(
 
 sealed class LoginOrRegisterException : Exception() {
     class InvalidUser : LoginOrRegisterException()
-    class Other(e: Throwable) : LoginOrRegisterException() {
-        override val message = e.message
-    }
+    class Other(override val cause: Throwable) : LoginOrRegisterException()
 }
