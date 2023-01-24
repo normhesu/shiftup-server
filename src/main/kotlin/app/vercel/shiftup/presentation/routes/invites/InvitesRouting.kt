@@ -10,6 +10,7 @@ import app.vercel.shiftup.features.user.invite.application.AddInviteUseCase
 import app.vercel.shiftup.features.user.invite.application.AddInviteUseCaseException
 import app.vercel.shiftup.features.user.invite.application.GetAllInvitesWithAvailableUserOrNullUseCase
 import app.vercel.shiftup.features.user.invite.application.RemoveInviteUseCase
+import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
@@ -59,29 +60,46 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
             call.respond(response)
         }
     }
-    post<Invites> {
-        val useCase: AddInviteUseCase by inject()
-        useCase(invite = call.receive())
-            .onSuccess {
-                call.respond(HttpStatusCode.Created)
-            }.onFailure { e ->
-                when (e) {
-                    is AddInviteUseCaseException.Invited -> {
-                        call.response.headers.append(
-                            name = HttpHeaders.Allow,
-                            value = listOf(HttpMethod.Get, HttpMethod.Delete)
-                                .joinToString { it.value },
-                        )
-                        call.respond(HttpStatusCode.MethodNotAllowed)
-                    }
-                }
-            }
-    }
+
+    postInvite()
+
     delete<Invites.Id> {
         val useCase: RemoveInviteUseCase by inject()
         call.respondDeleteResult(
             useCase(inviteId = InviteId(StudentNumber(it.id)))
         )
+    }
+}
+
+private fun Route.postInvite() = post<Invites> {
+    @Serializable
+    data class Params(
+        val studentNumber: StudentNumber,
+        val department: Department,
+        val position: Position,
+    )
+
+    val params: Params = call.receive()
+    val invite = Invite(
+        studentNumber = params.studentNumber,
+        department = params.department,
+        position = params.position,
+    )
+
+    val useCase: AddInviteUseCase by inject()
+    useCase(invite).onSuccess {
+        call.respond(HttpStatusCode.Created)
+    }.onFailure { e ->
+        when (e) {
+            is AddInviteUseCaseException.Invited -> {
+                call.response.headers.append(
+                    name = HttpHeaders.Allow,
+                    value = listOf(HttpMethod.Get, HttpMethod.Delete)
+                        .joinToString { it.value },
+                )
+                call.respond(HttpStatusCode.MethodNotAllowed)
+            }
+        }
     }
 }
 

@@ -8,14 +8,13 @@ import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.infra.InviteRepository
 import com.github.michaelbull.result.Err
-import com.mongodb.MongoException
+import com.github.michaelbull.result.Ok
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 
 class AddInviteUseCaseTest : FreeSpec({
@@ -41,13 +40,10 @@ class AddInviteUseCaseTest : FreeSpec({
                     ),
                 )
                 coEvery {
-                    repository.findByStudentNumber(studentNumber)
-                } returns null
+                    repository.addOrNothingAndGetAddedResult(invite)
+                } returns false
 
-                useCase(invite)
-                coVerify(exactly = 1) {
-                    repository.add(invite)
-                }
+                useCase(invite) shouldBe Ok(Unit)
             }
         }
 
@@ -65,18 +61,9 @@ class AddInviteUseCaseTest : FreeSpec({
                     ),
                 )
 
-                val duplicateKeyCode = 11000
-                val mockMongoException: MongoException = mockk(relaxed = true)
-
                 coEvery {
-                    mockMongoException.code
-                } answers {
-                    duplicateKeyCode
-                }
-
-                coEvery {
-                    repository.add(invite)
-                } throws mockMongoException
+                    repository.addOrNothingAndGetAddedResult(invite)
+                } returns true
 
                 useCase(invite).shouldBeInstanceOf<Err<AddInviteUseCaseException.Invited>>()
             }
@@ -93,9 +80,6 @@ class AddInviteUseCaseTest : FreeSpec({
                         )
                     ),
                 )
-                coEvery {
-                    repository.findByStudentNumber(studentNumber)
-                } returns null
 
                 shouldThrow<IllegalArgumentException> {
                     useCase(invite)
