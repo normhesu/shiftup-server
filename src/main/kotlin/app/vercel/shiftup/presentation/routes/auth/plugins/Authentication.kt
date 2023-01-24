@@ -39,6 +39,9 @@ fun Application.configureAuthentication(httpClient: HttpClient) {
                         "https://www.googleapis.com/auth/userinfo.email",
                         "openid",
                     ),
+                    extraAuthParameters = listOf(
+                        "prompt" to "select_account",
+                    ),
                 )
             }
             client = httpClient
