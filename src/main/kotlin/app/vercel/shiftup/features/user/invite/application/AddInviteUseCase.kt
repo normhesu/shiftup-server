@@ -35,6 +35,6 @@ class AddInviteUseCase(
     }
 }
 
-sealed class AddInviteUseCaseException(cause: Throwable) : Exception(cause) {
-    class Invited(cause: Throwable) : AddInviteUseCaseException(cause)
+sealed class AddInviteUseCaseException(override val cause: Throwable) : Exception(cause) {
+    class Invited(override val cause: Throwable) : AddInviteUseCaseException(cause)
 }
