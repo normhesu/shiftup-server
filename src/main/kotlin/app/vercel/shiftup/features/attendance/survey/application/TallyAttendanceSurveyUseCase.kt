@@ -5,7 +5,9 @@ import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurv
 import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.attendance.survey.domain.service.TallyAttendanceSurveyDomainService
 import app.vercel.shiftup.features.attendance.survey.domain.service.TallyAttendanceSurveyResult
-import io.ktor.server.plugins.*
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Single
@@ -18,13 +20,21 @@ class TallyAttendanceSurveyUseCase(
 ) {
     suspend operator fun invoke(
         surveyId: AttendanceSurveyId,
-    ): TallyAttendanceSurveyResult = coroutineScope {
-        val surveyDeferred = async { attendanceSurveyRepository.findById(surveyId) ?: throw NotFoundException() }
+    ): Result<TallyAttendanceSurveyResult, TallyAttendanceSurveyUseCaseException> = coroutineScope {
+        val surveyDeferred = async {
+            attendanceSurveyRepository.findById(surveyId)
+        }
         val answersDeferred = async { attendanceSurveyAnswerRepository.findBySurveyId(surveyId) }
 
         tallyAttendanceSurveyDomainService(
-            survey = surveyDeferred.await(),
+            survey = surveyDeferred.await() ?: return@coroutineScope Err(
+                TallyAttendanceSurveyUseCaseException.NotFoundSurvey,
+            ),
             answers = answersDeferred.await(),
-        )
+        ).let(::Ok)
     }
+}
+
+sealed class TallyAttendanceSurveyUseCaseException : Exception() {
+    object NotFoundSurvey : TallyAttendanceSurveyUseCaseException()
 }

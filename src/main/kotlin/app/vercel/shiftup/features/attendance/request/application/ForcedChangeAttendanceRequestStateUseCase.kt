@@ -7,7 +7,9 @@ import app.vercel.shiftup.features.attendance.request.infra.AttendanceRequestRep
 import app.vercel.shiftup.features.user.account.application.service.GetCastApplicationService
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.infra.UserRepository
-import io.ktor.server.plugins.*
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Single
@@ -23,7 +25,7 @@ class ForcedChangeAttendanceRequestStateUseCase(
         openCampusDate: OpenCampusDate,
         state: AttendanceRequestState,
         operatorId: UserId,
-    ) = coroutineScope {
+    ): Result<Unit, ForcedChangeAttendanceRequestStateUseCaseException> = coroutineScope {
         val castIdDeferred = async {
             getCastApplicationService(userId).id
         }
@@ -38,9 +40,16 @@ class ForcedChangeAttendanceRequestStateUseCase(
                 castId = castIdDeferred.await(),
                 openCampusDate = openCampusDate,
             )
-        ) ?: throw NotFoundException()
+        ) ?: return@coroutineScope Err(
+            ForcedChangeAttendanceRequestStateUseCaseException.NotFoundRequest,
+        )
         val newRequest = request.forcedChangeState(state, operatorDeferred.await())
 
         attendanceRequestRepository.replace(newRequest)
+        Ok(Unit)
     }
+}
+
+sealed class ForcedChangeAttendanceRequestStateUseCaseException : Exception() {
+    object NotFoundRequest : ForcedChangeAttendanceRequestStateUseCaseException()
 }

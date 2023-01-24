@@ -51,8 +51,11 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
         ).onSuccess {
             call.respond(HttpStatusCode.NoContent)
         }.onFailure { e ->
-            @Suppress("USELESS_IS_CHECK")
             when (e) {
+                is AttendanceSurveyAnswerFactoryException.NotFoundSurvey -> {
+                    call.respond(HttpStatusCode.NotFound)
+                }
+
                 is AttendanceSurveyAnswerFactoryException.CanNotAnswer -> {
                     call.response.headers.append(HttpHeaders.Allow, "")
                     call.respond(HttpStatusCode.MethodNotAllowed)
@@ -98,9 +101,15 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         useCase(
             attendanceSurveyId = it.parent.attendanceSurveyId,
             available = call.receiveText().toBooleanStrict(),
-        )
-
-        call.respond(HttpStatusCode.NoContent)
+        ).onSuccess {
+            call.respond(HttpStatusCode.NoContent)
+        }.onFailure { e ->
+            when (e) {
+                is ChangeAvailableAttendanceSurveyUseCaseException.NotFoundSurvey -> {
+                    call.respond(HttpStatusCode.NotFound)
+                }
+            }
+        }
     }
 
     getSurveysRoute()
@@ -137,6 +146,7 @@ private fun Route.getSurveysRoute() = noCsrfProtection {
     }
 }
 
+@Suppress("LongMethod")
 private fun Route.surveyResultsRoute() = noCsrfProtection {
     get<Surveys.Id.Result> { resource ->
         @Serializable
@@ -181,22 +191,28 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
         )
 
         val useCase: TallyAttendanceSurveyUseCase by inject()
-        val tallyResult = useCase(resource.parent.attendanceSurveyId)
-
-        val openCampuses = tallyResult.results.map {
-            ResponseItem(
-                date = it.openCampusDate,
-                tallied = it.tallied,
-                availableCasts = it.castsWithAttendanceRequested.map(::ResponseCast).toSet(),
-            )
-        }
-
-        val response = Response(
-            tallied = tallyResult.tallied,
-            openCampuses = openCampuses,
-        )
-
-        call.respond(response)
+        useCase(resource.parent.attendanceSurveyId)
+            .onSuccess { tallyResult ->
+                val openCampuses = tallyResult.results.map {
+                    ResponseItem(
+                        date = it.openCampusDate,
+                        tallied = it.tallied,
+                        availableCasts = it.castsWithAttendanceRequested.map(::ResponseCast).toSet(),
+                    )
+                }
+                val response = Response(
+                    tallied = tallyResult.tallied,
+                    openCampuses = openCampuses,
+                )
+                call.respond(response)
+            }
+            .onFailure { e ->
+                when (e) {
+                    is TallyAttendanceSurveyUseCaseException.NotFoundSurvey -> {
+                        call.respond(HttpStatusCode.NotFound)
+                    }
+                }
+            }
     }
 }
 

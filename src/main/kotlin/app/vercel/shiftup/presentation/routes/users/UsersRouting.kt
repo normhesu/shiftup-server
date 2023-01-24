@@ -82,7 +82,7 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         }.onFailure { e ->
             when (e) {
                 is ChangeUserPositionUseCaseException.UserNotFound -> {
-                    throw NotFoundException()
+                    call.respond(HttpStatusCode.NotFound)
                 }
 
                 is ChangeUserPositionUseCaseException.UnsupportedOperation -> {

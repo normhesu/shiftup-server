@@ -9,8 +9,6 @@ import app.vercel.shiftup.features.user.account.domain.model.UserId
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getOrElse
-import io.ktor.server.plugins.*
 import org.koin.core.annotation.Single
 
 @Single
@@ -22,19 +20,24 @@ class RespondAttendanceRequestUseCase(
         userId: UserId,
         openCampusDate: OpenCampusDate,
         state: AttendanceRequestState.NonBlank,
-    ): Result<Unit, IllegalStateException> {
+    ): Result<Unit, RespondAttendanceRequestUseCaseException> {
         val request = attendanceRequestRepository.findById(
             AttendanceRequestId(
                 castId = getCastApplicationService(userId).id,
                 openCampusDate = openCampusDate,
             )
-        ) ?: throw NotFoundException()
-        val newRequest = request.respond(state).getOrElse {
-            if (it !is IllegalStateException) throw it
-            return Err(it)
-        }
+        ) ?: return Err(RespondAttendanceRequestUseCaseException.NotFoundRequest)
 
+        val newRequest = request.respond(state).getOrElse {
+            return Err(RespondAttendanceRequestUseCaseException.Responded)
+        }
         attendanceRequestRepository.replace(newRequest)
+
         return Ok(Unit)
     }
+}
+
+sealed class RespondAttendanceRequestUseCaseException : Exception() {
+    object NotFoundRequest : RespondAttendanceRequestUseCaseException()
+    object Responded : RespondAttendanceRequestUseCaseException()
 }
