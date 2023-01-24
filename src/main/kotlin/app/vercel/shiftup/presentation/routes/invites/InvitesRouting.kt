@@ -1,12 +1,14 @@
 package app.vercel.shiftup.presentation.routes.invites
 
+import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Department
+import app.vercel.shiftup.features.user.domain.model.value.Email
 import app.vercel.shiftup.features.user.domain.model.value.Role
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.application.AddInviteUseCase
 import app.vercel.shiftup.features.user.invite.application.AddInviteUseCaseException
-import app.vercel.shiftup.features.user.invite.application.GetAllInvitesWithNameOrNullUseCase
+import app.vercel.shiftup.features.user.invite.application.GetAllInvitesWithAvailableUserOrNullUseCase
 import app.vercel.shiftup.features.user.invite.application.RemoveInviteUseCase
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
@@ -33,18 +35,22 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
             @Serializable
             data class ResponseItem(
                 val id: InviteId,
-                val studentNumber: StudentNumber,
+                val userId: UserId?,
                 val name: Name?,
+                val studentNumber: StudentNumber,
+                val email: Email?,
                 val department: Department,
                 val position: Position,
             )
 
-            val useCase: GetAllInvitesWithNameOrNullUseCase by inject()
-            val response = useCase().map { (invite, nameOrNull) ->
+            val useCase: GetAllInvitesWithAvailableUserOrNullUseCase by inject()
+            val response = useCase().map { (invite, availableUserOrNull) ->
                 ResponseItem(
                     id = invite.id,
+                    userId = availableUserOrNull?.id,
+                    name = availableUserOrNull?.name,
                     studentNumber = invite.studentNumber,
-                    name = nameOrNull,
+                    email = availableUserOrNull?.email,
                     department = invite.department,
                     position = invite.position
                 )
@@ -59,7 +65,6 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
             .onSuccess {
                 call.respond(HttpStatusCode.Created)
             }.onFailure { e ->
-                @Suppress("USELESS_IS_CHECK")
                 when (e) {
                     is AddInviteUseCaseException.Invited -> {
                         call.response.headers.append(

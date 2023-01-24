@@ -7,8 +7,7 @@ import app.vercel.shiftup.features.attendance.request.application.GetCastsByAtte
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
-import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
+import app.vercel.shiftup.features.user.domain.model.value.*
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.attendance.Attendance
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
@@ -31,7 +30,9 @@ fun Application.attendanceRequestsDateRouting() = routingWithRole(Role.Manager) 
             data class ResponseItem(
                 val id: UserId,
                 val name: Name,
-                val schoolProfile: SchoolProfile,
+                val studentNumber: StudentNumber,
+                val email: Email,
+                val department: Department,
                 val position: Position,
             )
 
@@ -44,7 +45,9 @@ fun Application.attendanceRequestsDateRouting() = routingWithRole(Role.Manager) 
                 ResponseItem(
                     id = user.id,
                     name = user.name,
-                    schoolProfile = user.schoolProfile,
+                    email = user.email,
+                    department = user.department,
+                    studentNumber = user.studentNumber,
                     position = user.position,
                 )
             }

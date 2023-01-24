@@ -10,8 +10,7 @@ import app.vercel.shiftup.features.attendance.survey.domain.service.CastWithAtte
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
-import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
+import app.vercel.shiftup.features.user.domain.model.value.*
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.attendance.Attendance
 import app.vercel.shiftup.presentation.routes.attendance.surveys.me.attendanceSurveysMeRouting
@@ -144,7 +143,9 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
         data class ResponseCast(
             val id: UserId,
             val name: Name,
-            val schoolProfile: SchoolProfile,
+            val studentNumber: StudentNumber,
+            val email: Email,
+            val department: Department,
             val position: Position,
             val attendanceRequested: Boolean,
         ) {
@@ -158,8 +159,10 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
             private constructor(user: AvailableUser, attendanceRequested: Boolean) : this(
                 id = user.id,
                 name = user.name,
+                studentNumber = user.studentNumber,
+                email = user.email,
+                department = user.department,
                 position = user.position,
-                schoolProfile = user.schoolProfile,
                 attendanceRequested = attendanceRequested,
             )
         }

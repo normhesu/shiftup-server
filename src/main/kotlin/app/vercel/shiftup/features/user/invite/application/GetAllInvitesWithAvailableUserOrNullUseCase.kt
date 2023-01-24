@@ -1,6 +1,6 @@
 package app.vercel.shiftup.features.user.invite.application
 
-import app.vercel.shiftup.features.user.account.domain.model.value.Name
+import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
@@ -11,20 +11,22 @@ import org.koin.core.annotation.Single
  * ユーザーが一度もログインをしていない場合、氏名はnullになります
  */
 @Single
-class GetAllInvitesWithNameOrNullUseCase(
+class GetAllInvitesWithAvailableUserOrNullUseCase(
     private val inviteRepository: InviteRepository,
     private val userRepository: UserRepository,
 ) {
-    suspend operator fun invoke(): Map<Invite, Name?> {
+    suspend operator fun invoke(): List<Pair<Invite, AvailableUser?>> {
         val invites = inviteRepository.findAll()
-        val names: Map<StudentNumber, Name> = userRepository.findAvailableUserByStudentNumbers(
+        val availableUsers: Map<StudentNumber, AvailableUser> = userRepository.findAvailableUserByStudentNumbers(
             invites.map { it.studentNumber }
-        ).associate {
-            it.studentNumber to it.name
+        ).associateBy {
+            it.studentNumber
         }
 
         return invites.associateWith {
-            names[it.studentNumber]
+            availableUsers[it.studentNumber]
+        }.map {
+            it.key to it.value
         }
     }
 }
