@@ -45,11 +45,10 @@ class TallyAttendanceSurveyDomainService(
         }
 
         val resultItems = openCampuses.map { openCampus ->
-            fun Cast.attendanceRequested() = attendanceRequests
-                .filterKeys { it == openCampus.date }
-                .any { (_, attendanceRequests) ->
-                    attendanceRequests.find { it.castId == this.id } != null
-                }
+            fun Cast.attendanceRequested(): Boolean {
+                val requests = attendanceRequests[openCampus.date].orEmpty()
+                return requests.find { it.castId == this.id } != null
+            }
 
             val availableCastsWithAttendanceRequested = casts
                 .filter { it.id in openCampus.availableCastIds }
