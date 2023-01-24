@@ -1,6 +1,6 @@
 package app.vercel.shiftup.presentation.routes.attendance.surveys.me
 
-import app.vercel.shiftup.features.attendance.survey.answer.application.GetCanAnswerAttendanceSurveyAndAnswerListUseCase
+import app.vercel.shiftup.features.attendance.survey.application.GetCanAnswerAttendanceSurveyAndAnswerListUseCase
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
 import app.vercel.shiftup.features.user.domain.model.value.Role

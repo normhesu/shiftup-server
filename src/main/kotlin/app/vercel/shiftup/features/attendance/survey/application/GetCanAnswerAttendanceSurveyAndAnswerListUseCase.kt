@@ -1,4 +1,4 @@
-package app.vercel.shiftup.features.attendance.survey.answer.application
+package app.vercel.shiftup.features.attendance.survey.application
 
 import app.vercel.shiftup.features.attendance.survey.answer.domain.model.AttendanceSurveyAnswer
 import app.vercel.shiftup.features.attendance.survey.answer.infra.AttendanceSurveyAnswerRepository
