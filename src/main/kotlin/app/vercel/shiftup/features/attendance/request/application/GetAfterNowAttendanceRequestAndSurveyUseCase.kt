@@ -10,6 +10,7 @@ import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single
 
 @Single
@@ -52,6 +53,7 @@ class GetAfterNowAttendanceRequestAndSurveyUseCase(
     }
 }
 
+@Serializable
 data class GetAfterNowAttendanceRequestAndSurveyUseCaseResult(
     val canRespondRequestAndSurveyList: List<Pair<AttendanceRequest, AttendanceSurvey?>>,
     val respondedRequestAndSurveyList: List<Pair<AttendanceRequest, AttendanceSurvey?>>,
