@@ -40,8 +40,8 @@ private fun Application.authRouting() = routing {
             }
 
             get<Users.Me.Roles> {
-                val getUserRolesUseCase: GetUserRolesUseCase by inject()
-                val roles = getUserRolesUseCase(call.sessions.userId).let(::checkNotNull)
+                val useCase: GetUserRolesUseCase by inject()
+                val roles = useCase(call.sessions.userId).let(::checkNotNull)
                 call.respond(roles)
             }
 
