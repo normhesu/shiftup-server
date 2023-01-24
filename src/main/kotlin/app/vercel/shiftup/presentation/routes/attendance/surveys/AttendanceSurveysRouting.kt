@@ -64,34 +64,6 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
 }
 
 private fun Application.managerRouting() = routingWithRole(Role.Manager) {
-    noCsrfProtection {
-        get<Surveys> {
-            @Serializable
-            data class ResponseItem(
-                val id: AttendanceSurveyId,
-                val name: String,
-                val openCampusSchedule: OpenCampusDates,
-                val creationDate: LocalDate,
-                val available: Boolean,
-                val answerCount: Int,
-            )
-
-            val useCase: GetCanSendAttendanceRequestAttendanceSurveyUseCase by inject()
-            val response = useCase().map { (survey, answerCount) ->
-                ResponseItem(
-                    id = survey.id,
-                    name = survey.name,
-                    openCampusSchedule = survey.openCampusSchedule,
-                    creationDate = survey.creationDate,
-                    available = survey.available,
-                    answerCount = answerCount,
-                )
-            }
-
-            call.respond(response)
-        }
-    }
-
     post<Surveys> {
         @Serializable
         data class Params(
@@ -108,9 +80,18 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
 
     delete<Surveys.Id> {
         val useCase: RemoveAttendanceSurveyUseCase by inject()
-        call.respondDeleteResult(
-            useCase(attendanceSurveyId = it.attendanceSurveyId)
-        )
+        useCase(attendanceSurveyId = it.attendanceSurveyId)
+            .onSuccess { result ->
+                call.respondDeleteResult(result)
+            }.onFailure { e ->
+                @Suppress("USELESS_IS_CHECK")
+                when (e) {
+                    is UnsupportedOperationException -> {
+                        call.response.headers.append(HttpHeaders.Allow, "")
+                        call.respond(HttpStatusCode.MethodNotAllowed)
+                    }
+                }
+            }
     }
 
     put<Surveys.Id.Available> {
@@ -123,7 +104,38 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         call.respond(HttpStatusCode.NoContent)
     }
 
+    getSurveysRoute()
     surveyResultsRoute()
+}
+
+private fun Route.getSurveysRoute() = noCsrfProtection {
+    get<Surveys> {
+        @Serializable
+        data class ResponseItem(
+            val id: AttendanceSurveyId,
+            val name: String,
+            val openCampusSchedule: OpenCampusDates,
+            val creationDate: LocalDate,
+            val available: Boolean,
+            val answerCount: Int,
+            val canDelete: Boolean,
+        )
+
+        val useCase: GetCanSendAttendanceRequestAttendanceSurveyUseCase by inject()
+        val response = useCase().map { (survey, answerCount, canDelete) ->
+            ResponseItem(
+                id = survey.id,
+                name = survey.name,
+                openCampusSchedule = survey.openCampusSchedule,
+                creationDate = survey.creationDate,
+                available = survey.available,
+                answerCount = answerCount,
+                canDelete = canDelete,
+            )
+        }
+
+        call.respond(response)
+    }
 }
 
 private fun Route.surveyResultsRoute() = noCsrfProtection {
