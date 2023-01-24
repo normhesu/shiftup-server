@@ -5,10 +5,13 @@ import app.vercel.shiftup.features.attendance.request.domain.model.AttendanceReq
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.attendance.request.infra.AttendanceRequestRepository
 import app.vercel.shiftup.features.user.account.application.service.GetCastApplicationService
+import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Single
 
 @Single
@@ -20,20 +23,26 @@ class RespondAttendanceRequestUseCase(
         userId: UserId,
         openCampusDate: OpenCampusDate,
         state: AttendanceRequestState.NonBlank,
-    ): Result<Unit, RespondAttendanceRequestUseCaseException> {
+    ): Result<Unit, RespondAttendanceRequestUseCaseException> = coroutineScope {
+        val castDeferred = async { getCastApplicationService(userId) }
         val request = attendanceRequestRepository.findById(
             AttendanceRequestId(
-                castId = getCastApplicationService(userId).id,
+                castId = CastId.unsafe(userId),
                 openCampusDate = openCampusDate,
             )
-        ) ?: return Err(RespondAttendanceRequestUseCaseException.NotFoundRequest)
+        ) ?: return@coroutineScope Err(
+            RespondAttendanceRequestUseCaseException.NotFoundRequest,
+        )
 
         val newRequest = request.respond(state).getOrElse {
-            return Err(RespondAttendanceRequestUseCaseException.Responded)
+            return@coroutineScope Err(
+                RespondAttendanceRequestUseCaseException.Responded,
+            )
         }
+        castDeferred.await()
         attendanceRequestRepository.replace(newRequest)
 
-        return Ok(Unit)
+        Ok(Unit)
     }
 }
 
