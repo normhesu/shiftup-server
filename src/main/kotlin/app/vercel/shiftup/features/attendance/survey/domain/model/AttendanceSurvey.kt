@@ -6,6 +6,7 @@ import app.vercel.shiftup.features.user.account.domain.model.Cast
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.util.*
 
 @Serializable
@@ -48,7 +49,8 @@ data class AttendanceSurvey private constructor(
         }
     }
 
-    val fiscalYear = openCampusSchedule.fiscalYear
+    @Transient
+    private val fiscalYear = openCampusSchedule.fiscalYear
 
     fun changeAvailable(available: Boolean) = copy(available = available)
 
