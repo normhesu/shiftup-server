@@ -11,6 +11,7 @@ import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.coroutine.updateOne
 import org.litote.kmongo.`in`
+import org.litote.kmongo.nin
 import org.litote.kmongo.path
 
 @Single
@@ -32,6 +33,10 @@ class AttendanceSurveyRepository(
     ) = collection
         .find(Filters.`in`(AttendanceSurvey::openCampusSchedule.path(), openCampusDates))
         .toList()
+
+    suspend fun countByNotContainsIds(ids: Collection<AttendanceSurveyId>): Long {
+        return collection.countDocuments(AttendanceSurvey::id nin ids)
+    }
 
     suspend fun add(survey: AttendanceSurvey) {
         collection.insertOne(survey).orThrow()

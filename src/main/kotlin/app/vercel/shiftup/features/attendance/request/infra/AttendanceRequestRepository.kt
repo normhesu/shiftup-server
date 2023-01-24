@@ -18,6 +18,7 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.coroutine.updateOne
 import org.litote.kmongo.serialization.registerSerializer
 
+@Suppress("TooManyFunctions")
 @Single
 class AttendanceRequestRepository(
     private val database: CoroutineDatabase,
@@ -59,6 +60,44 @@ class AttendanceRequestRepository(
         AttendanceRequest::castId eq castId,
         AttendanceRequest::openCampusDate gte earliestDate
     ).toList()
+
+    suspend fun findOldestOpenCampusDateRequestByCastIdAndStateAndAfterDate(
+        castId: CastId,
+        state: AttendanceRequestState,
+        openCampusDate: OpenCampusDate,
+    ): AttendanceRequest? = collection.find(
+        AttendanceRequest::castId eq castId,
+        Filters.eq(AttendanceRequest::state.path(), state.name),
+        AttendanceRequest::openCampusDate gte openCampusDate,
+    ).sort(
+        ascending(AttendanceRequest::openCampusDate),
+    ).first()
+
+    suspend fun countByCastIdAndStateAndEarliestDate(
+        castId: CastId,
+        state: AttendanceRequestState,
+        earliestDate: OpenCampusDate,
+    ): Long = collection.countDocuments(
+        and(
+            AttendanceRequest::castId eq castId,
+            Filters.eq(AttendanceRequest::state.path(), state.name),
+            AttendanceRequest::openCampusDate gte earliestDate
+        )
+    )
+
+    suspend fun countByCastIdAndStateAndOpenCampusDuration(
+        castId: CastId,
+        state: AttendanceRequestState,
+        startOpenCampusDate: OpenCampusDate,
+        endOpenCampusDate: OpenCampusDate,
+    ): Long = collection.countDocuments(
+        and(
+            AttendanceRequest::castId eq castId,
+            Filters.eq(AttendanceRequest::state.path(), state.name),
+            AttendanceRequest::openCampusDate gte startOpenCampusDate,
+            AttendanceRequest::openCampusDate lte endOpenCampusDate,
+        )
+    )
 
     suspend fun addAndRemoveAll(
         addAttendanceRequests: Collection<AttendanceRequest>,
