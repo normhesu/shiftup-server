@@ -1,6 +1,5 @@
 package app.vercel.shiftup.presentation.plugins
 
-import app.vercel.shiftup.features.attendance.request.application.RemoveAfterOpenCampusDateAttendanceRequestUseCase
 import app.vercel.shiftup.features.attendance.survey.answer.application.RemoveNoAttendanceSurveyExistsAttendanceSurveyAnswerUseCase
 import app.vercel.shiftup.features.attendance.survey.application.RemoveAfterOpenCampusPeriodAttendanceSurveyUseCase
 import io.ktor.server.application.*
@@ -32,16 +31,6 @@ fun Application.configureScheduling() {
         val useCase: RemoveNoAttendanceSurveyExistsAttendanceSurveyAnswerUseCase by inject()
         useCase().also {
             log.info("deletedAttendanceSurveyAnswerCount ${it.deletedCount}")
-        }
-    }
-    schedule(
-        name = "RemoveAfterOpenCampusDateAttendanceRequest",
-        fixedDelay = 1.days,
-        runStartup = true,
-    ) {
-        val useCase: RemoveAfterOpenCampusDateAttendanceRequestUseCase by inject()
-        useCase().also {
-            log.info("deletedAttendanceRequestCount ${it.deletedCount}")
         }
     }
 }

@@ -8,6 +8,8 @@ import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
+import org.litote.kmongo.coroutine.updateOne
+import org.litote.kmongo.upsert
 
 @Single
 class InviteRepository(
@@ -33,6 +35,14 @@ class InviteRepository(
 
     suspend fun add(invite: Invite) {
         collection.insertOne(invite).orThrow()
+    }
+
+    suspend fun replace(invite: Invite) {
+        collection.updateOne(invite).orThrow()
+    }
+
+    suspend fun addOrReplace(invite: Invite) {
+        collection.updateOne(invite, upsert()).orThrow()
     }
 
     suspend fun remove(inviteId: InviteId): DeleteResult {

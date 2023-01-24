@@ -15,6 +15,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
+import org.litote.kmongo.coroutine.updateOne
 import org.litote.kmongo.`in`
 import org.litote.kmongo.path
 
@@ -29,6 +30,10 @@ class UserRepository(
 
     suspend fun add(availableUser: AvailableUser) {
         userDTOCollection.insertOne(availableUser.toDTO()).orThrow()
+    }
+
+    suspend fun replace(availableUser: AvailableUser) {
+        userDTOCollection.updateOne(availableUser.toDTO()).orThrow()
     }
 
     suspend fun findAvailableUserById(id: UserId): AvailableUser? {
