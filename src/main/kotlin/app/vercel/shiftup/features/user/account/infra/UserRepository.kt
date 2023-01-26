@@ -12,6 +12,7 @@ import com.mongodb.client.model.Filters
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.coroutine.updateOne
+import org.litote.kmongo.eq
 import org.litote.kmongo.`in`
 import org.litote.kmongo.path
 
@@ -56,7 +57,7 @@ class UserRepository(
         return users.toAvailableUsers(invites)
     }
 
-    suspend fun contains(id: UserId) = userCollection.findOneById(id) != null
+    suspend fun contains(id: UserId) = userCollection.countDocuments(User::id eq id) != 0L
 
     private suspend fun findInvite(user: User): Invite? {
         return inviteCollection.findOneById(
