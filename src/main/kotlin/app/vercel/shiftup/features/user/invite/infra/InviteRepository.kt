@@ -41,7 +41,7 @@ class InviteRepository(
         return collection.find().toList()
     }
 
-    suspend fun addOrNothingAndGetAddedResult(invite: Invite) = runSuspendCatching {
+    suspend fun addOrNothingAndGetContainsBeforeAdd(invite: Invite) = runSuspendCatching {
         collection.insertOne(invite).orThrow()
     }.throwIf {
         (it is MongoException && it.code == DUPLICATE_KEY_CODE).not()
