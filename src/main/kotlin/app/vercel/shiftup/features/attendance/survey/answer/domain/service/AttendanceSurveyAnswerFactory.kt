@@ -19,6 +19,7 @@ class AttendanceSurveyAnswerFactory(
         cast: Cast,
         availableDays: SameFiscalYearOpenCampusDates,
     ): Result<AttendanceSurveyAnswer, AttendanceSurveyAnswerFactoryException> {
+        // 取得後にアンケートが削除されてもアンケートが存在しない回答は自動で削除されるので、生成を許容する
         val survey = attendanceSurveyRepository.findById(
             attendanceSurveyId,
         )
