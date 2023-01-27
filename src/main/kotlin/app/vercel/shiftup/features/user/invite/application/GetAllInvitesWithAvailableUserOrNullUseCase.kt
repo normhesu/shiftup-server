@@ -1,7 +1,7 @@
 package app.vercel.shiftup.features.user.invite.application
 
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
-import app.vercel.shiftup.features.user.account.infra.UserRepository
+import app.vercel.shiftup.features.user.account.infra.AvailableUserRepository
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.infra.InviteRepository
@@ -13,15 +13,16 @@ import org.koin.core.annotation.Single
 @Single
 class GetAllInvitesWithAvailableUserOrNullUseCase(
     private val inviteRepository: InviteRepository,
-    private val userRepository: UserRepository,
+    private val availableUserRepository: AvailableUserRepository,
 ) {
     suspend operator fun invoke(): List<Pair<Invite, AvailableUser?>> {
         val invites = inviteRepository.findAll()
-        val availableUsers: Map<StudentNumber, AvailableUser> = userRepository.findAvailableUserByStudentNumbers(
-            invites.map { it.studentNumber }
-        ).associateBy {
-            it.studentNumber
-        }
+        val availableUsers: Map<StudentNumber, AvailableUser> =
+            availableUserRepository.findByStudentNumbers(
+                invites.map { it.studentNumber }
+            ).associateBy {
+                it.studentNumber
+            }
 
         return invites.associateWith {
             availableUsers[it.studentNumber]

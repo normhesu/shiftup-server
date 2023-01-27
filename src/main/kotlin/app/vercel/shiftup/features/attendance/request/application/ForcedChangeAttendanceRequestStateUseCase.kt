@@ -6,7 +6,7 @@ import app.vercel.shiftup.features.attendance.request.domain.model.value.Attenda
 import app.vercel.shiftup.features.attendance.request.infra.AttendanceRequestRepository
 import app.vercel.shiftup.features.user.account.application.service.GetCastApplicationService
 import app.vercel.shiftup.features.user.account.domain.model.UserId
-import app.vercel.shiftup.features.user.account.infra.UserRepository
+import app.vercel.shiftup.features.user.account.infra.AvailableUserRepository
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -17,7 +17,7 @@ import org.koin.core.annotation.Single
 @Single
 class ForcedChangeAttendanceRequestStateUseCase(
     private val attendanceRequestRepository: AttendanceRequestRepository,
-    private val userRepository: UserRepository,
+    private val availableUserRepository: AvailableUserRepository,
     private val getCastApplicationService: GetCastApplicationService,
 ) {
     suspend operator fun invoke(
@@ -31,7 +31,7 @@ class ForcedChangeAttendanceRequestStateUseCase(
         }
 
         val operatorDeferred = async {
-            userRepository.findAvailableUserById(operatorId)
+            availableUserRepository.findById(operatorId)
                 .let(::checkNotNull)
         }
 

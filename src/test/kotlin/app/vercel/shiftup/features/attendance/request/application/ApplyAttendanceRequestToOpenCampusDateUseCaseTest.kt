@@ -7,7 +7,7 @@ import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
-import app.vercel.shiftup.features.user.account.infra.UserRepository
+import app.vercel.shiftup.features.user.account.infra.AvailableUserRepository
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.annotation.DoNotParallelize
@@ -33,10 +33,10 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
     }
 
     "ApplyAttendanceRequestToOpenCampusDateUseCase" - {
-        val mockUserRepository: UserRepository = mockk()
+        val mockAvailableUserRepository: AvailableUserRepository = mockk()
         val mockAttendanceRequestRepository: AttendanceRequestRepository = mockk(relaxUnitFun = true)
         val useCase = ApplyAttendanceRequestToOpenCampusDateUseCase(
-            userRepository = mockUserRepository,
+            availableUserRepository = mockAvailableUserRepository,
             attendanceRequestRepository = mockAttendanceRequestRepository,
         )
         "正常系" - {
@@ -58,7 +58,7 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 }
 
                 coEvery {
-                    mockUserRepository.findAvailableUserByIds(userIds)
+                    mockAvailableUserRepository.findByIds(userIds)
                 } returns users
 
                 coEvery {
@@ -101,7 +101,7 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 }
 
                 coEvery {
-                    mockUserRepository.findAvailableUserByIds(userIds)
+                    mockAvailableUserRepository.findByIds(userIds)
                 } returns users
 
                 coEvery {
@@ -151,7 +151,7 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 }
 
                 coEvery {
-                    mockUserRepository.findAvailableUserByIds(userIds)
+                    mockAvailableUserRepository.findByIds(userIds)
                 } returns users
 
                 coEvery {
@@ -184,7 +184,7 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 val userIds = emptySet<UserId>()
 
                 coEvery {
-                    mockUserRepository.findAvailableUserByIds(userIds)
+                    mockAvailableUserRepository.findByIds(userIds)
                 } returns emptyList()
 
                 val savedRequests = List(10) {
@@ -234,7 +234,7 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 }
 
                 coEvery {
-                    mockUserRepository.findAvailableUserByIds(userIds)
+                    mockAvailableUserRepository.findByIds(userIds)
                 } returns users
 
                 coEvery {
@@ -254,58 +254,58 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 }
             }
             "受け取ったCastIdの中にすでに登録済みの出勤依頼のCastIdがあり、" +
-                "登録済みの出勤依頼のCastId内に受け取ったCastIdがある場合、" +
-                "差分を適用する" {
-                    val openCampusDate = OpenCampusDate(
-                        LocalDate(2022, 2, 1),
-                    )
-
-                    val userIds = setOf(1, 2, 4, 6, 7).map {
-                        UserId(it.toString())
-                    }.toSet()
-
-                    coEvery {
-                        mockUserRepository.findAvailableUserByIds(userIds)
-                    } returns userIds.map {
-                        AvailableUser(
-                            id = it,
-                            name = mockk(relaxed = true),
-                            position = Position.Cast,
-                            schoolProfile = mockk(relaxed = true)
+                    "登録済みの出勤依頼のCastId内に受け取ったCastIdがある場合、" +
+                    "差分を適用する" {
+                        val openCampusDate = OpenCampusDate(
+                            LocalDate(2022, 2, 1),
                         )
-                    }
 
-                    coEvery {
-                        mockAttendanceRequestRepository.findByOpenCampusDate(openCampusDate)
-                    } returns (3..5).map {
-                        AttendanceRequest(
-                            castId = CastId.unsafe(UserId(it.toString())),
+                        val userIds = setOf(1, 2, 4, 6, 7).map {
+                            UserId(it.toString())
+                        }.toSet()
+
+                        coEvery {
+                            mockAvailableUserRepository.findByIds(userIds)
+                        } returns userIds.map {
+                            AvailableUser(
+                                id = it,
+                                name = mockk(relaxed = true),
+                                position = Position.Cast,
+                                schoolProfile = mockk(relaxed = true)
+                            )
+                        }
+
+                        coEvery {
+                            mockAttendanceRequestRepository.findByOpenCampusDate(openCampusDate)
+                        } returns (3..5).map {
+                            AttendanceRequest(
+                                castId = CastId.unsafe(UserId(it.toString())),
+                                openCampusDate = openCampusDate,
+                            )
+                        }
+
+                        useCase(
                             openCampusDate = openCampusDate,
+                            userIds = userIds,
                         )
-                    }
 
-                    useCase(
-                        openCampusDate = openCampusDate,
-                        userIds = userIds,
-                    )
-
-                    coVerify {
-                        mockAttendanceRequestRepository.addAndRemoveAll(
-                            addAttendanceRequests = setOf(1, 2, 6, 7).map {
-                                AttendanceRequest(
-                                    castId = CastId.unsafe(UserId(it.toString())),
-                                    openCampusDate = openCampusDate,
-                                )
-                            }.toSet(),
-                            removeAttendanceRequests = setOf(3, 5).map {
-                                AttendanceRequest(
-                                    castId = CastId.unsafe(UserId(it.toString())),
-                                    openCampusDate = openCampusDate,
-                                )
-                            }.toSet(),
-                        )
+                        coVerify {
+                            mockAttendanceRequestRepository.addAndRemoveAll(
+                                addAttendanceRequests = setOf(1, 2, 6, 7).map {
+                                    AttendanceRequest(
+                                        castId = CastId.unsafe(UserId(it.toString())),
+                                        openCampusDate = openCampusDate,
+                                    )
+                                }.toSet(),
+                                removeAttendanceRequests = setOf(3, 5).map {
+                                    AttendanceRequest(
+                                        castId = CastId.unsafe(UserId(it.toString())),
+                                        openCampusDate = openCampusDate,
+                                    )
+                                }.toSet(),
+                            )
+                        }
                     }
-                }
         }
         "異常系" - {
             "変更する日付が過去の場合、IllegalArgumentExceptionを投げる" {

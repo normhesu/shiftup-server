@@ -1,7 +1,7 @@
 package app.vercel.shiftup.features.user.account.application
 
 import app.vercel.shiftup.features.user.account.domain.model.UserId
-import app.vercel.shiftup.features.user.account.infra.UserRepository
+import app.vercel.shiftup.features.user.account.infra.AvailableUserRepository
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.features.user.invite.infra.InviteRepository
@@ -15,7 +15,7 @@ import org.koin.core.annotation.Single
 
 @Single
 class ChangeUserPositionUseCase(
-    private val userRepository: UserRepository,
+    private val availableUserRepository: AvailableUserRepository,
     private val inviteRepository: InviteRepository,
     private val firstManager: FirstManager,
 ) {
@@ -24,9 +24,9 @@ class ChangeUserPositionUseCase(
         position: Position,
         operatorId: UserId,
     ): Result<Unit, ChangeUserPositionUseCaseException> = coroutineScope {
-        val userDeferred = async { userRepository.findAvailableUserById(userId) }
+        val userDeferred = async { availableUserRepository.findById(userId) }
         val operatorDeferred = async {
-            userRepository.findAvailableUserById(operatorId)
+            availableUserRepository.findById(operatorId)
                 .let(::requireNotNull)
         }
 

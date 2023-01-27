@@ -6,7 +6,7 @@ import app.vercel.shiftup.features.attendance.request.domain.model.AttendanceReq
 import app.vercel.shiftup.features.attendance.request.infra.AttendanceRequestRepository
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.account.domain.model.UserId
-import app.vercel.shiftup.features.user.account.infra.UserRepository
+import app.vercel.shiftup.features.user.account.infra.AvailableUserRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.withLock
@@ -14,7 +14,7 @@ import org.koin.core.annotation.Single
 
 @Single
 class ApplyAttendanceRequestToOpenCampusDateUseCase(
-    private val userRepository: UserRepository,
+    private val availableUserRepository: AvailableUserRepository,
     private val attendanceRequestRepository: AttendanceRequestRepository,
 ) {
     suspend operator fun invoke(
@@ -24,7 +24,7 @@ class ApplyAttendanceRequestToOpenCampusDateUseCase(
         coroutineScope {
             require(openCampusDate >= OpenCampusDate.now())
 
-            val castIdsDeferred = async { userRepository.findAvailableUserByIds(userIds).map { Cast(it).id } }
+            val castIdsDeferred = async { availableUserRepository.findAvailableUserByIds(userIds).map { Cast(it).id } }
             val currentRequestsDeferred =
                 async { attendanceRequestRepository.findByOpenCampusDate(openCampusDate).toSet() }
 

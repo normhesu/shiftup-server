@@ -4,6 +4,7 @@ import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
+import app.vercel.shiftup.features.user.account.infra.AvailableUserRepository
 import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.domain.model.value.Email
 import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
@@ -20,6 +21,7 @@ import org.koin.core.annotation.Single
 @Single
 class GetAvailableUserWithAutoRegisterUseCase(
     private val userRepository: UserRepository,
+    private val availableUserRepository: AvailableUserRepository,
     private val inviteRepository: InviteRepository,
     private val firstManager: FirstManager,
 ) {
@@ -50,7 +52,7 @@ class GetAvailableUserWithAutoRegisterUseCase(
                 firstManagerEmail = firstManager.email,
             )
         }
-        val userDeferred = async { userRepository.findAvailableUserById(userId) }
+        val userDeferred = async { availableUserRepository.findById(userId) }
 
         // ユーザー登録済みでも招待が取り消された場合はログイン出来ないようにするため、
         // ここでinviteDeferredをawaitして招待済みかチェックする
