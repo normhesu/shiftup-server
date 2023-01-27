@@ -7,7 +7,7 @@ import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import com.github.michaelbull.result.coroutines.runSuspendCatching
-import com.github.michaelbull.result.mapBoth
+import com.github.michaelbull.result.fold
 import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
@@ -38,7 +38,7 @@ class InviteRepository(
 
     suspend fun addOrNothingAndGetContainsBeforeAdd(invite: Invite) = runSuspendCatching {
         collection.insertOne(invite).orThrow()
-    }.throwIfNotDuplicate().mapBoth(
+    }.throwIfNotDuplicate().fold(
         success = { false },
         failure = { true },
     )

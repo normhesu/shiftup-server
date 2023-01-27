@@ -8,7 +8,7 @@ import app.vercel.shiftup.features.user.invite.infra.InviteRepository
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.mapBoth
+import com.github.michaelbull.result.fold
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Single
@@ -45,7 +45,7 @@ class ChangeUserPositionUseCase(
         invite.changePosition(
             position = position,
             operator = operatorDeferred.await(),
-        ).mapBoth(
+        ).fold(
             success = {
                 Ok(inviteRepository.replace(it))
             },
