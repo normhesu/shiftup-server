@@ -11,5 +11,4 @@ fun Application.module() {
     configureMonitoring()
     configureSecurity()
     configureRouting()
-    configureScheduling()
 }

@@ -14,6 +14,7 @@ import app.vercel.shiftup.features.user.domain.model.value.*
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.attendance.Attendance
 import app.vercel.shiftup.presentation.routes.attendance.surveys.me.attendanceSurveysMeRouting
+import app.vercel.shiftup.presentation.routes.attendance.surveys.scheduling.attendanceSurveysScheduling
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
@@ -39,6 +40,7 @@ fun Application.attendanceSurveysRouting() {
     castRouting()
     managerRouting()
     attendanceSurveysMeRouting()
+    attendanceSurveysScheduling()
 }
 
 private fun Application.castRouting() = routingWithRole(Role.Cast) {
