@@ -1,6 +1,7 @@
 package app.vercel.shiftup.features.user.account.infra
 
 import app.vercel.shiftup.features.core.infra.orThrow
+import app.vercel.shiftup.features.core.infra.throwIfNotDuplicate
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.User
 import app.vercel.shiftup.features.user.account.domain.model.UserId
@@ -8,6 +9,7 @@ import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
+import com.github.michaelbull.result.coroutines.runSuspendCatching
 import com.mongodb.client.model.Filters
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
@@ -25,8 +27,10 @@ class UserRepository(
     private val userCollection get() = database.getCollection<User>()
     private val inviteCollection get() = database.getCollection<Invite>()
 
-    suspend fun add(user: User) {
-        userCollection.insertOne(user).orThrow()
+    suspend fun addOrNothing(user: User) {
+        runSuspendCatching {
+            userCollection.insertOne(user).orThrow()
+        }.throwIfNotDuplicate()
     }
 
     suspend fun replace(user: User) {

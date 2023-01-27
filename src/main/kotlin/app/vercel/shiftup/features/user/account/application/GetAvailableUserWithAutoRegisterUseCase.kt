@@ -65,7 +65,7 @@ class GetAvailableUserWithAutoRegisterUseCase(
             ),
             position = invite.position,
         ).also {
-            userRepository.add(User(it))
+            userRepository.addOrNothing(User(it))
         }
     }
 

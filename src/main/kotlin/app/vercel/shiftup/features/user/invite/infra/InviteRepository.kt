@@ -1,14 +1,13 @@
 package app.vercel.shiftup.features.user.invite.infra
 
 import app.vercel.shiftup.features.core.infra.orThrow
+import app.vercel.shiftup.features.core.infra.throwIfNotDuplicate
 import app.vercel.shiftup.features.user.domain.model.value.Email
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import com.github.michaelbull.result.coroutines.runSuspendCatching
 import com.github.michaelbull.result.mapBoth
-import com.github.michaelbull.result.throwIf
-import com.mongodb.MongoException
 import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
@@ -19,10 +18,6 @@ import org.litote.kmongo.upsert
 class InviteRepository(
     private val database: CoroutineDatabase,
 ) {
-    companion object {
-        private const val DUPLICATE_KEY_CODE = 11000
-    }
-
     private val collection get() = database.getCollection<Invite>()
 
     suspend fun findByEmail(
@@ -43,9 +38,7 @@ class InviteRepository(
 
     suspend fun addOrNothingAndGetContainsBeforeAdd(invite: Invite) = runSuspendCatching {
         collection.insertOne(invite).orThrow()
-    }.throwIf {
-        (it is MongoException && it.code == DUPLICATE_KEY_CODE).not()
-    }.mapBoth(
+    }.throwIfNotDuplicate().mapBoth(
         success = { false },
         failure = { true },
     )
