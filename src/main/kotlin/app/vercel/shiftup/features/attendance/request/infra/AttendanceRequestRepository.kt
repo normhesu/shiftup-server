@@ -21,7 +21,7 @@ import org.litote.kmongo.serialization.registerSerializer
 @Suppress("TooManyFunctions")
 @Single
 class AttendanceRequestRepository(
-    private val database: CoroutineDatabase,
+    database: CoroutineDatabase,
 ) : AttendanceRequestRepositoryInterface {
     companion object {
         init {
@@ -29,7 +29,7 @@ class AttendanceRequestRepository(
         }
     }
 
-    private val collection get() = database.getCollection<AttendanceRequest>()
+    private val collection = database.getCollection<AttendanceRequest>()
 
     suspend fun containsByOpenCampusDates(
         sameFiscalYearOpenCampusDates: SameFiscalYearOpenCampusDates,

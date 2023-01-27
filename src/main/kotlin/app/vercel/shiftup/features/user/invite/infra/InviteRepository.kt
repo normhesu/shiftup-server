@@ -16,9 +16,9 @@ import org.litote.kmongo.upsert
 
 @Single
 class InviteRepository(
-    private val database: CoroutineDatabase,
+    database: CoroutineDatabase,
 ) {
-    private val collection get() = database.getCollection<Invite>()
+    private val collection = database.getCollection<Invite>()
 
     suspend fun findByEmail(
         email: Email,

@@ -14,9 +14,9 @@ import org.litote.kmongo.coroutine.updateOne
 
 @Single
 class AttendanceSurveyAnswerRepository(
-    private val database: CoroutineDatabase,
+    database: CoroutineDatabase,
 ) {
-    private val collection get() = database.getCollection<AttendanceSurveyAnswer>()
+    private val collection = database.getCollection<AttendanceSurveyAnswer>()
 
     suspend fun addOrReplace(answer: AttendanceSurveyAnswer) {
         collection.updateOne(answer, upsert()).orThrow()

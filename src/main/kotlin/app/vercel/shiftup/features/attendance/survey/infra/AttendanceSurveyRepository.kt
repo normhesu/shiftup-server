@@ -16,9 +16,9 @@ import org.litote.kmongo.path
 
 @Single
 class AttendanceSurveyRepository(
-    private val database: CoroutineDatabase,
+    database: CoroutineDatabase,
 ) : AttendanceSurveyRepositoryInterface {
-    private val collection get() = database.getCollection<AttendanceSurvey>()
+    private val collection = database.getCollection<AttendanceSurvey>()
 
     override suspend fun findById(attendanceSurveyId: AttendanceSurveyId): AttendanceSurvey? {
         return collection.findOneById(attendanceSurveyId)

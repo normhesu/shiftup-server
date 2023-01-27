@@ -12,9 +12,9 @@ import org.litote.kmongo.eq
 
 @Single
 class UserRepository(
-    private val database: CoroutineDatabase,
+    database: CoroutineDatabase,
 ) {
-    private val userCollection get() = database.getCollection<User>()
+    private val userCollection = database.getCollection<User>()
 
     suspend fun addOrNothing(user: User) {
         runSuspendCatching {

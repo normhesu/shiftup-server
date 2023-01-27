@@ -15,13 +15,13 @@ import org.litote.kmongo.path
 
 @Single
 class AvailableUserRepository(
-    private val database: CoroutineDatabase,
+    database: CoroutineDatabase,
     firstManager: FirstManager,
 ) {
 
     private val firstManagerInvite = Invite(firstManager)
-    private val userCollection get() = database.getCollection<User>()
-    private val inviteCollection get() = database.getCollection<Invite>()
+    private val userCollection = database.getCollection<User>()
+    private val inviteCollection = database.getCollection<Invite>()
 
     suspend fun findById(id: UserId): AvailableUser? {
         val user = userCollection.findOneById(id) ?: return null
