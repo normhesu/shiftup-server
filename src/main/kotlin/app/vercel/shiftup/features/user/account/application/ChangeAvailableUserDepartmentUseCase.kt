@@ -9,7 +9,7 @@ import app.vercel.shiftup.features.user.invite.infra.InviteRepository
 import org.koin.core.annotation.Single
 
 @Single
-class ChangeUserDepartmentUseCase(
+class ChangeAvailableUserDepartmentUseCase(
     private val availableUserRepository: AvailableUserRepository,
     private val inviteRepository: InviteRepository,
     private val firstManager: FirstManager,

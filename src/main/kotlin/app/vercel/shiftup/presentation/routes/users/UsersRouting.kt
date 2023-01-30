@@ -60,7 +60,7 @@ private fun Application.authRouting() = routing {
             call.respond(HttpStatusCode.NoContent)
         }
         put<Users.Me.Department> {
-            val useCase: ChangeUserDepartmentUseCase by inject()
+            val useCase: ChangeAvailableUserDepartmentUseCase by inject()
             useCase(
                 userId = call.sessions.userId,
                 department = Department.valueOf(call.receiveText())
@@ -72,7 +72,7 @@ private fun Application.authRouting() = routing {
 
 private fun Application.managerRouting() = routingWithRole(Role.Manager) {
     put<Users.Id.Position> {
-        val useCase: ChangeUserPositionUseCase by inject()
+        val useCase: ChangeAvailableUserPositionUseCase by inject()
         useCase(
             userId = it.parent.id,
             position = enumValueOf(call.receiveText()),
@@ -81,11 +81,11 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
             call.respond(HttpStatusCode.NoContent)
         }.onFailure { e ->
             when (e) {
-                is ChangeUserPositionUseCaseException.UserNotFound -> {
+                is ChangeAvailableUserPositionUseCaseException.AvailableUserNotFound -> {
                     call.respond(HttpStatusCode.NotFound)
                 }
 
-                is ChangeUserPositionUseCaseException.UnsupportedOperation -> {
+                is ChangeAvailableUserPositionUseCaseException.UnsupportedOperation -> {
                     call.response.headers.append(HttpHeaders.Allow, "")
                     call.respond(HttpStatusCode.MethodNotAllowed)
                 }

@@ -14,7 +14,7 @@ import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Single
 
 @Single
-class ChangeUserPositionUseCase(
+class ChangeAvailableUserPositionUseCase(
     private val availableUserRepository: AvailableUserRepository,
     private val inviteRepository: InviteRepository,
     private val firstManager: FirstManager,
@@ -23,7 +23,7 @@ class ChangeUserPositionUseCase(
         userId: UserId,
         position: Position,
         operatorId: UserId,
-    ): Result<Unit, ChangeUserPositionUseCaseException> = coroutineScope {
+    ): Result<Unit, ChangeAvailableUserPositionUseCaseException> = coroutineScope {
         val userDeferred = async { availableUserRepository.findById(userId) }
         val operatorDeferred = async {
             availableUserRepository.findById(operatorId)
@@ -31,11 +31,11 @@ class ChangeUserPositionUseCase(
         }
 
         val user = userDeferred.await() ?: return@coroutineScope Err(
-            ChangeUserPositionUseCaseException.UserNotFound,
+            ChangeAvailableUserPositionUseCaseException.AvailableUserNotFound,
         )
         if (user.studentNumber == firstManager.studentNumber) {
             return@coroutineScope Err(
-                ChangeUserPositionUseCaseException.UnsupportedOperation()
+                ChangeAvailableUserPositionUseCaseException.UnsupportedOperation()
             )
         }
 
@@ -50,13 +50,13 @@ class ChangeUserPositionUseCase(
                 Ok(inviteRepository.replace(it))
             },
             failure = {
-                Err(ChangeUserPositionUseCaseException.UnsupportedOperation(it))
+                Err(ChangeAvailableUserPositionUseCaseException.UnsupportedOperation(it))
             }
         )
     }
 }
 
-sealed class ChangeUserPositionUseCaseException(cause: Throwable? = null) : Exception(cause) {
-    object UserNotFound : ChangeUserPositionUseCaseException()
-    class UnsupportedOperation(cause: Throwable? = null) : ChangeUserPositionUseCaseException(cause)
+sealed class ChangeAvailableUserPositionUseCaseException(cause: Throwable? = null) : Exception(cause) {
+    object AvailableUserNotFound : ChangeAvailableUserPositionUseCaseException()
+    class UnsupportedOperation(cause: Throwable? = null) : ChangeAvailableUserPositionUseCaseException(cause)
 }
