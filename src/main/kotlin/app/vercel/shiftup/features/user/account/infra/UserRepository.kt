@@ -14,17 +14,17 @@ import org.litote.kmongo.eq
 class UserRepository(
     database: CoroutineDatabase,
 ) {
-    private val userCollection = database.getCollection<User>()
+    private val collection = database.getCollection<User>()
 
     suspend fun addOrNothing(user: User) {
         runSuspendCatching {
-            userCollection.insertOne(user).orThrow()
+            collection.insertOne(user).orThrow()
         }.throwIfNotDuplicate()
     }
 
     suspend fun replace(user: User) {
-        userCollection.updateOne(user).orThrow()
+        collection.updateOne(user).orThrow()
     }
 
-    suspend fun contains(id: UserId) = userCollection.countDocuments(User::id eq id) != 0L
+    suspend fun contains(id: UserId) = collection.countDocuments(User::id eq id) != 0L
 }
