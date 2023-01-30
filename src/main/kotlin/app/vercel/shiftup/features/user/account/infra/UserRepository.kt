@@ -16,6 +16,10 @@ class UserRepository(
 ) {
     private val collection = database.getCollection<User>()
 
+    suspend fun findById(userId: UserId): User? {
+        return collection.findOneById(userId)
+    }
+
     suspend fun addOrNothing(user: User) {
         runSuspendCatching {
             collection.insertOne(user).orThrow()
