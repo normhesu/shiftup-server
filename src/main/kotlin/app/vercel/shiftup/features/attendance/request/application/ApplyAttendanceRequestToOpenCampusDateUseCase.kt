@@ -4,9 +4,9 @@ import app.vercel.shiftup.features.attendance.application.removeAttendanceSurvey
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.request.domain.model.AttendanceRequest
 import app.vercel.shiftup.features.attendance.request.infra.AttendanceRequestRepository
-import app.vercel.shiftup.features.user.account.domain.model.Cast
+import app.vercel.shiftup.features.user.account.application.service.GetCastsByCastIdsApplicationService
+import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
-import app.vercel.shiftup.features.user.account.infra.AvailableUserRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.withLock
@@ -14,8 +14,8 @@ import org.koin.core.annotation.Single
 
 @Single
 class ApplyAttendanceRequestToOpenCampusDateUseCase(
-    private val availableUserRepository: AvailableUserRepository,
     private val attendanceRequestRepository: AttendanceRequestRepository,
+    private val getCastsByCastIdsApplicationService: GetCastsByCastIdsApplicationService,
 ) {
     suspend operator fun invoke(
         openCampusDate: OpenCampusDate,
@@ -24,14 +24,18 @@ class ApplyAttendanceRequestToOpenCampusDateUseCase(
         coroutineScope {
             require(openCampusDate >= OpenCampusDate.now())
 
-            val castIdsDeferred = async { availableUserRepository.findAvailableUserByIds(userIds).map { Cast(it).id } }
-            val currentRequestsDeferred =
-                async { attendanceRequestRepository.findByOpenCampusDate(openCampusDate).toSet() }
+            val castsDeferred = async {
+                getCastsByCastIdsApplicationService(userIds.map(CastId::unsafe))
+            }
+            val currentRequestsDeferred = async {
+                attendanceRequestRepository.findByOpenCampusDate(openCampusDate).toSet()
+            }
 
-            val applyRequests = castIdsDeferred.await().map {
-                AttendanceRequest(castId = it, openCampusDate = openCampusDate)
+            val applyRequests = userIds.map {
+                AttendanceRequest(castId = CastId.unsafe(it), openCampusDate = openCampusDate)
             }.toSet()
             val currentRequests = currentRequestsDeferred.await()
+            castsDeferred.await()
 
             attendanceRequestRepository.addAndRemoveAll(
                 addAttendanceRequests = applyRequests - currentRequests,
