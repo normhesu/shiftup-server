@@ -2,7 +2,7 @@ package app.vercel.shiftup.features.attendance.survey.domain.service
 
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.flatten
 import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import kotlinx.datetime.Clock
@@ -14,7 +14,7 @@ class AttendanceSurveyFactory(
 ) {
     suspend operator fun invoke(
         name: String,
-        openCampusSchedule: OpenCampusDates,
+        openCampusSchedule: SameFiscalYearOpenCampusDates,
     ): AttendanceSurvey {
         val surveys = attendanceSurveyRepository.findAll()
         val duplicateOpenCampusDate = surveys

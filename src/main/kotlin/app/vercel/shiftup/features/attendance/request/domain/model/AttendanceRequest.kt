@@ -5,7 +5,6 @@ import app.vercel.shiftup.features.attendance.request.domain.model.value.Attenda
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.domain.model.value.Role
-import com.github.michaelbull.result.runCatching
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -40,8 +39,10 @@ data class AttendanceRequest private constructor(
 
     val canRespond get() = state == AttendanceRequestState.Blank
 
-    fun respond(newState: AttendanceRequestState.NonBlank) = runCatching {
-        check(canRespond)
+    fun respond(
+        newState: AttendanceRequestState.NonBlank,
+    ): Result<AttendanceRequest> = runCatching {
+        if (!canRespond) throw UnsupportedOperationException()
         copy(state = newState)
     }
 

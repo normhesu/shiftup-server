@@ -1,10 +1,13 @@
 package app.vercel.shiftup.features.user.invite.infra
 
 import app.vercel.shiftup.features.core.infra.orThrow
+import app.vercel.shiftup.features.core.infra.throwIfNotDuplicate
 import app.vercel.shiftup.features.user.domain.model.value.Email
 import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
+import com.github.michaelbull.result.coroutines.runSuspendCatching
+import com.github.michaelbull.result.fold
 import com.mongodb.client.result.DeleteResult
 import org.koin.core.annotation.Single
 import org.litote.kmongo.coroutine.CoroutineDatabase
@@ -13,9 +16,15 @@ import org.litote.kmongo.upsert
 
 @Single
 class InviteRepository(
-    private val database: CoroutineDatabase,
+    database: CoroutineDatabase,
 ) {
-    private val collection get() = database.getCollection<Invite>()
+    private val collection = database.getCollection<Invite>()
+
+    suspend fun findById(
+        inviteId: InviteId,
+    ): Invite? {
+        return collection.findOneById(inviteId)
+    }
 
     suspend fun findByEmail(
         email: Email,
@@ -33,9 +42,12 @@ class InviteRepository(
         return collection.find().toList()
     }
 
-    suspend fun add(invite: Invite) {
+    suspend fun addOrNothingAndGetContainsBeforeAdd(invite: Invite) = runSuspendCatching {
         collection.insertOne(invite).orThrow()
-    }
+    }.throwIfNotDuplicate().fold(
+        success = { false },
+        failure = { true },
+    )
 
     suspend fun replace(invite: Invite) {
         collection.updateOne(invite).orThrow()

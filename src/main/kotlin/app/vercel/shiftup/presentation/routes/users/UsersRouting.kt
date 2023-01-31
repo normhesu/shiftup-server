@@ -1,15 +1,11 @@
 package app.vercel.shiftup.presentation.routes.users
 
 import app.vercel.shiftup.features.user.account.application.*
-import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Department
-import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
-import app.vercel.shiftup.presentation.routes.auth.plugins.userId
+import app.vercel.shiftup.features.user.invite.domain.model.value.Position
+import app.vercel.shiftup.presentation.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
-import com.github.michaelbull.result.onFailure
-import com.github.michaelbull.result.onSuccess
 import io.ktor.http.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
@@ -24,14 +20,31 @@ import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import org.mpierce.ktor.csrf.noCsrfProtection
 
-fun Application.usersRouting() {
-    authRouting()
-    managerRouting()
-}
-
-private fun Application.authRouting() = routing {
+fun Application.usersRouting() = routing {
     authenticate {
         noCsrfProtection {
+            get<Users.Me> {
+                @Serializable
+                data class Response(
+                    val name: Name,
+                    val department: Department,
+                    val position: Position,
+                )
+
+                val useCase: GetAvailableUserUseCase by inject()
+                val availableUser = useCase(call.sessions.userId).let(::checkNotNull)
+                val response = Response(
+                    name = availableUser.name,
+                    department = availableUser.department,
+                    position = availableUser.position,
+                )
+                call.respond(response)
+            }
+
+            get<Users.Me.Id> {
+                call.respond(call.sessions.userId)
+            }
+
             get<Users.Me.Detail> {
                 val useCase: GetAvailableUserDetailUseCase by inject()
                 call.respond(
@@ -40,8 +53,8 @@ private fun Application.authRouting() = routing {
             }
 
             get<Users.Me.Roles> {
-                val getUserRolesUseCase: GetUserRolesUseCase by inject()
-                val roles = getUserRolesUseCase(call.sessions.userId).let(::checkNotNull)
+                val useCase: GetUserRolesUseCase by inject()
+                val roles = useCase(call.sessions.userId).let(::checkNotNull)
                 call.respond(roles)
             }
 
@@ -60,36 +73,12 @@ private fun Application.authRouting() = routing {
             call.respond(HttpStatusCode.NoContent)
         }
         put<Users.Me.Department> {
-            val useCase: ChangeUserDepartmentUseCase by inject()
+            val useCase: ChangeAvailableUserDepartmentUseCase by inject()
             useCase(
                 userId = call.sessions.userId,
                 department = Department.valueOf(call.receiveText())
             )
             call.respond(HttpStatusCode.NoContent)
-        }
-    }
-}
-
-private fun Application.managerRouting() = routingWithRole(Role.Manager) {
-    put<Users.Id.Position> {
-        val useCase: ChangeUserPositionUseCase by inject()
-        useCase(
-            userId = it.parent.id,
-            position = enumValueOf(call.receiveText()),
-            operatorId = call.sessions.userId,
-        ).onSuccess {
-            call.respond(HttpStatusCode.NoContent)
-        }.onFailure { e ->
-            when (e) {
-                is ChangeUserPositionUseCaseException.UserNotFound -> {
-                    throw NotFoundException()
-                }
-
-                is ChangeUserPositionUseCaseException.UnsupportedOperation -> {
-                    call.response.headers.append(HttpHeaders.Allow, "")
-                    call.respond(HttpStatusCode.MethodNotAllowed)
-                }
-            }
         }
     }
 }
@@ -101,6 +90,10 @@ class Users {
     @Serializable
     @Resource("me")
     class Me(val parent: Users) {
+        @Serializable
+        @Resource("id")
+        class Id(val parent: Me)
+
         @Serializable
         @Resource("detail")
         class Detail(val parent: Me)
@@ -115,18 +108,10 @@ class Users {
 
         @Serializable
         @Resource("department")
-        class Department(val parent: Id)
+        class Department(val parent: Me)
 
         @Serializable
         @Resource("attendance")
         class Attendance(val parent: Me)
-    }
-
-    @Serializable
-    @Resource("{id}")
-    class Id(val parent: Users, val id: UserId) {
-        @Serializable
-        @Resource("position")
-        class Position(val parent: Id)
     }
 }

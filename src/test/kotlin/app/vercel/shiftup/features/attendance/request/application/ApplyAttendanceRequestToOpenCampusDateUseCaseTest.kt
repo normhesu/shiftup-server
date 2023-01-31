@@ -3,11 +3,11 @@ package app.vercel.shiftup.features.attendance.request.application
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.request.domain.model.AttendanceRequest
 import app.vercel.shiftup.features.attendance.request.infra.AttendanceRequestRepository
+import app.vercel.shiftup.features.user.account.application.service.GetCastsByCastIdsApplicationService
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
-import app.vercel.shiftup.features.user.account.infra.UserRepository
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.annotation.DoNotParallelize
@@ -33,11 +33,11 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
     }
 
     "ApplyAttendanceRequestToOpenCampusDateUseCase" - {
-        val mockUserRepository: UserRepository = mockk()
         val mockAttendanceRequestRepository: AttendanceRequestRepository = mockk(relaxUnitFun = true)
+        val mockGetCastsByCastIdsApplicationService: GetCastsByCastIdsApplicationService = mockk()
         val useCase = ApplyAttendanceRequestToOpenCampusDateUseCase(
-            userRepository = mockUserRepository,
             attendanceRequestRepository = mockAttendanceRequestRepository,
+            getCastsByCastIdsApplicationService = mockGetCastsByCastIdsApplicationService,
         )
         "正常系" - {
             "出勤依頼が空の場合、受け取ったCastIdの出勤依頼を追加する" {
@@ -47,19 +47,20 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 val userIds = List(10) {
                     UserId(it.toString())
                 }.toSet()
+                val castIds = userIds.map(CastId::unsafe)
 
-                val users = userIds.map {
+                val casts = userIds.map {
                     AvailableUser(
                         id = it,
                         name = mockk(relaxed = true),
                         position = Position.Cast,
                         schoolProfile = mockk(relaxed = true)
-                    )
+                    ).let(::Cast)
                 }
 
                 coEvery {
-                    mockUserRepository.findAvailableUserByIds(userIds)
-                } returns users
+                    mockGetCastsByCastIdsApplicationService(castIds)
+                } returns casts
 
                 coEvery {
                     mockAttendanceRequestRepository.findByOpenCampusDate(openCampusDate)
@@ -72,9 +73,9 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
 
                 coVerify {
                     mockAttendanceRequestRepository.addAndRemoveAll(
-                        addAttendanceRequests = users.map {
+                        addAttendanceRequests = casts.map {
                             AttendanceRequest(
-                                castId = Cast(it).id,
+                                castId = it.id,
                                 openCampusDate = openCampusDate,
                             )
                         }.toSet(),
@@ -90,25 +91,26 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 val userIds = List(10) {
                     UserId(it.toString())
                 }.toSet()
+                val castIds = userIds.map(CastId::unsafe)
 
-                val users = userIds.map {
+                val casts = userIds.map {
                     AvailableUser(
                         id = it,
                         name = mockk(relaxed = true),
                         position = Position.Cast,
                         schoolProfile = mockk(relaxed = true)
-                    )
+                    ).let(::Cast)
                 }
 
                 coEvery {
-                    mockUserRepository.findAvailableUserByIds(userIds)
-                } returns users
+                    mockGetCastsByCastIdsApplicationService(castIds)
+                } returns casts
 
                 coEvery {
                     mockAttendanceRequestRepository.findByOpenCampusDate(openCampusDate)
-                } returns users.map {
+                } returns casts.map {
                     AttendanceRequest(
-                        castId = Cast(it).id,
+                        castId = it.id,
                         openCampusDate = openCampusDate,
                     )
                 }
@@ -133,6 +135,7 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 val userIds = List(10) {
                     UserId(it.toString())
                 }.toSet()
+                val castIds = userIds.map(CastId::unsafe)
 
                 val users = userIds.map {
                     AvailableUser(
@@ -143,6 +146,8 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                     )
                 }
 
+                val casts = users.map(::Cast)
+
                 val savedRequests = users.take(3).map {
                     AttendanceRequest(
                         castId = Cast(it).id,
@@ -151,8 +156,8 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 }
 
                 coEvery {
-                    mockUserRepository.findAvailableUserByIds(userIds)
-                } returns users
+                    mockGetCastsByCastIdsApplicationService(castIds)
+                } returns casts
 
                 coEvery {
                     mockAttendanceRequestRepository.findByOpenCampusDate(openCampusDate)
@@ -182,9 +187,10 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 )
 
                 val userIds = emptySet<UserId>()
+                val castIds = userIds.map(CastId::unsafe)
 
                 coEvery {
-                    mockUserRepository.findAvailableUserByIds(userIds)
+                    mockGetCastsByCastIdsApplicationService(castIds)
                 } returns emptyList()
 
                 val savedRequests = List(10) {
@@ -224,18 +230,20 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                 }
 
                 val userIds = savedRequests.take(3).map { it.castId.value }.toSet()
-                val users = userIds.map {
+                val castIds = userIds.map(CastId::unsafe)
+
+                val casts = userIds.map {
                     AvailableUser(
                         id = it,
                         name = mockk(relaxed = true),
                         position = Position.Cast,
                         schoolProfile = mockk(relaxed = true)
-                    )
+                    ).let(::Cast)
                 }
 
                 coEvery {
-                    mockUserRepository.findAvailableUserByIds(userIds)
-                } returns users
+                    mockGetCastsByCastIdsApplicationService(castIds)
+                } returns casts
 
                 coEvery {
                     mockAttendanceRequestRepository.findByOpenCampusDate(openCampusDate)
@@ -261,18 +269,19 @@ class ApplyAttendanceRequestToOpenCampusDateUseCaseTest : FreeSpec({
                     )
 
                     val userIds = setOf(1, 2, 4, 6, 7).map {
-                        UserId(it.toString())
+                        (UserId(it.toString()))
                     }.toSet()
+                    val castIds = userIds.map(CastId::unsafe)
 
                     coEvery {
-                        mockUserRepository.findAvailableUserByIds(userIds)
+                        mockGetCastsByCastIdsApplicationService(castIds)
                     } returns userIds.map {
                         AvailableUser(
                             id = it,
                             name = mockk(relaxed = true),
                             position = Position.Cast,
                             schoolProfile = mockk(relaxed = true)
-                        )
+                        ).let(::Cast)
                     }
 
                     coEvery {

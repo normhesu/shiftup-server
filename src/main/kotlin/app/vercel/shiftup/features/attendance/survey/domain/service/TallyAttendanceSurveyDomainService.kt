@@ -3,20 +3,22 @@ package app.vercel.shiftup.features.attendance.survey.domain.service
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.request.domain.service.AttendanceRequestRepositoryInterface
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.AttendanceSurveyAnswers
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameAttendanceSurveyAnswers
 import app.vercel.shiftup.features.user.account.domain.model.Cast
 import app.vercel.shiftup.features.user.domain.model.value.Department
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.Serializable
+import org.koin.core.annotation.Single
 
+@Single
 class TallyAttendanceSurveyDomainService(
     private val attendanceRequestRepository: AttendanceRequestRepositoryInterface,
     private val getCastsByCastIds: GetCastsByCastIdsApplicationServiceInterface,
 ) {
     suspend operator fun invoke(
         survey: AttendanceSurvey,
-        answers: AttendanceSurveyAnswers,
+        answers: SameAttendanceSurveyAnswers,
     ): TallyAttendanceSurveyResult = coroutineScope {
         val openCampuses = survey.tally(answers)
         val (attendanceRequests, casts) = run {
@@ -43,11 +45,10 @@ class TallyAttendanceSurveyDomainService(
         }
 
         val resultItems = openCampuses.map { openCampus ->
-            fun Cast.attendanceRequested() = attendanceRequests
-                .filterKeys { it == openCampus.date }
-                .any { (_, attendanceRequests) ->
-                    attendanceRequests.find { it.castId == this.id } != null
-                }
+            fun Cast.attendanceRequested(): Boolean {
+                val requests = attendanceRequests[openCampus.date].orEmpty()
+                return requests.find { it.castId == this.id } != null
+            }
 
             val availableCastsWithAttendanceRequested = casts
                 .filter { it.id in openCampus.availableCastIds }

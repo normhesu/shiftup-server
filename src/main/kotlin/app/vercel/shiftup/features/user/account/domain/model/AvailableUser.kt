@@ -6,13 +6,6 @@ import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import kotlinx.serialization.Serializable
 
 @Serializable
-@JvmInline
-value class UserId(
-    // セッションに保存が出来なくなるので、privateにしない
-    val value: String,
-)
-
-@Serializable
 data class AvailableUser(
     val id: UserId,
     val name: Name,
@@ -29,8 +22,6 @@ data class AvailableUser(
     fun inSchool(fiscalYear: Int?) = getSchoolYear(fiscalYear) != null
 
     fun hasRole(role: Role) = role in roles
-
-    fun changeName(name: Name) = copy(name = name)
 
     private fun getSchoolYear(fiscalYear: Int?) = studentNumber.getSchoolYear(
         tenure = department.tenure,

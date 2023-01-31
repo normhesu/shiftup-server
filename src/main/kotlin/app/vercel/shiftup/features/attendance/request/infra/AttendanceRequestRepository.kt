@@ -6,6 +6,7 @@ import app.vercel.shiftup.features.attendance.request.domain.model.AttendanceReq
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestStateSerializer
 import app.vercel.shiftup.features.attendance.request.domain.service.AttendanceRequestRepositoryInterface
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.core.infra.orThrow
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import com.mongodb.client.model.DeleteManyModel
@@ -20,7 +21,7 @@ import org.litote.kmongo.serialization.registerSerializer
 @Suppress("TooManyFunctions")
 @Single
 class AttendanceRequestRepository(
-    private val database: CoroutineDatabase,
+    database: CoroutineDatabase,
 ) : AttendanceRequestRepositoryInterface {
     companion object {
         init {
@@ -28,7 +29,13 @@ class AttendanceRequestRepository(
         }
     }
 
-    private val collection get() = database.getCollection<AttendanceRequest>()
+    private val collection = database.getCollection<AttendanceRequest>()
+
+    suspend fun containsByOpenCampusDates(
+        sameFiscalYearOpenCampusDates: SameFiscalYearOpenCampusDates,
+    ): Boolean = collection.findOne(
+        AttendanceRequest::openCampusDate `in` sameFiscalYearOpenCampusDates,
+    ) != null
 
     suspend fun findById(attendanceRequestId: AttendanceRequestId): AttendanceRequest? {
         return collection.findOneById(attendanceRequestId)
@@ -50,6 +57,12 @@ class AttendanceRequestRepository(
     ): List<AttendanceRequest> = collection.find(
         AttendanceRequest::openCampusDate eq openCampusDate,
         Filters.eq(AttendanceRequest::state.path(), state.name),
+    ).toList()
+
+    suspend fun findByOpenCampusDates(
+        openCampusDates: Collection<OpenCampusDate>,
+    ): List<AttendanceRequest> = collection.find(
+        AttendanceRequest::openCampusDate `in` openCampusDates,
     ).toList()
 
     suspend fun findByCastIdAndEarliestDate(

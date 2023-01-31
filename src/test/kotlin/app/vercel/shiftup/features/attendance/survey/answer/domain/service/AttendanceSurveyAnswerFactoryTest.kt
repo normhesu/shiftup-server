@@ -3,7 +3,7 @@ package app.vercel.shiftup.features.attendance.survey.answer.domain.service
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import app.vercel.shiftup.features.user.account.domain.model.Cast
@@ -39,7 +39,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
         val factory = AttendanceSurveyAnswerFactory(mockSurveyRepository)
         val fakeOpenCampus = AttendanceSurvey.fromFactory(
             name = "テスト",
-            openCampusSchedule = OpenCampusDates(
+            openCampusSchedule = SameFiscalYearOpenCampusDates(
                 setOf(
                     OpenCampusDate(LocalDate(2022, 4, 1))
                 ),
@@ -73,7 +73,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                     )
                     actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.NotFoundSurvey>>()
                 }
-                "アンケートが回答受付を終了している場合、Err(AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey)を返す" {
+                "アンケートが回答受付を終了している場合、Err(AttendanceSurveyAnswerFactoryException.CanNotAnswer)を返す" {
                     coEvery {
                         mockSurveyRepository.findById(any())
                     } returns fakeOpenCampus.changeAvailable(false)
@@ -83,9 +83,9 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                         cast = mockk(relaxed = true),
                         availableDays = mockk(relaxed = true),
                     )
-                    actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey>>()
+                    actual.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.CanNotAnswer>>()
                 }
-                "アンケート内のオープンキャンパス開催日に学生が在籍していない場合、Err(AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey)を返す" {
+                "アンケート内のオープンキャンパス開催日に学生が在籍していない場合、Err(AttendanceSurveyAnswerFactoryException.CanNotAnswer)を返す" {
                     val mockCast: Cast = mockk(relaxed = true)
                     every { mockCast.inSchool(any()) } returns false
                     coEvery { mockSurveyRepository.findById(any()) } returns fakeOpenCampus
@@ -93,7 +93,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                     val result = factory(
                         attendanceSurveyId = mockk(relaxed = true),
                         cast = mockCast,
-                        availableDays = OpenCampusDates(
+                        availableDays = SameFiscalYearOpenCampusDates(
                             setOf(
                                 OpenCampusDate(
                                     LocalDate(
@@ -105,7 +105,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                             ),
                         ),
                     )
-                    result.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey>>()
+                    result.shouldBeInstanceOf<Err<AttendanceSurveyAnswerFactoryException.CanNotAnswer>>()
                 }
                 "アンケート内のオープンキャンパス開催日以外の日にちが出勤可能日にある場合、IllegalArgumentExceptionを投げる" {
                     val mockCast: Cast = mockk(relaxed = true)
@@ -124,7 +124,7 @@ class AttendanceSurveyAnswerFactoryTest : FreeSpec({
                         factory(
                             attendanceSurveyId = mockk(relaxed = true),
                             cast = mockCast,
-                            availableDays = OpenCampusDates(
+                            availableDays = SameFiscalYearOpenCampusDates(
                                 setOf(openCampusDate),
                             ),
                         )

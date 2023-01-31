@@ -2,12 +2,12 @@ package app.vercel.shiftup.features.attendance.survey.answer.domain.service
 
 import app.vercel.shiftup.features.attendance.survey.answer.domain.model.AttendanceSurveyAnswer
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.attendance.survey.domain.service.AttendanceSurveyRepositoryInterface
 import app.vercel.shiftup.features.user.account.domain.model.Cast
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.coroutines.runSuspendCatching
-import com.github.michaelbull.result.mapError
 import org.koin.core.annotation.Single
 
 @Single
@@ -17,32 +17,28 @@ class AttendanceSurveyAnswerFactory(
     suspend operator fun invoke(
         attendanceSurveyId: AttendanceSurveyId,
         cast: Cast,
-        availableDays: OpenCampusDates,
-    ): Result<AttendanceSurveyAnswer, AttendanceSurveyAnswerFactoryException> = runSuspendCatching {
+        availableDays: SameFiscalYearOpenCampusDates,
+    ): Result<AttendanceSurveyAnswer, AttendanceSurveyAnswerFactoryException> {
+        // 取得後にアンケートが削除されてもアンケートが存在しない回答は自動で削除されるので、生成を許容する
         val survey = attendanceSurveyRepository.findById(
             attendanceSurveyId,
         )
         when {
-            survey == null -> throw AttendanceSurveyAnswerFactoryException.NotFoundSurvey
-            survey.canAnswer(cast).not() -> throw AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey
+            survey == null -> return Err(AttendanceSurveyAnswerFactoryException.NotFoundSurvey)
+            survey.canAnswer(cast).not() -> return Err(AttendanceSurveyAnswerFactoryException.CanNotAnswer)
             else -> {
                 require(availableDays.all { it in survey.openCampusSchedule })
             }
         }
-        AttendanceSurveyAnswer.fromFactory(
+        return AttendanceSurveyAnswer.fromFactory(
             surveyId = attendanceSurveyId,
             availableCastId = cast.id,
             availableDays = availableDays,
-        )
-    }.mapError {
-        when (it) {
-            is AttendanceSurveyAnswerFactoryException -> it
-            else -> throw it
-        }
+        ).let(::Ok)
     }
 }
 
 sealed interface AttendanceSurveyAnswerFactoryException {
     object NotFoundSurvey : Exception(), AttendanceSurveyAnswerFactoryException
-    object CanNotAnswerSurvey : Exception(), AttendanceSurveyAnswerFactoryException
+    object CanNotAnswer : Exception(), AttendanceSurveyAnswerFactoryException
 }

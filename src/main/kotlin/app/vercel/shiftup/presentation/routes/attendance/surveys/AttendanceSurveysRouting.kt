@@ -5,18 +5,18 @@ import app.vercel.shiftup.features.attendance.survey.answer.application.AddOrRep
 import app.vercel.shiftup.features.attendance.survey.answer.domain.service.AttendanceSurveyAnswerFactoryException
 import app.vercel.shiftup.features.attendance.survey.application.*
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.attendance.survey.domain.service.CastWithAttendanceRequested
 import app.vercel.shiftup.features.user.account.domain.model.AvailableUser
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
-import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
+import app.vercel.shiftup.features.user.domain.model.value.*
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
+import app.vercel.shiftup.presentation.plugins.routingWithRole
+import app.vercel.shiftup.presentation.plugins.userId
 import app.vercel.shiftup.presentation.routes.attendance.Attendance
 import app.vercel.shiftup.presentation.routes.attendance.surveys.me.attendanceSurveysMeRouting
-import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
-import app.vercel.shiftup.presentation.routes.auth.plugins.userId
+import app.vercel.shiftup.presentation.routes.attendance.surveys.scheduling.attendanceSurveysScheduling
 import app.vercel.shiftup.presentation.routes.inject
 import app.vercel.shiftup.presentation.routes.respondDeleteResult
 import com.github.michaelbull.result.onFailure
@@ -40,6 +40,7 @@ fun Application.attendanceSurveysRouting() {
     castRouting()
     managerRouting()
     attendanceSurveysMeRouting()
+    attendanceSurveysScheduling()
 }
 
 private fun Application.castRouting() = routingWithRole(Role.Cast) {
@@ -52,9 +53,12 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
         ).onSuccess {
             call.respond(HttpStatusCode.NoContent)
         }.onFailure { e ->
-            @Suppress("USELESS_IS_CHECK")
             when (e) {
-                is AttendanceSurveyAnswerFactoryException.CanNotAnswerSurvey -> {
+                is AttendanceSurveyAnswerFactoryException.NotFoundSurvey -> {
+                    call.respond(HttpStatusCode.NotFound)
+                }
+
+                is AttendanceSurveyAnswerFactoryException.CanNotAnswer -> {
                     call.response.headers.append(HttpHeaders.Allow, "")
                     call.respond(HttpStatusCode.MethodNotAllowed)
                 }
@@ -64,39 +68,11 @@ private fun Application.castRouting() = routingWithRole(Role.Cast) {
 }
 
 private fun Application.managerRouting() = routingWithRole(Role.Manager) {
-    noCsrfProtection {
-        get<Surveys> {
-            @Serializable
-            data class ResponseItem(
-                val id: AttendanceSurveyId,
-                val name: String,
-                val openCampusSchedule: OpenCampusDates,
-                val creationDate: LocalDate,
-                val available: Boolean,
-                val answerCount: Int,
-            )
-
-            val useCase: GetCanSendAttendanceRequestAttendanceSurveyUseCase by inject()
-            val response = useCase().map { (survey, answerCount) ->
-                ResponseItem(
-                    id = survey.id,
-                    name = survey.name,
-                    openCampusSchedule = survey.openCampusSchedule,
-                    creationDate = survey.creationDate,
-                    available = survey.available,
-                    answerCount = answerCount,
-                )
-            }
-
-            call.respond(response)
-        }
-    }
-
     post<Surveys> {
         @Serializable
         data class Params(
             val name: String,
-            val openCampusSchedule: OpenCampusDates,
+            val openCampusSchedule: SameFiscalYearOpenCampusDates,
         )
 
         val useCase: AddAttendanceSurveyUseCase by inject()
@@ -108,9 +84,17 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
 
     delete<Surveys.Id> {
         val useCase: RemoveAttendanceSurveyUseCase by inject()
-        call.respondDeleteResult(
-            useCase(attendanceSurveyId = it.attendanceSurveyId)
-        )
+        useCase(attendanceSurveyId = it.attendanceSurveyId)
+            .onSuccess { result ->
+                call.respondDeleteResult(result)
+            }.onFailure { e ->
+                when (e) {
+                    is RemoveAttendanceSurveyUseCaseException.UnsupportedOperation -> {
+                        call.response.headers.append(HttpHeaders.Allow, "")
+                        call.respond(HttpStatusCode.MethodNotAllowed)
+                    }
+                }
+            }
     }
 
     put<Surveys.Id.Available> {
@@ -118,21 +102,61 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
         useCase(
             attendanceSurveyId = it.parent.attendanceSurveyId,
             available = call.receiveText().toBooleanStrict(),
-        )
-
-        call.respond(HttpStatusCode.NoContent)
+        ).onSuccess {
+            call.respond(HttpStatusCode.NoContent)
+        }.onFailure { e ->
+            when (e) {
+                is ChangeAvailableAttendanceSurveyUseCaseException.NotFoundSurvey -> {
+                    call.respond(HttpStatusCode.NotFound)
+                }
+            }
+        }
     }
 
+    getSurveysRoute()
     surveyResultsRoute()
 }
 
+private fun Route.getSurveysRoute() = noCsrfProtection {
+    get<Surveys> {
+        @Serializable
+        data class ResponseItem(
+            val id: AttendanceSurveyId,
+            val name: String,
+            val openCampusSchedule: SameFiscalYearOpenCampusDates,
+            val creationDate: LocalDate,
+            val available: Boolean,
+            val answerCount: Int,
+            val canDelete: Boolean,
+        )
+
+        val useCase: GetCanTallyAttendanceSurveyUseCase by inject()
+        val response = useCase().map { (survey, answerCount, canDelete) ->
+            ResponseItem(
+                id = survey.id,
+                name = survey.name,
+                openCampusSchedule = survey.openCampusSchedule,
+                creationDate = survey.creationDate,
+                available = survey.available,
+                answerCount = answerCount,
+                canDelete = canDelete,
+            )
+        }
+
+        call.respond(response)
+    }
+}
+
+@Suppress("LongMethod")
 private fun Route.surveyResultsRoute() = noCsrfProtection {
     get<Surveys.Id.Result> { resource ->
         @Serializable
         data class ResponseCast(
             val id: UserId,
             val name: Name,
-            val schoolProfile: SchoolProfile,
+            val studentNumber: StudentNumber,
+            val email: Email,
+            val department: Department,
             val position: Position,
             val attendanceRequested: Boolean,
         ) {
@@ -146,8 +170,10 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
             private constructor(user: AvailableUser, attendanceRequested: Boolean) : this(
                 id = user.id,
                 name = user.name,
+                studentNumber = user.studentNumber,
+                email = user.email,
+                department = user.department,
                 position = user.position,
-                schoolProfile = user.schoolProfile,
                 attendanceRequested = attendanceRequested,
             )
         }
@@ -166,22 +192,28 @@ private fun Route.surveyResultsRoute() = noCsrfProtection {
         )
 
         val useCase: TallyAttendanceSurveyUseCase by inject()
-        val tallyResult = useCase(resource.parent.attendanceSurveyId)
-
-        val openCampuses = tallyResult.results.map {
-            ResponseItem(
-                date = it.openCampusDate,
-                tallied = it.tallied,
-                availableCasts = it.castsWithAttendanceRequested.map(::ResponseCast).toSet(),
-            )
-        }
-
-        val response = Response(
-            tallied = tallyResult.tallied,
-            openCampuses = openCampuses,
-        )
-
-        call.respond(response)
+        useCase(resource.parent.attendanceSurveyId)
+            .onSuccess { tallyResult ->
+                val openCampuses = tallyResult.results.map {
+                    ResponseItem(
+                        date = it.openCampusDate,
+                        tallied = it.tallied,
+                        availableCasts = it.castsWithAttendanceRequested.map(::ResponseCast).toSet(),
+                    )
+                }
+                val response = Response(
+                    tallied = tallyResult.tallied,
+                    openCampuses = openCampuses,
+                )
+                call.respond(response)
+            }
+            .onFailure { e ->
+                when (e) {
+                    is TallyAttendanceSurveyUseCaseException.NotFoundSurvey -> {
+                        call.respond(HttpStatusCode.NotFound)
+                    }
+                }
+            }
     }
 }
 

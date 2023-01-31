@@ -8,8 +8,9 @@ import app.vercel.shiftup.features.attendance.survey.infra.AttendanceSurveyRepos
 import app.vercel.shiftup.features.user.account.application.service.GetCastApplicationService
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single
 
 @Single
@@ -21,7 +22,7 @@ class GetAfterNowAttendanceRequestAndSurveyUseCase(
     suspend operator fun invoke(
         userId: UserId,
     ): GetAfterNowAttendanceRequestAndSurveyUseCaseResult = coroutineScope {
-        launch { getCastApplicationService(userId) }
+        val castDeferred = async { getCastApplicationService(userId) }
         val requests = attendanceRequestRepository.findByCastIdAndEarliestDate(
             castId = CastId.unsafe(userId),
             earliestDate = OpenCampusDate.now(),
@@ -45,6 +46,7 @@ class GetAfterNowAttendanceRequestAndSurveyUseCase(
             request.canRespond
         }
 
+        castDeferred.await()
         GetAfterNowAttendanceRequestAndSurveyUseCaseResult(
             canRespondRequestAndSurveyList = canRespondRequestAndSurveyList,
             respondedRequestAndSurveyList = respondedRequestAndSurveyList
@@ -52,6 +54,7 @@ class GetAfterNowAttendanceRequestAndSurveyUseCase(
     }
 }
 
+@Serializable
 data class GetAfterNowAttendanceRequestAndSurveyUseCaseResult(
     val canRespondRequestAndSurveyList: List<Pair<AttendanceRequest, AttendanceSurvey?>>,
     val respondedRequestAndSurveyList: List<Pair<AttendanceRequest, AttendanceSurvey?>>,

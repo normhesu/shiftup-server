@@ -2,9 +2,9 @@ package app.vercel.shiftup.features.attendance.survey.domain.model
 
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.answer.domain.model.AttendanceSurveyAnswer
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.AttendanceSurveyAnswers
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampus
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameAttendanceSurveyAnswers
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import app.vercel.shiftup.features.user.account.domain.model.CastId
 import app.vercel.shiftup.features.user.account.domain.model.UserId
@@ -46,15 +46,15 @@ class AttendanceSurveyTest : FreeSpec({
                 )
                 val survey = AttendanceSurvey.fromFactory(
                     name = "テスト",
-                    openCampusSchedule = OpenCampusDates(openCampusDatesValue),
+                    openCampusSchedule = SameFiscalYearOpenCampusDates(openCampusDatesValue),
                     creationDate = Clock.System.now().toTokyoLocalDateTime().date,
                     available = true,
                     id = AttendanceSurveyId(),
                 )
 
                 "回答が無い場合、キャスト一覧は空になる" {
-                    val actual = survey.tally(AttendanceSurveyAnswers.empty(survey.id))
-                    val expected = OpenCampusDates(openCampusDatesValue).map(::OpenCampus)
+                    val actual = survey.tally(SameAttendanceSurveyAnswers.empty(survey.id))
+                    val expected = SameFiscalYearOpenCampusDates(openCampusDatesValue).map(::OpenCampus)
                     actual shouldBe expected
                 }
 
@@ -64,12 +64,12 @@ class AttendanceSurveyTest : FreeSpec({
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
                                 availableCastId = CastId.unsafe(UserId("A")),
-                                availableDays = OpenCampusDates.empty()
+                                availableDays = SameFiscalYearOpenCampusDates.empty()
                             ),
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
                                 availableCastId = CastId.unsafe(UserId("B")),
-                                availableDays = OpenCampusDates(
+                                availableDays = SameFiscalYearOpenCampusDates(
                                     setOf(
                                         openCampusDatesValue.elementAt(0),
                                         openCampusDatesValue.elementAt(1),
@@ -80,7 +80,7 @@ class AttendanceSurveyTest : FreeSpec({
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
                                 availableCastId = CastId.unsafe(UserId("C")),
-                                availableDays = OpenCampusDates(
+                                availableDays = SameFiscalYearOpenCampusDates(
                                     setOf(
                                         openCampusDatesValue.elementAt(1),
                                     )
@@ -89,7 +89,7 @@ class AttendanceSurveyTest : FreeSpec({
                             AttendanceSurveyAnswer.fromFactory(
                                 surveyId = survey.id,
                                 availableCastId = CastId.unsafe(UserId("D")),
-                                availableDays = OpenCampusDates(
+                                availableDays = SameFiscalYearOpenCampusDates(
                                     setOf(
                                         openCampusDatesValue.elementAt(0),
                                         openCampusDatesValue.elementAt(3),
@@ -99,7 +99,7 @@ class AttendanceSurveyTest : FreeSpec({
                         )
 
                         survey.tally(
-                            AttendanceSurveyAnswers(
+                            SameAttendanceSurveyAnswers(
                                 answers = answersSet,
                                 surveyId = survey.id,
                             ),

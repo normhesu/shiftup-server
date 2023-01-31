@@ -3,7 +3,7 @@ package app.vercel.shiftup.features.attendance.survey.domain.service
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurvey
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
-import app.vercel.shiftup.features.attendance.survey.domain.model.value.OpenCampusDates
+import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.core.domain.model.toTokyoLocalDateTime
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrowExactly
@@ -39,7 +39,7 @@ class AttendanceSurveyFactoryTest : FreeSpec({
                 } returns listOf(
                     AttendanceSurvey.fromFactory(
                         name = "1",
-                        openCampusSchedule = OpenCampusDates(
+                        openCampusSchedule = SameFiscalYearOpenCampusDates(
                             setOf(
                                 OpenCampusDate(LocalDate(2022, 1, 3)),
                                 OpenCampusDate(LocalDate(2022, 2, 1)),
@@ -53,7 +53,7 @@ class AttendanceSurveyFactoryTest : FreeSpec({
                 shouldNotThrowAny {
                     factory(
                         name = "2",
-                        openCampusSchedule = OpenCampusDates(
+                        openCampusSchedule = SameFiscalYearOpenCampusDates(
                             setOf(
                                 OpenCampusDate(LocalDate(2022, 1, 1)),
                                 OpenCampusDate(LocalDate(2022, 1, 2)),
@@ -69,7 +69,7 @@ class AttendanceSurveyFactoryTest : FreeSpec({
                 shouldThrowExactly<IllegalArgumentException> {
                     factory(
                         name = "テスト",
-                        openCampusSchedule = OpenCampusDates.empty(),
+                        openCampusSchedule = SameFiscalYearOpenCampusDates.empty(),
                     )
                 }
             }
@@ -78,7 +78,7 @@ class AttendanceSurveyFactoryTest : FreeSpec({
                 shouldThrowExactly<IllegalArgumentException> {
                     factory(
                         name = "テスト",
-                        openCampusSchedule = OpenCampusDates(
+                        openCampusSchedule = SameFiscalYearOpenCampusDates(
                             setOf(OpenCampusDate(LocalDate(2021, 12, 31)))
                         ),
                     )
@@ -108,7 +108,7 @@ class AttendanceSurveyFactoryTest : FreeSpec({
                 } returns listOf(
                     AttendanceSurvey.fromFactory(
                         name = "1",
-                        openCampusSchedule = OpenCampusDates(
+                        openCampusSchedule = SameFiscalYearOpenCampusDates(
                             setOf(
                                 OpenCampusDate(LocalDate(2022, 1, 1)),
                                 OpenCampusDate(LocalDate(2022, 1, 2)),
@@ -122,7 +122,7 @@ class AttendanceSurveyFactoryTest : FreeSpec({
                 shouldThrowExactly<IllegalArgumentException> {
                     factory(
                         name = "2",
-                        openCampusSchedule = OpenCampusDates(
+                        openCampusSchedule = SameFiscalYearOpenCampusDates(
                             setOf(
                                 OpenCampusDate(LocalDate(2022, 1, 1)),
                                 OpenCampusDate(LocalDate(2022, 1, 3)),

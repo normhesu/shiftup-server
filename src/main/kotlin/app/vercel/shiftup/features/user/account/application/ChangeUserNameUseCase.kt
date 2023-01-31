@@ -10,7 +10,7 @@ class ChangeUserNameUseCase(
     private val userRepository: UserRepository,
 ) {
     suspend operator fun invoke(userId: UserId, name: Name) {
-        val user = userRepository.findAvailableUserById(userId).let(::checkNotNull)
+        val user = userRepository.findById(userId).let(::checkNotNull)
         userRepository.replace(user.changeName(name))
     }
 }

@@ -6,6 +6,7 @@ import app.vercel.shiftup.features.user.account.domain.model.Cast
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.util.*
 
 @Serializable
@@ -19,7 +20,7 @@ value class AttendanceSurveyId(
 @Suppress("DataClassPrivateConstructor")
 data class AttendanceSurvey private constructor(
     val name: String,
-    val openCampusSchedule: OpenCampusDates,
+    val openCampusSchedule: SameFiscalYearOpenCampusDates,
     val creationDate: LocalDate,
     val available: Boolean,
     @SerialName("_id") val id: AttendanceSurveyId,
@@ -27,7 +28,7 @@ data class AttendanceSurvey private constructor(
     companion object {
         fun fromFactory(
             name: String,
-            openCampusSchedule: OpenCampusDates,
+            openCampusSchedule: SameFiscalYearOpenCampusDates,
             creationDate: LocalDate,
             available: Boolean,
             id: AttendanceSurveyId,
@@ -48,11 +49,12 @@ data class AttendanceSurvey private constructor(
         }
     }
 
-    val fiscalYear = openCampusSchedule.fiscalYear
+    @Transient
+    private val fiscalYear = openCampusSchedule.fiscalYear
 
     fun changeAvailable(available: Boolean) = copy(available = available)
 
-    fun tally(answers: AttendanceSurveyAnswers): Set<OpenCampus> {
+    fun tally(answers: SameAttendanceSurveyAnswers): Set<OpenCampus> {
         require(answers.surveyId == id)
         return answers.fold(
             openCampusSchedule.sinceNow().map(::OpenCampus),

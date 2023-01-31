@@ -3,17 +3,19 @@ package app.vercel.shiftup.presentation.routes.attendance.requests.date
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.request.application.ApplyAttendanceRequestToOpenCampusDateUseCase
 import app.vercel.shiftup.features.attendance.request.application.ForcedChangeAttendanceRequestStateUseCase
+import app.vercel.shiftup.features.attendance.request.application.ForcedChangeAttendanceRequestStateUseCaseException
 import app.vercel.shiftup.features.attendance.request.application.GetCastsByAttendanceRequestUseCase
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
-import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.features.user.domain.model.value.SchoolProfile
+import app.vercel.shiftup.features.user.domain.model.value.*
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
+import app.vercel.shiftup.presentation.plugins.routingWithRole
+import app.vercel.shiftup.presentation.plugins.userId
 import app.vercel.shiftup.presentation.routes.attendance.Attendance
-import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
-import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
+import com.github.michaelbull.result.onFailure
+import com.github.michaelbull.result.onSuccess
 import io.ktor.http.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
@@ -31,7 +33,9 @@ fun Application.attendanceRequestsDateRouting() = routingWithRole(Role.Manager) 
             data class ResponseItem(
                 val id: UserId,
                 val name: Name,
-                val schoolProfile: SchoolProfile,
+                val studentNumber: StudentNumber,
+                val email: Email,
+                val department: Department,
                 val position: Position,
             )
 
@@ -44,7 +48,9 @@ fun Application.attendanceRequestsDateRouting() = routingWithRole(Role.Manager) 
                 ResponseItem(
                     id = user.id,
                     name = user.name,
-                    schoolProfile = user.schoolProfile,
+                    email = user.email,
+                    department = user.department,
+                    studentNumber = user.studentNumber,
                     position = user.position,
                 )
             }
@@ -69,8 +75,15 @@ fun Application.attendanceRequestsDateRouting() = routingWithRole(Role.Manager) 
                 enumValueOf(call.receiveText()),
             ),
             operatorId = call.sessions.userId,
-        )
-        call.respond(HttpStatusCode.NoContent)
+        ).onSuccess {
+            call.respond(HttpStatusCode.NoContent)
+        }.onFailure { e ->
+            when (e) {
+                is ForcedChangeAttendanceRequestStateUseCaseException.NotFoundRequest -> {
+                    call.respond(HttpStatusCode.NotFound)
+                }
+            }
+        }
     }
 }
 

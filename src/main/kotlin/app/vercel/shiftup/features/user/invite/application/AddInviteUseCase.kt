@@ -1,28 +1,29 @@
 package app.vercel.shiftup.features.user.invite.application
 
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
+import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
+import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.features.user.invite.infra.InviteRepository
-import com.github.michaelbull.result.coroutines.runSuspendCatching
-import com.github.michaelbull.result.mapError
-import com.mongodb.MongoException
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import org.koin.core.annotation.Single
 
 @Single
 class AddInviteUseCase(
     private val inviteRepository: InviteRepository,
+    private val firstManager: FirstManager,
 ) {
-    companion object {
-        private const val DUPLICATE_KEY_CODE = 11000
-    }
+    suspend operator fun invoke(invite: Invite): Result<Unit, AddInviteUseCaseException> {
+        if (invite.studentNumber == firstManager.studentNumber) {
+            require(invite.position == Position.Manager)
+        }
 
-    suspend operator fun invoke(invite: Invite) = runSuspendCatching<Unit> {
-        inviteRepository.add(invite)
-    }.mapError {
-        val invited = it is MongoException && it.code == DUPLICATE_KEY_CODE
-        if (invited) AddInviteUseCaseException.Invited else throw it
+        val invited = inviteRepository.addOrNothingAndGetContainsBeforeAdd(invite)
+        return if (!invited) Ok(Unit) else Err(AddInviteUseCaseException.Invited)
     }
 }
 
-sealed interface AddInviteUseCaseException {
-    object Invited : Exception(), AddInviteUseCaseException
+sealed class AddInviteUseCaseException : Exception() {
+    object Invited : AddInviteUseCaseException()
 }

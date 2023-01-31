@@ -3,10 +3,11 @@ package app.vercel.shiftup.presentation.routes.attendance.requests.me
 import app.vercel.shiftup.features.attendance.domain.model.value.OpenCampusDate
 import app.vercel.shiftup.features.attendance.request.application.GetAfterNowAttendanceRequestAndSurveyUseCase
 import app.vercel.shiftup.features.attendance.request.application.RespondAttendanceRequestUseCase
+import app.vercel.shiftup.features.attendance.request.application.RespondAttendanceRequestUseCaseException
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
-import app.vercel.shiftup.presentation.routes.auth.plugins.userId
+import app.vercel.shiftup.presentation.plugins.routingWithRole
+import app.vercel.shiftup.presentation.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
 import app.vercel.shiftup.presentation.routes.users.Users
 import com.github.michaelbull.result.onFailure
@@ -84,9 +85,12 @@ private fun Route.postState() = post<Requests.Date.State> {
     ).onSuccess {
         call.respond(HttpStatusCode.OK)
     }.onFailure { e ->
-        @Suppress("USELESS_IS_CHECK")
         when (e) {
-            is IllegalStateException -> {
+            is RespondAttendanceRequestUseCaseException.NotFoundRequest -> {
+                call.respond(HttpStatusCode.NotFound)
+            }
+
+            is RespondAttendanceRequestUseCaseException.Responded -> {
                 call.response.headers.append(HttpHeaders.Allow, "")
                 call.respond(HttpStatusCode.MethodNotAllowed)
             }

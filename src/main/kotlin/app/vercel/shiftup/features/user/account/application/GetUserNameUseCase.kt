@@ -10,6 +10,6 @@ class GetUserNameUseCase(
     private val userRepository: UserRepository,
 ) {
     suspend operator fun invoke(userId: UserId): Name? {
-        return userRepository.findAvailableUserById(userId)?.name
+        return userRepository.findById(userId)?.name
     }
 }
