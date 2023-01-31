@@ -89,9 +89,8 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
 
     delete<Invites.Id> {
         val useCase: RemoveInviteUseCase by inject()
-        call.respondDeleteResult(
-            useCase(inviteId = it.id)
-        )
+        val result = useCase(inviteId = it.id)
+        call.respondDeleteResult(result)
     }
 }
 
