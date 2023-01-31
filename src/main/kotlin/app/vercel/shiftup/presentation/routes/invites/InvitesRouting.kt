@@ -9,6 +9,7 @@ import app.vercel.shiftup.features.user.domain.model.value.StudentNumber
 import app.vercel.shiftup.features.user.invite.application.*
 import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
+import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
@@ -58,6 +59,11 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
             }
 
             call.respond(response)
+        }
+
+        get<Invites.First.Id> {
+            val firstManager: FirstManager by inject()
+            call.respond(Invite(firstManager).id)
         }
     }
 
@@ -125,6 +131,14 @@ private fun Route.postInvite() = post<Invites> {
 @Serializable
 @Resource("invites")
 class Invites {
+    @Serializable
+    @Resource("first")
+    class First(val parent: Invites) {
+        @Serializable
+        @Resource("id")
+        class Id(val parent: First)
+    }
+
     @Serializable
     @Resource("{id}")
     class Id(val parent: Invites, val id: InviteId) {
