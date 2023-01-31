@@ -88,9 +88,8 @@ private fun Application.managerRouting() = routingWithRole(Role.Manager) {
             .onSuccess { result ->
                 call.respondDeleteResult(result)
             }.onFailure { e ->
-                @Suppress("USELESS_IS_CHECK")
                 when (e) {
-                    is UnsupportedOperationException -> {
+                    is RemoveAttendanceSurveyUseCaseException.UnsupportedOperation -> {
                         call.response.headers.append(HttpHeaders.Allow, "")
                         call.respond(HttpStatusCode.MethodNotAllowed)
                     }

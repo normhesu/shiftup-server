@@ -18,13 +18,17 @@ class RemoveAttendanceSurveyUseCase(
 ) {
     suspend operator fun invoke(
         attendanceSurveyId: AttendanceSurveyId,
-    ): Result<DeleteResult, UnsupportedOperationException> =
+    ): Result<DeleteResult, RemoveAttendanceSurveyUseCaseException> =
         removeAttendanceSurveyUseCaseAndApplyAttendanceRequestToOpenCampusDateUseCaseMutex.withLock {
             val survey = attendanceSurveyRepository.findById(attendanceSurveyId).let(::checkNotNull)
             val canRemove = attendanceRequestRepository.containsByOpenCampusDates(
                 survey.openCampusSchedule,
             ).not()
-            if (!canRemove) return Err(UnsupportedOperationException())
+            if (!canRemove) return Err(RemoveAttendanceSurveyUseCaseException.UnsupportedOperation)
             return Ok(attendanceSurveyRepository.remove(attendanceSurveyId))
         }
+}
+
+sealed class RemoveAttendanceSurveyUseCaseException : Exception() {
+    object UnsupportedOperation : RemoveAttendanceSurveyUseCaseException()
 }
