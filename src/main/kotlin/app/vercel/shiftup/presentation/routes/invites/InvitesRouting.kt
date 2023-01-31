@@ -11,8 +11,8 @@ import app.vercel.shiftup.features.user.invite.domain.model.Invite
 import app.vercel.shiftup.features.user.invite.domain.model.InviteId
 import app.vercel.shiftup.features.user.invite.domain.model.value.FirstManager
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
-import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
-import app.vercel.shiftup.presentation.routes.auth.plugins.userId
+import app.vercel.shiftup.presentation.plugins.routingWithRole
+import app.vercel.shiftup.presentation.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
 import app.vercel.shiftup.presentation.routes.respondDeleteResult
 import com.github.michaelbull.result.onFailure

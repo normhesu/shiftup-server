@@ -7,10 +7,7 @@ import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Email
 import app.vercel.shiftup.features.user.domain.model.value.NeecStudentNumber
-import app.vercel.shiftup.presentation.routes.auth.plugins.AUTH_OAUTH_GOOGLE_NAME
-import app.vercel.shiftup.presentation.routes.auth.plugins.UserSession
-import app.vercel.shiftup.presentation.routes.auth.plugins.configureAuthentication
-import app.vercel.shiftup.presentation.routes.auth.plugins.configureSessions
+import app.vercel.shiftup.presentation.plugins.*
 import app.vercel.shiftup.presentation.routes.inject
 import app.vercel.shiftup.presentation.topPageUrl
 import com.github.michaelbull.result.getOrThrow
@@ -32,61 +29,57 @@ import io.ktor.util.pipeline.*
 import kotlinx.datetime.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.mpierce.ktor.csrf.noCsrfProtection
 
-fun Application.authRouting(httpClient: HttpClient = app.vercel.shiftup.presentation.routes.auth.httpClient) {
-    val config = environment.config
-    configureSessions()
-    configureAuthentication(httpClient)
+fun Application.authRouting(
+    httpClient: HttpClient = authenticationHttpClient,
+) = routing {
+    val config = this.application.environment.config
+    noCsrfProtection {
+        authenticate(AUTH_OAUTH_GOOGLE_NAME) {
+            get<Login> {
+                // 自動的に認証ページに転送されます
+            }
 
-    routing {
-        noCsrfProtection {
-            authenticate(AUTH_OAUTH_GOOGLE_NAME) {
-                get<Login> {
-                    // 自動的に認証ページに転送されます
-                }
-
-                get<Login.Verify> {
-                    runCatching {
-                        val user = getUserFromPrincipal()
-                        call.sessions.set(
-                            UserSession(
-                                userId = user.id,
-                                creationInstantISOString = Clock.System.now().toString()
-                            )
+            get<Login.Verify> {
+                runCatching {
+                    val user = getUserFromPrincipal(httpClient)
+                    call.sessions.set(
+                        UserSession(
+                            userId = user.id,
+                            creationInstantISOString = Clock.System.now().toString()
                         )
-                        call.respondRedirect(config.topPageUrl)
-                    }.onFailure {
-                        application.log.error(it.message)
-                        when (it) {
-                            is LoginOrRegisterException.InvalidUser -> call.respondRedirect(
-                                config.topPageUrl + "/error/invalid-user",
-                            )
+                    )
+                    call.respondRedirect(config.topPageUrl)
+                }.onFailure {
+                    application.log.error(it.message)
+                    when (it) {
+                        is LoginOrRegisterException.InvalidUser -> call.respondRedirect(
+                            config.topPageUrl + "/error/invalid-user",
+                        )
 
-                            else -> call.respondRedirect(
-                                config.topPageUrl + "/error/authentication-error",
-                            )
-                        }
+                        else -> call.respondRedirect(
+                            config.topPageUrl + "/error/authentication-error",
+                        )
                     }
                 }
             }
+        }
 
-            get<Logout> {
-                call.sessions.clear<UserSession>()
-                call.respondRedirect(config.topPageUrl)
-            }
+        get<Logout> {
+            call.sessions.clear<UserSession>()
+            call.respondRedirect(config.topPageUrl)
+        }
 
-            authenticate {
-                get<SessionAvailable> {
-                    call.respond(HttpStatusCode.OK)
-                }
+        authenticate {
+            get<SessionAvailable> {
+                call.respond(HttpStatusCode.OK)
             }
         }
     }
 }
 
-private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(): AvailableUser {
+private suspend fun PipelineContext<Unit, ApplicationCall>.getUserFromPrincipal(httpClient: HttpClient): AvailableUser {
     val principal: OAuthAccessTokenResponse.OAuth2 = checkNotNull(call.principal())
     val userInfo = httpClient.get("https://www.googleapis.com/oauth2/v2/userinfo") {
         headers {
@@ -120,16 +113,6 @@ class Logout
 @Serializable
 @Resource("session-available")
 class SessionAvailable
-
-private val httpClient = HttpClient(CIO) {
-    install(ContentNegotiation) {
-        json(
-            Json {
-                ignoreUnknownKeys = true
-            }
-        )
-    }
-}
 
 @Serializable
 private data class UserInfo(

@@ -1,4 +1,4 @@
-package app.vercel.shiftup.presentation.routes.auth.plugins
+package app.vercel.shiftup.presentation.plugins
 
 import app.vercel.shiftup.features.user.account.application.GetUserRolesUseCase
 import app.vercel.shiftup.features.user.domain.model.value.Role

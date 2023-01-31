@@ -4,8 +4,8 @@ import app.vercel.shiftup.features.attendance.survey.application.GetCanAnswerAtt
 import app.vercel.shiftup.features.attendance.survey.domain.model.AttendanceSurveyId
 import app.vercel.shiftup.features.attendance.survey.domain.model.value.SameFiscalYearOpenCampusDates
 import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
-import app.vercel.shiftup.presentation.routes.auth.plugins.userId
+import app.vercel.shiftup.presentation.plugins.routingWithRole
+import app.vercel.shiftup.presentation.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
 import app.vercel.shiftup.presentation.routes.users.Users
 import io.ktor.resources.*

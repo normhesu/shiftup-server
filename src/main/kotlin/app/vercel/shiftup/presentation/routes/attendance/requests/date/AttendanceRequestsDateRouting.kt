@@ -10,9 +10,9 @@ import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.*
 import app.vercel.shiftup.features.user.invite.domain.model.value.Position
+import app.vercel.shiftup.presentation.plugins.routingWithRole
+import app.vercel.shiftup.presentation.plugins.userId
 import app.vercel.shiftup.presentation.routes.attendance.Attendance
-import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
-import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess

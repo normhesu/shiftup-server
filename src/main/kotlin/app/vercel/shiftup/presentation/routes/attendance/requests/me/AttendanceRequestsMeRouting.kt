@@ -6,8 +6,8 @@ import app.vercel.shiftup.features.attendance.request.application.RespondAttenda
 import app.vercel.shiftup.features.attendance.request.application.RespondAttendanceRequestUseCaseException
 import app.vercel.shiftup.features.attendance.request.domain.model.value.AttendanceRequestState
 import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
-import app.vercel.shiftup.presentation.routes.auth.plugins.userId
+import app.vercel.shiftup.presentation.plugins.routingWithRole
+import app.vercel.shiftup.presentation.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
 import app.vercel.shiftup.presentation.routes.users.Users
 import com.github.michaelbull.result.onFailure
