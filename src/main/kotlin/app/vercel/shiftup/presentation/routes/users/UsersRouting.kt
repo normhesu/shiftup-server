@@ -81,7 +81,7 @@ class Users {
 
         @Serializable
         @Resource("department")
-        class Department(val parent: Id)
+        class Department(val parent: Me)
 
         @Serializable
         @Resource("attendance")
