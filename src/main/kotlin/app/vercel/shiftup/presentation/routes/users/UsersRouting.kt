@@ -3,6 +3,7 @@ package app.vercel.shiftup.presentation.routes.users
 import app.vercel.shiftup.features.user.account.application.*
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Department
+import app.vercel.shiftup.features.user.invite.domain.model.value.Position
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
 import io.ktor.http.*
@@ -22,6 +23,24 @@ import org.mpierce.ktor.csrf.noCsrfProtection
 fun Application.usersRouting() = routing {
     authenticate {
         noCsrfProtection {
+            get<Users.Me> {
+                @Serializable
+                data class Response(
+                    val name: Name,
+                    val department: Department,
+                    val position: Position,
+                )
+
+                val useCase: GetAvailableUserUseCase by inject()
+                val availableUser = useCase(call.sessions.userId).let(::checkNotNull)
+                val response = Response(
+                    name = availableUser.name,
+                    department = availableUser.department,
+                    position = availableUser.position,
+                )
+                call.respond(response)
+            }
+
             get<Users.Me.Id> {
                 call.respond(call.sessions.userId)
             }
@@ -73,7 +92,7 @@ class Users {
     class Me(val parent: Users) {
         @Serializable
         @Resource("id")
-        class Id(val parent: Users)
+        class Id(val parent: Me)
 
         @Serializable
         @Resource("detail")
