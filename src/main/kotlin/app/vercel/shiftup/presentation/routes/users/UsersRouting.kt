@@ -22,6 +22,10 @@ import org.mpierce.ktor.csrf.noCsrfProtection
 fun Application.usersRouting() = routing {
     authenticate {
         noCsrfProtection {
+            get<Users.Me.Id> {
+                call.respond(call.sessions.userId)
+            }
+
             get<Users.Me.Detail> {
                 val useCase: GetAvailableUserDetailUseCase by inject()
                 call.respond(
@@ -67,6 +71,10 @@ class Users {
     @Serializable
     @Resource("me")
     class Me(val parent: Users) {
+        @Serializable
+        @Resource("id")
+        class Id(val parent: Users)
+
         @Serializable
         @Resource("detail")
         class Detail(val parent: Me)
