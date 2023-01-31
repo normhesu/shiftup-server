@@ -20,6 +20,12 @@ class InviteRepository(
 ) {
     private val collection = database.getCollection<Invite>()
 
+    suspend fun findById(
+        inviteId: InviteId,
+    ): Invite? {
+        return collection.findOneById(inviteId)
+    }
+
     suspend fun findByEmail(
         email: Email,
     ): Invite? {

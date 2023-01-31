@@ -1,15 +1,10 @@
 package app.vercel.shiftup.presentation.routes.users
 
 import app.vercel.shiftup.features.user.account.application.*
-import app.vercel.shiftup.features.user.account.domain.model.UserId
 import app.vercel.shiftup.features.user.account.domain.model.value.Name
 import app.vercel.shiftup.features.user.domain.model.value.Department
-import app.vercel.shiftup.features.user.domain.model.value.Role
-import app.vercel.shiftup.presentation.routes.auth.plugins.routingWithRole
 import app.vercel.shiftup.presentation.routes.auth.plugins.userId
 import app.vercel.shiftup.presentation.routes.inject
-import com.github.michaelbull.result.onFailure
-import com.github.michaelbull.result.onSuccess
 import io.ktor.http.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
@@ -24,12 +19,7 @@ import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import org.mpierce.ktor.csrf.noCsrfProtection
 
-fun Application.usersRouting() {
-    authRouting()
-    managerRouting()
-}
-
-private fun Application.authRouting() = routing {
+fun Application.usersRouting() = routing {
     authenticate {
         noCsrfProtection {
             get<Users.Me.Detail> {
@@ -70,30 +60,6 @@ private fun Application.authRouting() = routing {
     }
 }
 
-private fun Application.managerRouting() = routingWithRole(Role.Manager) {
-    put<Users.Id.Position> {
-        val useCase: ChangeAvailableUserPositionUseCase by inject()
-        useCase(
-            userId = it.parent.id,
-            position = enumValueOf(call.receiveText()),
-            operatorId = call.sessions.userId,
-        ).onSuccess {
-            call.respond(HttpStatusCode.NoContent)
-        }.onFailure { e ->
-            when (e) {
-                is ChangeAvailableUserPositionUseCaseException.AvailableUserNotFound -> {
-                    call.respond(HttpStatusCode.NotFound)
-                }
-
-                is ChangeAvailableUserPositionUseCaseException.UnsupportedOperation -> {
-                    call.response.headers.append(HttpHeaders.Allow, "")
-                    call.respond(HttpStatusCode.MethodNotAllowed)
-                }
-            }
-        }
-    }
-}
-
 @Suppress("unused")
 @Serializable
 @Resource("users")
@@ -120,13 +86,5 @@ class Users {
         @Serializable
         @Resource("attendance")
         class Attendance(val parent: Me)
-    }
-
-    @Serializable
-    @Resource("{id}")
-    class Id(val parent: Users, val id: UserId) {
-        @Serializable
-        @Resource("position")
-        class Position(val parent: Id)
     }
 }
