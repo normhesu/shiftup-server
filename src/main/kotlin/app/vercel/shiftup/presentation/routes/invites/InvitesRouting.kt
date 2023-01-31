@@ -66,7 +66,7 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
     delete<Invites.Id> {
         val useCase: RemoveInviteUseCase by inject()
         call.respondDeleteResult(
-            useCase(inviteId = InviteId(StudentNumber(it.id)))
+            useCase(inviteId = it.id)
         )
     }
 }
@@ -109,5 +109,5 @@ private fun Route.postInvite() = post<Invites> {
 class Invites {
     @Serializable
     @Resource("{id}")
-    class Id(val parent: Invites, val id: String)
+    class Id(val parent: Invites, val id: InviteId)
 }
