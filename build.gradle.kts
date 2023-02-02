@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "app.vercel.shiftup"
-version = "0.0.1"
+version = "1.0.0"
 application {
     mainClass.set("app.vercel.shiftup.ApplicationKt")
 
