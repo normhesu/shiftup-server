@@ -31,7 +31,23 @@ import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import org.mpierce.ktor.csrf.noCsrfProtection
 
-fun Application.invitesRouting() = routingWithRole(Role.Manager) {
+fun Application.invitesRouting() {
+    authRouting()
+    managerRouting()
+}
+
+private fun Application.authRouting() = routing {
+    authenticate {
+        noCsrfProtection {
+            get<Invites.First.Id> {
+                val firstManager: FirstManager by inject()
+                call.respond(Invite(firstManager).id)
+            }
+        }
+    }
+}
+
+private fun Application.managerRouting() = routingWithRole(Role.Manager) {
     noCsrfProtection {
         get<Invites> {
             @Serializable
@@ -59,11 +75,6 @@ fun Application.invitesRouting() = routingWithRole(Role.Manager) {
             }
 
             call.respond(response)
-        }
-
-        get<Invites.First.Id> {
-            val firstManager: FirstManager by inject()
-            call.respond(Invite(firstManager).id)
         }
     }
 
