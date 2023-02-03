@@ -17,7 +17,7 @@ data class OpenCampus private constructor(
         availableCastIds = emptySet(),
     )
 
-    fun addAvailableCastOrNothing(
+    fun addAvailableCastIfPossible(
         answer: AttendanceSurveyAnswer,
     ) = when (date) {
         in answer.availableDays -> addAvailableCastId(
