@@ -19,7 +19,7 @@ class AddInviteUseCase(
             require(invite.position == Position.Manager)
         }
 
-        val invited = inviteRepository.addOrNothingAndGetContainsBeforeAdd(invite)
+        val invited = inviteRepository.addIfPossibleAndGetContainsBeforeAdd(invite)
         return if (!invited) Ok(Unit) else Err(AddInviteUseCaseException.Invited)
     }
 }

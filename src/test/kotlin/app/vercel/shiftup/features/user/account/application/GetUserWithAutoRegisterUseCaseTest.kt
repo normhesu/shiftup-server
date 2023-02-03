@@ -116,7 +116,7 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                 ) shouldBe Ok(resultAvailableUser)
 
                 coVerify {
-                    mockUserRepository.addOrNothing(User(resultAvailableUser))
+                    mockUserRepository.addIfPossible(User(resultAvailableUser))
                 }
             }
 
@@ -144,7 +144,7 @@ class GetUserWithAutoRegisterUseCaseTest : FreeSpec({
                     ) shouldBe Ok(resultAvailableUser)
 
                     coVerify {
-                        mockUserRepository.addOrNothing(User(resultAvailableUser))
+                        mockUserRepository.addIfPossible(User(resultAvailableUser))
                     }
                 }
 
