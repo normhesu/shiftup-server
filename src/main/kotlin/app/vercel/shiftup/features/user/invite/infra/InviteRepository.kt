@@ -42,7 +42,7 @@ class InviteRepository(
         return collection.find().toList()
     }
 
-    suspend fun addOrNothingAndGetContainsBeforeAdd(invite: Invite) = runSuspendCatching {
+    suspend fun addIfPossibleAndGetContainsBeforeAdd(invite: Invite) = runSuspendCatching {
         collection.insertOne(invite).orThrow()
     }.throwIfNotDuplicate().fold(
         success = { false },

@@ -20,7 +20,7 @@ class UserRepository(
         return collection.findOneById(userId)
     }
 
-    suspend fun addOrNothing(user: User) {
+    suspend fun addIfPossible(user: User) {
         runSuspendCatching {
             collection.insertOne(user).orThrow()
         }.throwIfNotDuplicate()

@@ -40,7 +40,7 @@ class AddInviteUseCaseTest : FreeSpec({
                     ),
                 )
                 coEvery {
-                    repository.addOrNothingAndGetContainsBeforeAdd(invite)
+                    repository.addIfPossibleAndGetContainsBeforeAdd(invite)
                 } returns false
 
                 useCase(invite) shouldBe Ok(Unit)
@@ -62,7 +62,7 @@ class AddInviteUseCaseTest : FreeSpec({
                 )
 
                 coEvery {
-                    repository.addOrNothingAndGetContainsBeforeAdd(invite)
+                    repository.addIfPossibleAndGetContainsBeforeAdd(invite)
                 } returns true
 
                 useCase(invite).shouldBeInstanceOf<Err<AddInviteUseCaseException.Invited>>()

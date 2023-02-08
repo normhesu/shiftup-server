@@ -11,6 +11,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.resources.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 
 fun Application.configureRouting() {
@@ -32,6 +33,7 @@ fun Application.configureRouting() {
     }
     install(AutoHeadResponse)
     install(Resources)
+    install(IgnoreTrailingSlash)
     install(ContentNegotiation) {
         json(
             Json {

@@ -60,7 +60,7 @@ data class AttendanceSurvey private constructor(
             openCampusSchedule.sinceNow().map(::OpenCampus),
         ) { openCampuses, answer ->
             openCampuses.map {
-                it.addAvailableCastOrNothing(answer)
+                it.addAvailableCastIfPossible(answer)
             }
         }.toSet()
     }

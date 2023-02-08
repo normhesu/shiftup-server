@@ -5,19 +5,19 @@ import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
 plugins {
     application
-    kotlin("jvm") version "1.8.0"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.0"
+    kotlin("jvm") version "1.8.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.gitlab.arturbosch.detekt") version "1.22.0"
-    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
+    id("com.google.devtools.ksp") version "1.8.10-1.0.9"
     id("org.jetbrains.dokka") version "1.7.20"
-    id("org.dddjava.jig-gradle-plugin") version "2022.12.1"
+    id("org.dddjava.jig-gradle-plugin") version "2023.1.1"
     id("com.bnorm.power.kotlin-power-assert") version "0.12.0"
-    id("com.github.ben-manes.versions") version "0.44.0"
+    id("com.github.ben-manes.versions") version "0.45.0"
 }
 
 group = "app.vercel.shiftup"
-version = "0.0.1"
+version = "1.0.0"
 application {
     mainClass.set("app.vercel.shiftup.ApplicationKt")
 
@@ -39,11 +39,11 @@ repositories {
 }
 
 object Version {
-    const val ktor = "2.2.2"
+    const val ktor = "2.2.3"
     const val logback = "1.4.5"
     const val ktorCsrf = "1.0.0"
     const val detekt = "1.22.0"
-    const val kotest = "5.5.4"
+    const val kotest = "5.5.5"
     const val kotestAssertionsKtor = "1.0.3"
     const val archUnit = "1.0.1"
     const val mockK = "1.13.4"
